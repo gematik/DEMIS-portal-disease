@@ -1,0 +1,22 @@
+<mat-tab-group class="tabs-navigation" #navtabs [id]="id" animationDuration="0ms">
+  @for (tab of field.fieldGroup; let i = $index; track i) {
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <div [ngClass]="i === navtabs.selectedIndex ? 'selected-tab' : 'unselected-tab'">
+          <div>
+            <mat-icon [svgIcon]="isValid(tab) ? 'checkmark-outline' : 'circle-dash'"></mat-icon>
+          </div>
+          {{ tab.props?.label }}
+        </div>
+      </ng-template>
+      <mat-toolbar>{{ field.props['title'] }}</mat-toolbar>
+      <div class="section-header">
+        <span class="section-title">{{ tab.props?.label }}</span>
+        <span class="oval-label"> Schritt {{ navtabs.selectedIndex !== null ? navtabs.selectedIndex + 1 : '?' }} von {{ tabCount() }} </span>
+      </div>
+      <div class="section-body">
+        <formly-field [field]="tab"></formly-field>
+      </div>
+    </mat-tab>
+  }
+</mat-tab-group>

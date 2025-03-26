@@ -1,0 +1,27 @@
+@for (currentField of field.fieldGroup; let i = $index; track i) {
+  <div class="repeat-section">
+    @if (itemName) {
+      <mat-label class="section-label">{{ itemName }} {{ i + 1 }}</mat-label>
+    }
+    <div class="repetition-wrapper">
+      <formly-field class="" [field]="currentField"></formly-field>
+    </div>
+    <div class="remove-repetition-wrapper">
+      @if (field.props.required ? field!.fieldGroup!.length > 1 : true) {
+        <button mat-icon-button="" color="primary" type="button" (click)="remove(i)" title="Entfernen">
+          <mat-icon role="img" class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color" aria-hidden="true" data-mat-icon-type="font"
+            >delete
+          </mat-icon>
+        </button>
+      }
+    </div>
+  </div>
+}
+<div class="add-repetition-wrapper">
+  <div class="add-repetition-label">
+    {{ itemName }}
+  </div>
+  <button mat-icon-button [id]="formatId('add-button-', field.className)" type="button" (click)="add()" title="Hinzufügen">
+    <mat-icon role="img" class="mat-icon material-icons mat-ligature-font mat-icon-no-color" aria-hidden="true" data-mat-icon-type="font">add </mat-icon>
+  </button>
+</div>

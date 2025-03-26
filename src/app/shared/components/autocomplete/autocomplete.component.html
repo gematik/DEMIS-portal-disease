@@ -1,0 +1,66 @@
+<div [ngClass]="multi ? 'chip-list-wrapper' : ''">
+  <mat-chip-grid #chipList>
+    @for (select of selectData; track select.code) {
+      <mat-chip-row class="cardinal-colors" (removed)="removeChip(select)">
+        <span>{{ select.display }}</span>
+        <button matChipRemove>
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip-row>
+    }
+  </mat-chip-grid>
+</div>
+<div
+  #divContainer
+  [currentSelectionBreadcrumb]="getCurrentBreadcrumb()"
+  [hasError]="!!formlyField?.formControl?.invalid && !!formlyField?.formControl?.touched"
+  appAddBreadcrumb>
+  @if (formlyField) {
+    <input
+      matInput
+      [id]="createIdForAutocompleteInput(formlyField)"
+      [matAutocomplete]="auto"
+      [matChipInputFor]="chipList"
+      [formControl]="selectControl"
+      [formlyAttributes]="formlyField"
+      [placeholder]="placeholder || ''"
+      [errorStateMatcher]="errorStateMatcher"
+      (keydown.space)="multi ? handleSpace($event) : null"
+      (click)="onClick()"
+      (blur)="onBlur()" />
+  } @else {
+    <input matInput [matAutocomplete]="auto" [formControl]="selectControl" [placeholder]="placeholder || ''" [errorStateMatcher]="errorStateMatcher" />
+  }
+  @if (clearable && selectControl.value) {
+    <span style="position: absolute; left: calc(100% - 30px); top: +5px">
+      <button
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="onRemoveSelection($event)"
+        tabindex="-1"
+        style="border: none; background-color: transparent"
+        class="clear-autocomplete">
+        <mat-icon>close</mat-icon>
+      </button>
+    </span>
+  }
+  <mat-autocomplete
+    #auto="matAutocomplete"
+    [displayWith]="displayFn"
+    hideSingleSelectionIndicator="true"
+    (optionActivated)="activateOption($event)"
+    (closed)="onClosePanel()">
+    @for (coding of filteredCodings | async; track coding.code) {
+      @if (multi) {
+        <mat-option (keydown.space)="toggleSelection(coding)" [value]="coding" class="autocomplete-option">
+          <mat-checkbox [checked]="coding.selected" (click)="toggleSelection(coding); $event.stopPropagation()" class="opt-{{ coding.code }}">
+            {{ displayFn(coding) }}{{ coding.breadcrumb && ' - ' + coding.breadcrumb }}
+          </mat-checkbox>
+        </mat-option>
+      } @else {
+        <mat-option [value]="coding" class="opt-{{ coding.code }}"> {{ displayFn(coding) }}{{ coding.breadcrumb && ' - ' + coding.breadcrumb }} </mat-option>
+      }
+    }
+  </mat-autocomplete>
+</div>

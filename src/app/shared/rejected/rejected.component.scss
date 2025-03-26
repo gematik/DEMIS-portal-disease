@@ -1,0 +1,19 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.mat-cell {
+  padding: 8px 8px 8px 0;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+#rejected-container {
+  padding: 20px;
+  justify-content: flex-end;
+}

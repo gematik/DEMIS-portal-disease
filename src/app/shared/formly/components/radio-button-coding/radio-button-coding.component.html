@@ -1,0 +1,7 @@
+<mat-radio-group [formControl]="formControl" [formlyAttributes]="field" id="radio-group-{{ field.className }}">
+  @for (coding of codings; track coding.code) {
+    <mat-radio-button [value]="coding" class="opt-{{ coding.code }}" id="radio-button-{{ field.className }}-{{ coding.display }}">
+      {{ coding.display }}
+    </mat-radio-button>
+  }
+</mat-radio-group>

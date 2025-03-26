@@ -1,0 +1,14 @@
+<mat-form-field>
+  <mat-select [formControl]="formControl" [formlyAttributes]="field" [errorStateMatcher]="errorStateMatcher">
+    @for (coding of codings; track coding.code) {
+      <mat-option [value]="coding">
+        {{ coding.display }}
+      </mat-option>
+    }
+  </mat-select>
+  @if (currentSelectionBreadcrumb) {
+    <mat-hint>
+      {{ currentSelectionBreadcrumb }}
+    </mat-hint>
+  }
+</mat-form-field>

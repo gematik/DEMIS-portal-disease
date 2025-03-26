@@ -1,0 +1,23 @@
+<form [formGroup]="form" (ngSubmit)="submitForm()" appCheckLabelLength>
+  <formly-form [model]="model" [fields]="fields" [form]="form" [options]="formOptions"></formly-form>
+  <div class="action-bar-wrapper">
+    <div class="action-bar">
+      <div>
+        <button mat-button id="back-button" class="nav-button" [disabled]="!canGoBack()" type="button" (click)="goBack()">
+          <mat-icon fontIcon="arrow_back"></mat-icon>
+          <span>Zurück <span class="shortcut">^&larr;</span></span>
+        </button>
+        <button mat-button id="forward-button" class="nav-button" [disabled]="!canGoForward()" type="button" (click)="goForward()">
+          <span>Weiter <span class="shortcut">^&rarr;</span></span>
+          <mat-icon iconPositionEnd fontIcon="arrow_forward"></mat-icon>
+        </button>
+      </div>
+      <button mat-button id="send-button" class="send-button" [disabled]="!form.valid" type="submit">
+        <span>Senden</span>
+        <mat-icon iconPositionEnd fontIcon="send"></mat-icon>
+      </button>
+    </div>
+  </div>
+</form>
+<app-hexhexbutton (paste)="hexHex()"></app-hexhexbutton>
+<app-paste-box (paste)="paste()"></app-paste-box>

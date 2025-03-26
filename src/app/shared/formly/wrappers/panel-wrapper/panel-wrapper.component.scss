@@ -1,0 +1,10 @@
+div.card {
+  &:not(:has(> .card-body > ::ng-deep .ITEM_GROUP)) {
+    margin-left: 3rem;
+  }
+}
+
+h3.card-header {
+  /*font-weight: bolder;*/
+  font-size: 120%;
+}

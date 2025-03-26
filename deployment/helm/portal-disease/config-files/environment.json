@@ -1,0 +1,13 @@
+{
+  "production": {{ .Values.config.production }},
+  "pathToGatewayDisease": "{{ .Values.config.pathToGatewayDisease }}",
+  "pathToDisease": "{{ .Values.config.pathToDisease }}",
+  "pathToDiseaseQuestionnaire": "{{ .Values.config.pathToDiseaseQuestionnaire }}",
+  "pathToFuts": "{{ .Values.config.pathToFuts }}",
+  "ngxLoggerConfig": {
+    "level": 1,
+    "disableConsoleLogging": true
+  },
+    "featureFlags": {{ .Values.config.featureFlags | toJson }}
+}
+
