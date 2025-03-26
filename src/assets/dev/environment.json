@@ -1,0 +1,14 @@
+{
+  "production": false,
+  "pathToGatewayDisease": "/gateway/notification/api/ng/notification/disease",
+  "pathToDisease": "/fhir-ui-data-model-translation/disease",
+  "pathToDiseaseQuestionnaire": "/fhir-ui-data-model-translation/disease/questionnaire",
+  "pathToFuts": "/fhir-ui-data-model-translation",
+  "featureFlags": {
+    "FEATURE_FLAG_HOSP_COPY_CHECKBOXES": true
+  },
+  "ngxLoggerConfig": {
+    "level": 1,
+    "disableConsoleLogging": false
+  }
+}

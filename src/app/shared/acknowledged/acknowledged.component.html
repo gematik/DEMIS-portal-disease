@@ -1,0 +1,25 @@
+<div class="d-flex flex-column flex-grow-1">
+  <h1 mat-dialog-title id="success-title">
+    <mat-icon class="mr-3" id="icon-success">check_circle</mat-icon>
+    {{ 'Meldung wurde erfolgreich gesendet!' }}
+  </h1>
+  @if (result) {
+    <div mat-dialog-content class="d-flex flex-column flex-grow-1">
+      <p id="success-id">Meldungs-ID: {{ result.notificationId }}</p>
+      <p id="success-timestamp">Datum: {{ result.timestamp }}</p>
+      <p></p>
+      <p id="success-result">
+        Hier erhalten Sie Ihre Bestätigung:
+        <a target="_blank" download="{{ data.fileName }}" [href]="pdfDownloadUrl">Meldungsquittung (PDF)</a>
+      </p>
+      <p id="success-info">
+        Bei fachlichen Fragen wenden Sie sich bitte an die DEMIS-Geschäftsstelle des Robert Koch-Instituts:
+        <a [href]="'mailto:' + result.authorEmail">{{ result.authorEmail }}</a>
+      </p>
+    </div>
+  }
+
+  <div mat-dialog-actions class="dialog-actions">
+    <button mat-button color="primary" id="btn-back-to-report" mat-dialog-close cdkFocusInitial>Zur Startseite</button>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+{{- if not .Values.istio.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "portal-disease.fullname" . }}
+  labels:
+    {{- include "portal-disease.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "portal-disease.selectorLabels" . | nindent 4 }}
+{{- end }}
