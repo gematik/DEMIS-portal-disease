@@ -12,15 +12,74 @@
  limitations under the Licence.
  */
 
-import { DynamicEnvironment, FeatureFlags } from './dynamic-environment';
+import { HttpHeaders } from '@angular/common/http';
+import { NgxLoggerLevel } from 'ngx-logger';
+import { assetUrl } from '../single-spa/asset-url';
 
-/**
- * Environment file for prod
- */
-class Environment extends DynamicEnvironment {
+interface NgxLoggerConfig {
+  level: number;
+  disableConsoleLogging: boolean;
+  serverLogLevel: number;
+}
+
+interface Configuration {
+  production: boolean;
+  pathToGatewayDisease: string;
+  pathToDisease: string;
+  pathToDiseaseQuestionnaire: string;
+  pathToFuts: string;
+  ngxLoggerConfig: NgxLoggerConfig;
+}
+
+class Environment {
+  public headers: HttpHeaders;
+  public diseaseConfig: any;
+  public local: boolean = false;
+
   constructor() {
-    super();
-    this.local = false;
+    this.headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+  }
+
+  private get config(): Configuration {
+    return this.diseaseConfig;
+  }
+
+  public get isProduction(): boolean {
+    return !!this.config?.production;
+  }
+
+  public get ngxLoggerConfig(): NgxLoggerConfig {
+    return this.config?.ngxLoggerConfig ? this.config?.ngxLoggerConfig : this.defaultNgxLoggerConfig;
+  }
+
+  public get defaultNgxLoggerConfig(): NgxLoggerConfig {
+    return {
+      level: NgxLoggerLevel.OFF,
+      disableConsoleLogging: true,
+      serverLogLevel: NgxLoggerLevel.OFF,
+    };
+  }
+
+  public get pathToGatewayDisease(): string {
+    return this.config?.pathToGatewayDisease;
+  }
+
+  public get pathToDisease(): string {
+    return this.config?.pathToDisease;
+  }
+
+  public get pathToDiseaseQuestionnaire(): string {
+    return this.config?.pathToDiseaseQuestionnaire;
+  }
+
+  public get pathToFuts(): string {
+    return this.config?.pathToFuts;
+  }
+
+  public get pathToEnvironment() {
+    return assetUrl('../environment.json');
   }
 }
 

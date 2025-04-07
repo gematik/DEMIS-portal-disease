@@ -60,6 +60,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AutocompleteMultiCodingComponent } from './shared/formly/components/autocomplete-multi-coding/autocomplete-multi-coding.component';
 import { AutocompleteComponent } from './shared/components/autocomplete/autocomplete.component';
+import { environment } from '../environments/environment';
 
 export function initIconLoaderService(iconLoaderService: IconLoaderService) {
   return (): Promise<void> => {
@@ -92,11 +93,7 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    LoggerModule.forRoot({
-      level: NgxLoggerLevel.ERROR,
-      disableConsoleLogging: false,
-      serverLogLevel: NgxLoggerLevel.OFF,
-    }),
+    LoggerModule.forRoot(environment.ngxLoggerConfig),
     MatInputModule,
     NotificationFormValidationModule,
     FormlyModule.forRoot({

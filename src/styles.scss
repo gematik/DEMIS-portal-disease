@@ -1,14 +1,6 @@
-/* You can add global styles to this file, and also import other style files */
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
-
-html,
-body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
+//override for accordion background - needs to be checked if still necessary/styled in other MFs
+.mat-expansion-panel {
+  background-color: #FFFFFF;
 }
 
 .compile-error {
@@ -16,6 +8,7 @@ body {
   font-weight: bold;
 }
 
+//TODO: cleanup
 h1.platzhalter {
   margin: 10em 16em;
 }
