@@ -14,38 +14,39 @@
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, HostListener, inject, OnInit, Signal } from '@angular/core';
-import { AbstractControl, FormGroup } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
 import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
-import { lastValueFrom, Subscription, take, tap } from 'rxjs';
+import { lastValueFrom, take, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FACILITY_RULES, PERSON_ADDRESS_RULES, PERSON_RULES } from '../data-transfer/functionRules';
 import { DemisCoding, QuestionnaireDescriptor } from '../demis-types';
-import { formatItems, makeFieldSequence, sortItems } from '../format-items';
+import { makeFieldSequence, sortItems } from '../format-items';
 import { Ifsg61Service } from '../ifsg61.service';
 import { ErrorResult, MessageType } from '../legacy/message';
-import { AddressType, DiseaseNotification, DiseaseStatus, NotifiedPersonAddressInfo } from '../../api/notification';
+import { DiseaseStatus } from '../../api/notification';
 import { ErrorMessage } from '../shared/error-message';
 import { ErrorMessageDialogComponent } from '../shared/error-message-dialog/error-message-dialog.component';
 import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
 import { HelpersService } from '../shared/helpers.service';
 import { ProgressService } from '../shared/progress.service';
-import { createExpressions, dateStringToIso } from '../shared/utils';
+import { createExpressions } from '../shared/utils';
 import { getDiseaseChoiceFields } from './common/formlyConfigs/disease-choice';
 import { MaxMasern } from './common/maxMasern';
 import { notifiedPersonFormConfigFields } from './common/formlyConfigs/notified-person';
 import { notifierFacilityFormConfigFields } from './common/formlyConfigs/notifier';
-import { ImportFieldValuesService, ImportTargetComponent } from './services/import-field-values.service';
-import { cloneObject, trimStrings } from '@gematik/demis-portal-core-library';
-import { ExtendedSalutationEnum } from '../legacy/common-utils';
-import { CopyCheckboxesInHospitalization } from './services/copy-checkboxes-in-hospitalization-service';
+import {
+  CLIPBOARD_ERROR_DIALOG_MESSAGE,
+  CLIPBOARD_ERROR_DIALOG_MESSAGE_DETAILS,
+  CLIPBOARD_ERROR_DIALOG_TITLE,
+  ImportFieldValuesService,
+  ImportTargetComponent,
+} from './services/import-field-values.service';
+import { cloneObject } from '@gematik/demis-portal-core-library';
+import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-service';
+import { ProcessFormService } from './services/process-form-service';
 import StatusEnum = DiseaseStatus.StatusEnum;
-
-const CLIPBOARD_ERROR_DIALOG_TITLE = 'Fehler beim Einlesen der Daten aus der Zwischenablage';
-const CLIPBOARD_ERROR_DIALOG_MESSAGE = 'Bei der Datenübernahme ist ein Fehler aufgetreten.';
-const CLIPBOARD_ERROR_DIALOG_MESSAGE_DETAILS =
-  'Diese Daten werden aus der Zwischenablage importiert. Bitte wenden Sie sich an Ihre IT zur Konfiguration des Datenimports. Weitere Informationen finden Sie in der DEMIS Wissensdatenbank unter "<a href="https://wiki.gematik.de/x/fGFCH" target="_blank">Übergabe von Daten aus dem Primärsystem</a>".';
 
 const IFSG61_NOTIFIER = 'IFSG61_NOTIFIER'; // key into local storage
 
@@ -66,27 +67,6 @@ const NO_DISEASE_CHOOSEN: FormlyFieldConfig[] = [
     },
   },
 ];
-
-function makeCondition(condition: Record<string, any> | undefined) {
-  return {
-    recordedDate: dateStringToIso(answer(condition, 'recordedDate', 'valueDate')),
-    onset: dateStringToIso(answer(condition, 'onset', 'valueDate')),
-    note: answer(condition, 'note', 'valueString'),
-    evidence: answer(condition, 'evidence', 'valueCoding'),
-    verificationStatus: answer(condition, 'verificationStatus', 'valueCoding')?.code,
-  };
-}
-
-function answer(condition: Record<string, any | undefined> | undefined, key: string, typeTag: string): any {
-  if (!condition) return undefined;
-  const prop = condition[key];
-  if (!prop) return undefined;
-  if (Array.isArray(prop)) {
-    return prop.filter(item => item).map(item => item.answer[typeTag]);
-  } else {
-    return prop?.answer[typeTag];
-  }
-}
 
 @Component({
   selector: 'app-disease-form',
@@ -118,9 +98,8 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   private readonly helpers = inject(HelpersService);
   private readonly importFieldValuesService = inject(ImportFieldValuesService);
   private readonly progressService = inject(ProgressService);
-  private readonly copyCheckboxesInHospitalization = inject(CopyCheckboxesInHospitalization);
-
-  private subscriptions = new Map<string, Subscription>();
+  private readonly copyAndKeepInSyncService = inject(CopyAndKeepInSyncService);
+  private readonly processFormService = inject(ProcessFormService);
 
   constructor() {
     this.token = (window as any)['token'];
@@ -236,7 +215,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     }
 
     if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_HOSP_COPY_CHECKBOXES) {
-      this.copyCheckboxesInHospitalization.addChangeListeners(this.diseaseCommonFields, this.form, this.model);
+      this.copyAndKeepInSyncService.addChangeListenersForCopyCheckboxesInHospitalization(this.diseaseCommonFields, this.form, this.model);
     }
 
     this.fields = [
@@ -294,114 +273,11 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     this.navigateToTab(2);
   }
 
-  subscribeToCurrentAddressTypeChanges(e: FormlyValueChangeEvent) {
-    const currentAddressField = this.notifiedPersonFields.find(field => field.key === 'currentAddress') as FormlyFieldConfig;
-    const currentAddressTypeField = this.notifiedPersonFields.find(field => field.id === 'currentAddressType') as FormlyFieldConfig;
-    const currentAddressInstitutionNameField = this.notifiedPersonFields.find(field => field.id === 'currentAddressInstitutionName') as FormlyFieldConfig;
-
-    let keyForNotifierAddressSubscription = e.field.id + '-subscribeToNotifierAddress';
-    let keyForNotifierInstitutionNameSubscription = e.field.id + '-subscribeToNotifierInstitutionName';
-
-    //reset input data on value change
-    setTimeout(() => {
-      currentAddressField?.formControl?.reset();
-      currentAddressInstitutionNameField?.formControl?.reset();
-      if (!this.model.tabPatient.currentAddress?.fromClipboard) {
-        currentAddressField?.fieldGroup?.forEach(f => {
-          f.formControl?.setValue(f.key === 'country' ? 'DE' : '');
-        });
-        currentAddressInstitutionNameField?.formControl?.setValue('');
-      }
-    });
-
-    if (e.value === AddressType.SubmittingFacility) {
-      const sourceAddressInstitutionName = this.getNotifierInstitutionNameIfNotBlank();
-      const sourceAddress = this.getNotifierAddressIfCopyable();
-      if (sourceAddressInstitutionName === null || sourceAddress === null) {
-        this.showErrorDialog('Fehler bei der Auswahl der Adresse. Bitte geben Sie die Daten im Formular Meldende Person zunächst vollständig an.', [
-          { message: 'Bitte geben Sie die Daten im Formular Meldende Person zunächst vollständig an.' } as ErrorMessage,
-        ]);
-        setTimeout(() => {
-          currentAddressTypeField?.formControl?.setValue(null);
-        });
-      } else {
-        setTimeout(() => {
-          //InstitutionName
-          currentAddressInstitutionNameField?.formControl?.setValue(sourceAddressInstitutionName.value);
-          const subscriptionInstitutionName = sourceAddressInstitutionName.valueChanges.subscribe(newValue => {
-            currentAddressInstitutionNameField?.formControl?.setValue(newValue);
-          });
-          this.subscriptions.set(keyForNotifierInstitutionNameSubscription, subscriptionInstitutionName);
-
-          //Address
-          this.patchAddressInNotifiedPersonCurrentAddress(currentAddressField, sourceAddress.value);
-          const subscriptionCurrentAddress = sourceAddress.valueChanges.subscribe(newValue => {
-            this.patchAddressInNotifiedPersonCurrentAddress(currentAddressField, newValue);
-          });
-          this.subscriptions.set(keyForNotifierAddressSubscription, subscriptionCurrentAddress);
-        });
-      }
-    } else {
-      this.removeSubscriptions([keyForNotifierInstitutionNameSubscription, keyForNotifierAddressSubscription]);
-    }
-  }
-
   async submitForm() {
-    const message: DiseaseNotification = {
-      status: {
-        category: this.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code,
-        status: this.model.tabDiseaseChoice.clinicalStatus.answer.valueString,
-        note: this.model.tabDiseaseChoice.statusNoteGroup.statusNote.answer?.valueString,
-        initialNotificationId: this.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer?.valueString,
-      },
-      notifierFacility: {
-        address: this.model.tabNotifier.address,
-        contact: {
-          ...this.model.tabNotifier.contact,
-          salutation:
-            !!this.model.tabNotifier.contact?.salutation && this.model.tabNotifier.contact.salutation !== ExtendedSalutationEnum.None
-              ? this.model.tabNotifier.contact.salutation
-              : undefined,
-        },
-        contacts: [...this.model.tabNotifier.contacts.emailAddresses, ...this.model.tabNotifier.contacts.phoneNumbers],
-        facilityInfo: {
-          ...this.model.tabNotifier.facilityInfo,
-          organizationType: this.model.tabNotifier.facilityInfo.organizationType.answer.valueCoding.code,
-        },
-        oneTimeCode: this.model.tabNotifier.oneTimeCode,
-      },
-      notifiedPerson: {
-        info: this.model.tabPatient.info,
-        currentAddress: this.addAddressType(
-          this.model.tabPatient.currentAddressType === 'primaryAsCurrent' ? this.model.tabPatient.residenceAddress : this.model.tabPatient.currentAddress,
-          this.model.tabPatient.currentAddressType,
-          this.model.tabPatient.currentAddressInstitutionName
-        ),
-        residenceAddress: this.addAddressType(this.model.tabPatient.residenceAddress, this.model.tabPatient.residenceAddressType),
-        contacts: [...this.model.tabPatient.contacts.emailAddresses, ...this.model.tabPatient.contacts.phoneNumbers],
-      },
-      condition: makeCondition(this.model.tabDiseaseCondition),
-      common: {
-        questionnaire: 'common',
-        item: formatItems(this.model.tabDiseaseCommon),
-      },
-      disease: {
-        questionnaire: this.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code,
-        item: formatItems(this.model.tabQuestionnaire),
-      },
-    };
-
-    // final cleanup
-    const trimmedMessage: DiseaseNotification = trimStrings(message);
-    trimmedMessage.notifiedPerson.info.birthDate = dateStringToIso(trimmedMessage.notifiedPerson.info.birthDate);
-    sortItems(trimmedMessage.common.item, this.fieldSequence.tabDiseaseCommon);
-    sortItems(trimmedMessage.disease.item, this.fieldSequence.tabQuestionnaire);
-
-    this.ifsg61Service.sendNotification(trimmedMessage);
-  }
-
-  private addAddressType(address: NotifiedPersonAddressInfo, type: AddressType, institutionName?: string): NotifiedPersonAddressInfo {
-    return { ...address, addressType: type, ...(institutionName ? { additionalInfo: institutionName } : {}) };
+    const notification = this.processFormService.createNotification(this.model);
+    sortItems(notification.common.item, this.fieldSequence.tabDiseaseCommon);
+    sortItems(notification.disease.item, this.fieldSequence.tabQuestionnaire);
+    this.ifsg61Service.sendNotification(notification);
   }
 
   private storeFacilityOnUpdate(e: FormlyValueChangeEvent) {
@@ -443,6 +319,32 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     return date;
   }
 
+  /**
+   * This method reacts to value change events.
+   * Be aware that FormlyValueChangeEvent can be triggered not only when the change has been induced by the user
+   * but also while angular/formly process. So it can be triggered at unexpected moment. If you want to only react to
+   * user changes, it is better to use other strategies, like defining a change method in the props in the formly config
+   * of the watched component. For instance:
+   *                  {
+   *                   id: 'extractionDate',
+   *                   key: 'extractionDate',
+   *                   type: 'input',
+   *                   className: FormlyConstants.COLMD6,
+   *                   props: {
+   *                     label: 'Entnahmedatum',
+   *                     required: false,
+   *                     maxLength: 10,
+   *                     placeholder: UI_DATE_FORMAT_GER,
+   *                     change: (field: FormlyFieldConfig) => {
+   *                       const parentFormControl = field?.parent?.formControl as FormControl;
+   *                       triggerReceivedDateValidation(parentFormControl);
+   *                     },
+   *                   },
+   *                   validators: {
+   *                     validation: ['dateInputValidator'],
+   *                   },
+   *                 }
+   */
   private handleFieldChange(e: FormlyValueChangeEvent) {
     if (e.field.validators?.validation.includes('date123') && e.type === 'valueChanges') {
       const transformedDate = this.transformDate123Input(e.value);
@@ -455,7 +357,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     }
 
     if (e.field.id === 'currentAddressType') {
-      this.subscribeToCurrentAddressTypeChanges(e);
+      this.copyAndKeepInSyncService.subscribeToCurrentAddressTypeChanges(e, this.notifiedPersonFields, this.form, this.model);
     }
 
     if (e.field.id === 'disease-choice' && e.type === 'valueChanges') {
@@ -471,40 +373,6 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
         }
       }
     }
-  }
-
-  private removeSubscriptions(subscriptionKeys: string[]) {
-    subscriptionKeys.forEach(key => {
-      if (this.subscriptions.has(key)) {
-        this.subscriptions.get(key)?.unsubscribe(); // Unsubscribe
-        this.subscriptions.delete(key); // Remove from the map
-      }
-    });
-  }
-
-  private patchAddressInNotifiedPersonCurrentAddress(targetAddressField: FormlyFieldConfig, sourceAddressValue: any) {
-    targetAddressField?.formControl?.patchValue({
-      street: sourceAddressValue.street,
-      houseNumber: sourceAddressValue.houseNumber,
-      zip: sourceAddressValue.zip,
-      city: sourceAddressValue.city,
-    });
-  }
-
-  private getNotifierInstitutionNameIfNotBlank(): AbstractControl | null {
-    if (!this.model?.tabNotifier?.facilityInfo?.institutionName?.trim()) {
-      return null;
-    }
-    return this.form.get('tabNotifier.facilityInfo.institutionName');
-  }
-
-  private getNotifierAddressIfCopyable(): AbstractControl | null {
-    const address = this.model.tabNotifier.address;
-    const mandatoryFieldsNotFilled = !address.street?.trim() || !address.zip?.trim() || !address.city?.trim() || !address.houseNumber?.trim();
-    if (mandatoryFieldsNotFilled) {
-      return null;
-    }
-    return this.form.get('tabNotifier.address');
   }
 
   async loadQuestionnaire(diseaseCode: string): Promise<ErrorMessage[]> {
@@ -588,6 +456,9 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     }
   }
 
+  /**
+   * This method handles the import of data in the form using the clipboard
+   */
   async paste() {
     const dialogRef = this.progressService.startSpinner('Zwischenablage wird übernommen');
     try {

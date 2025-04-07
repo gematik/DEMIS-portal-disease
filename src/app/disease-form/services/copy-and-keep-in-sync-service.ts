@@ -22,18 +22,19 @@ import { findFormlyFieldIterativeByKey } from '../../shared/utils';
 import { AddressAsModel, ContactsAsModel } from '../common/formlyConfigs/formly-base';
 import { PractitionerInfoAsModel } from '../common/formlyConfigs/notifier';
 import { DemisCoding } from '../../demis-types';
+import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
 
 @Injectable({
   providedIn: 'root', // Makes it available app-wide
 })
-export class CopyCheckboxesInHospitalization {
+export class CopyAndKeepInSyncService {
   private subscriptions: Map<string, Subscription>;
 
   constructor(private helpers: HelpersService) {
     this.subscriptions = new Map<string, Subscription>();
   }
 
-  addChangeListeners(diseaseCommonFields: FormlyFieldConfig[], form: FormGroup, model: any) {
+  addChangeListenersForCopyCheckboxesInHospitalization(diseaseCommonFields: FormlyFieldConfig[], form: FormGroup, model: any) {
     const copyNotifiedPersonCurrentAddress = findFormlyFieldIterativeByKey(diseaseCommonFields, 'copyNotifiedPersonCurrentAddress');
     if (copyNotifiedPersonCurrentAddress) {
       copyNotifiedPersonCurrentAddress.props = {
@@ -140,6 +141,56 @@ export class CopyCheckboxesInHospitalization {
     }
   }
 
+  subscribeToCurrentAddressTypeChanges(e: FormlyValueChangeEvent, notifiedPersonFields: FormlyFieldConfig[], form: FormGroup, model: any) {
+    const currentAddressField = notifiedPersonFields.find(field => field.key === 'currentAddress') as FormlyFieldConfig;
+    const currentAddressTypeField = notifiedPersonFields.find(field => field.id === 'currentAddressType') as FormlyFieldConfig;
+    const currentAddressInstitutionNameField = notifiedPersonFields.find(field => field.id === 'currentAddressInstitutionName') as FormlyFieldConfig;
+
+    let keyForNotifierAddressSubscription = e.field.id + '-subscribeToNotifierAddress';
+    let keyForNotifierInstitutionNameSubscription = e.field.id + '-subscribeToNotifierInstitutionName';
+
+    //reset input data on value change
+    setTimeout(() => {
+      currentAddressField?.formControl?.reset();
+      currentAddressInstitutionNameField?.formControl?.reset();
+      if (!model.tabPatient.currentAddress?.fromClipboard) {
+        currentAddressField?.fieldGroup?.forEach(f => {
+          f.formControl?.setValue(f.key === 'country' ? 'DE' : '');
+        });
+        currentAddressInstitutionNameField?.formControl?.setValue('');
+      }
+    });
+
+    if (e.value === AddressType.SubmittingFacility) {
+      const sourceAddressInstitutionName = this.getNotifierInstitutionNameIfNotBlank(model, form);
+      const sourceAddress = this.getNotifierAddressIfCopyable(model, form);
+      if (sourceAddressInstitutionName === null || sourceAddress === null) {
+        this.helpers.displayError('Fehler bei der Auswahl der Adresse', 'Bitte geben Sie die Daten im Formular Meldende Person zunächst vollständig an.', '');
+        setTimeout(() => {
+          currentAddressTypeField?.formControl?.setValue(null);
+        });
+      } else {
+        setTimeout(() => {
+          //InstitutionName
+          currentAddressInstitutionNameField?.formControl?.setValue(sourceAddressInstitutionName.value);
+          const subscriptionInstitutionName = sourceAddressInstitutionName.valueChanges.subscribe(newValue => {
+            currentAddressInstitutionNameField?.formControl?.setValue(newValue);
+          });
+          this.subscriptions.set(keyForNotifierInstitutionNameSubscription, subscriptionInstitutionName);
+
+          //Address
+          this.patchAddressInNotifiedPersonCurrentAddress(currentAddressField, sourceAddress.value);
+          const subscriptionCurrentAddress = sourceAddress.valueChanges.subscribe(newValue => {
+            this.patchAddressInNotifiedPersonCurrentAddress(currentAddressField, newValue);
+          });
+          this.subscriptions.set(keyForNotifierAddressSubscription, subscriptionCurrentAddress);
+        });
+      }
+    } else {
+      CopyTargetField.removeSubscriptions(this.subscriptions, [keyForNotifierInstitutionNameSubscription, keyForNotifierAddressSubscription]);
+    }
+  }
+
   private getCurrentAddressInstitutionNameIfNotBlank(model: any, form: FormGroup): AbstractControl<string> | null {
     if (!model.tabPatient?.currentAddressInstitutionName?.trim()) {
       return null;
@@ -166,8 +217,33 @@ export class CopyCheckboxesInHospitalization {
     return form.get('tabNotifier.contact');
   }
 
+  private getNotifierInstitutionNameIfNotBlank(model: any, form: FormGroup): AbstractControl | null {
+    if (!model?.tabNotifier?.facilityInfo?.institutionName?.trim()) {
+      return null;
+    }
+    return form.get('tabNotifier.facilityInfo.institutionName');
+  }
+
   private getNotifierPhoneAndEmail(form: FormGroup): AbstractControl<ContactsAsModel> | null {
     return form.get('tabNotifier.contacts');
+  }
+
+  private patchAddressInNotifiedPersonCurrentAddress(targetAddressField: FormlyFieldConfig, sourceAddressValue: any) {
+    targetAddressField?.formControl?.patchValue({
+      street: sourceAddressValue.street,
+      houseNumber: sourceAddressValue.houseNumber,
+      zip: sourceAddressValue.zip,
+      city: sourceAddressValue.city,
+    });
+  }
+
+  private getNotifierAddressIfCopyable(model: any, form: FormGroup): AbstractControl | null {
+    const address = model.tabNotifier.address;
+    const mandatoryFieldsNotFilled = !address.street?.trim() || !address.zip?.trim() || !address.city?.trim() || !address.houseNumber?.trim();
+    if (mandatoryFieldsNotFilled) {
+      return null;
+    }
+    return form.get('tabNotifier.address');
   }
 }
 
@@ -200,10 +276,10 @@ class CopyTargetField {
     const fieldId = field.id;
     if (!fieldId) return;
     const matchingKeys = Array.from(subscriptions.keys()).filter(key => key.includes(fieldId));
-    this.removeSubscriptions(subscriptions, matchingKeys);
+    CopyTargetField.removeSubscriptions(subscriptions, matchingKeys);
   }
 
-  removeSubscriptions(subscriptions: Map<string, Subscription>, subscriptionKeys: string[]) {
+  public static removeSubscriptions(subscriptions: Map<string, Subscription>, subscriptionKeys: string[]) {
     subscriptionKeys.forEach(key => {
       if (subscriptions.has(key)) {
         subscriptions.get(key)?.unsubscribe(); // Unsubscribe

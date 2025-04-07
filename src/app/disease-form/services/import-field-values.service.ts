@@ -309,3 +309,8 @@ export class ImportFieldValuesService {
     await setModelValue(model, path, values, !!importSpec.multi, ffc.type === 'autocomplete-multi-coding');
   }
 }
+
+export const CLIPBOARD_ERROR_DIALOG_TITLE = 'Fehler beim Einlesen der Daten aus der Zwischenablage';
+export const CLIPBOARD_ERROR_DIALOG_MESSAGE = 'Bei der Datenübernahme ist ein Fehler aufgetreten.';
+export const CLIPBOARD_ERROR_DIALOG_MESSAGE_DETAILS =
+  'Diese Daten werden aus der Zwischenablage importiert. Bitte wenden Sie sich an Ihre IT zur Konfiguration des Datenimports. Weitere Informationen finden Sie in der DEMIS Wissensdatenbank unter "<a href="https://wiki.gematik.de/x/fGFCH" target="_blank">Übergabe von Daten aus dem Primärsystem</a>".';
