@@ -1,6 +1,6 @@
 //override for accordion background - needs to be checked if still necessary/styled in other MFs
 .mat-expansion-panel {
-  background-color: #FFFFFF;
+  background-color: var(--color-white);
 }
 
 .compile-error {
@@ -33,7 +33,7 @@ h1.platzhalter {
 }
 
 .tabs-navigation > div {
-  height: calc(100vh - 130px);
+  height: calc(100vh - 182px);
   width: 100%;
 }
 
@@ -50,7 +50,7 @@ app-tabs-navigation span.mdc-tab-indicator__content.mdc-tab-indicator__content--
 }
 
 app-tabs-navigation div.mat-mdc-tab-labels mat-icon {
-  color: rgb(15, 98, 254);
+  color: var(--color-primary);
   margin-right: 0.5rem;
 }
 
@@ -69,13 +69,13 @@ app-tabs-navigation span.mdc-tab__text-label > div {
 }
 
 app-tabs-navigation .mat-mdc-tab .mdc-tab__text-label {
-  color: #000000;
+  color: var(--color-primary);
 }
 
 app-tabs-navigation .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
   font-weight: bold;
   font-size: 100%;
-  color: #000000;
+  color: var(--color-primary);
 }
 
 .MISSING_MELDETATBESTAND {

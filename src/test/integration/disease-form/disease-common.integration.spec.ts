@@ -1,15 +1,17 @@
 /*
- Copyright (c) 2025 gematik GmbH
- Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
- the European Commission - subsequent versions of the EUPL (the "Licence");
- You may not use this work except in compliance with the Licence.
-    You may obtain a copy of the Licence at:
-    https://joinup.ec.europa.eu/software/page/eupl
-        Unless required by applicable law or agreed to in writing, software
- distributed under the Licence is distributed on an "AS IS" basis,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the Licence for the specific language governing permissions and
- limitations under the Licence.
+    Copyright (c) 2025 gematik GmbH
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
+    European Commission – subsequent versions of the EUPL (the "Licence").
+    You may not use this work except in compliance with the Licence.
+    You find a copy of the Licence in the "Licence" file or at
+    https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
+    In case of changes by gematik find details in the "Readme" file.
+    See the Licence for the specific language governing permissions and limitations under the Licence.
+    *******
+    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
@@ -39,6 +41,10 @@ import { NOTIFIER_PERSON_CONTACT_INPUT } from '../../shared/test-data';
 import { CLIPBOARD_VALUE_HOUSENR, CLIPBOARD_VALUE_STREET, FIELD_CURRENT_ADDRESS_HOUSE_NUMBER, FIELD_CURRENT_ADDRESS_ZIP } from '../../shared/test-constants';
 import { AddressType } from '../../../api/notification';
 import { buildMock, mainConfig } from './base.spec';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { TestBed } from '@angular/core/testing';
+import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';
+import { HelpersService } from '../../../app/shared/helpers.service';
 
 describe('DiseaseFormComponent integration tests for Common Tab', () => {
   let component: DiseaseFormComponent;
@@ -66,6 +72,7 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
 
   it('should have correct feature flags', async () => {
     expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_HOSP_COPY_CHECKBOXES).toBeTrue();
+    expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG).toBeTrue();
   });
 
   describe('Klinische und epidemiologische Angaben', () => {
@@ -93,12 +100,35 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           await setInputFieldValues(loader, [{ selector: '#firstname', value: 'Test' }]);
           await selectTab(fixture, loader, 5);
           await selectIsHospitalizedYes(loader);
+          const showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
+          const legacyDisplayErrorSpy = spyOn(TestBed.inject(HelpersService), 'displayError');
+
           const checkBox = await checkCopyContactCheckbox(loader);
           fixture.detectChanges();
 
           // assertion
+          expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+            errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+            errors: [
+              {
+                text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_CONTACT,
+              },
+            ],
+          });
           expect(await checkBox.isChecked()).toBe(false);
           await verifyHospitalizationContactInputFields(loader);
+
+          // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
+          environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
+          await checkCopyContactCheckbox(loader);
+          fixture.detectChanges();
+          expect(legacyDisplayErrorSpy).toHaveBeenCalledOnceWith(
+            CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+            CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_CONTACT,
+            ''
+          );
+          environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
+          //////////////////////////////////////////////////////////////////////////////
         });
 
         it('should verify that copy address is not working when required field is missing', async () => {
@@ -108,12 +138,35 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           await setInputFieldValues(loader, [{ selector: `#${FIELD_CURRENT_ADDRESS_ZIP}`, value: '' }]);
           await selectTab(fixture, loader, 5);
           await selectIsHospitalizedYes(loader);
+          const showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
+          const legacyDisplayErrorSpy = spyOn(TestBed.inject(HelpersService), 'displayError');
+
           const checkBox = await checkCopyAddressCheckbox(loader);
           fixture.detectChanges();
 
           // assertion
+          expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+            errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+            errors: [
+              {
+                text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_ADDRESS,
+              },
+            ],
+          });
           expect(await checkBox.isChecked()).toBe(false);
           await verifyHospitalizationAddressInputFields(loader);
+
+          // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
+          environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
+          await checkCopyAddressCheckbox(loader);
+          fixture.detectChanges();
+          expect(legacyDisplayErrorSpy).toHaveBeenCalledOnceWith(
+            CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+            CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_ADDRESS,
+            ''
+          );
+          environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
+          //////////////////////////////////////////////////////////////////////////////
         });
       });
 
@@ -367,5 +420,9 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
         });
       });
     });
+  });
+
+  afterAll(() => {
+    localStorage.clear();
   });
 });

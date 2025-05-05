@@ -1,15 +1,17 @@
 /*
- Copyright (c) 2025 gematik GmbH
- Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
- the European Commission - subsequent versions of the EUPL (the "Licence");
- You may not use this work except in compliance with the Licence.
-    You may obtain a copy of the Licence at:
-    https://joinup.ec.europa.eu/software/page/eupl
-        Unless required by applicable law or agreed to in writing, software
- distributed under the Licence is distributed on an "AS IS" basis,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the Licence for the specific language governing permissions and
- limitations under the Licence.
+    Copyright (c) 2025 gematik GmbH
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
+    European Commission – subsequent versions of the EUPL (the "Licence").
+    You may not use this work except in compliance with the Licence.
+    You find a copy of the Licence in the "Licence" file or at
+    https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
+    In case of changes by gematik find details in the "Readme" file.
+    See the Licence for the specific language governing permissions and limitations under the Licence.
+    *******
+    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
@@ -47,6 +49,10 @@ import {
   CLIPBOARD_VALUE_OTHER_NOTIFIER_GIVEN,
 } from '../../shared/test-constants';
 import { exampleAddressOfType, TestDataAddress } from '../../shared/data/test-objects';
+import { TestBed } from '@angular/core/testing';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { ImportFieldValuesService } from '../../../app/disease-form/services/import-field-values.service';
+import { ErrorMessage } from '../../../app/shared/error-message';
 
 describe('User fills in form through clipboard', () => {
   let component: DiseaseFormComponent;
@@ -272,6 +278,41 @@ describe('User fills in form through clipboard', () => {
           country: '',
         });
       });
+    });
+  });
+
+  describe('Error are handled correctly', () => {
+    let showErrorDialogSpy: jasmine.Spy;
+    let showErrorDialogInsertDataFromClipboard: jasmine.Spy;
+    let fillModelFromKVsSpy: jasmine.Spy;
+    let getClipboardKVsSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
+      showErrorDialogInsertDataFromClipboard = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialogInsertDataFromClipboard');
+      fillModelFromKVsSpy = spyOn(TestBed.inject(ImportFieldValuesService), 'fillModelFromKVs');
+      getClipboardKVsSpy = spyOn(TestBed.inject(ImportFieldValuesService), 'getClipboardKVs');
+    });
+
+    it('fillModelFromKVsSpy returns an error', async () => {
+      fillModelFromKVsSpy.and.returnValue(Promise.resolve([new ErrorMessage('E0002', 'foo')]));
+      await userImportsDataThroughClipboard('URL N.salutation=Mrs');
+      fixture.detectChanges();
+      expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+        errorTitle: 'Fehler bei der Datenübernahme',
+        errors: [
+          {
+            text: 'Ungültiger Parametername: foo',
+          },
+        ],
+      });
+    });
+
+    it('Other error happens', async () => {
+      getClipboardKVsSpy.and.throwError('boo');
+      await userImportsDataThroughClipboard('URL N.salutation=Mrs');
+      fixture.detectChanges();
+      expect(showErrorDialogInsertDataFromClipboard).toHaveBeenCalled();
     });
   });
 

@@ -14,40 +14,13 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { ErrorMessage } from '../shared/error-message';
+import { ErrorMessage } from './error-message';
 
-export interface ValidationError {
-  field: string;
-  message: string;
-}
-
-export enum MessageType {
-  INFO = 'Info',
-  ERROR = 'Fehler',
-  WARNING = 'Warnung',
-  SUCCESS = 'Erfolg',
-}
-
-export interface DialogNotificationData {
-  type?: MessageType;
-  title?: string;
-  message: string;
-  path?: string;
-  statusCode?: string;
-  messageDetails?: string;
-  locations?: string[];
-}
-
-export interface SuccessResult extends DialogNotificationData {
-  receiptContentType: string;
-  receiptContent: string;
-  authorName: string;
-  authorEmail: string;
-  timestamp: string;
-  status: string;
-  notificationId: string;
-}
-
-export interface ErrorResult extends DialogNotificationData {
-  problems: ErrorMessage[];
-}
+describe('ErrorMessage', () => {
+  it('toErrorMessageFromCoreLibrary', () => {
+    let underTest = new ErrorMessage('E0000', 'foo', 'bar');
+    expect(underTest.toErrorMessageFromCoreLibrary()).toEqual({
+      text: 'Unbekannter valueType bei Datenübernahme: foo (import key: bar)',
+    });
+  });
+});

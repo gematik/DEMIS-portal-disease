@@ -5,7 +5,8 @@
   "pathToDiseaseQuestionnaire": "/fhir-ui-data-model-translation/disease/questionnaire",
   "pathToFuts": "/fhir-ui-data-model-translation",
   "featureFlags": {
-    "FEATURE_FLAG_HOSP_COPY_CHECKBOXES": true
+    "FEATURE_FLAG_HOSP_COPY_CHECKBOXES": false,
+    "FEATURE_FLAG_PORTAL_ERROR_DIALOG": false
   },
   "ngxLoggerConfig": {
     "level": 1,

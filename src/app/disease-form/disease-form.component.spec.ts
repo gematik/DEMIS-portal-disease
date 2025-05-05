@@ -1,20 +1,22 @@
 /*
- Copyright (c) 2025 gematik GmbH
- Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
- the European Commission - subsequent versions of the EUPL (the "Licence");
- You may not use this work except in compliance with the Licence.
-    You may obtain a copy of the Licence at:
-    https://joinup.ec.europa.eu/software/page/eupl
-        Unless required by applicable law or agreed to in writing, software
- distributed under the Licence is distributed on an "AS IS" basis,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the Licence for the specific language governing permissions and
- limitations under the Licence.
+    Copyright (c) 2025 gematik GmbH
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
+    European Commission – subsequent versions of the EUPL (the "Licence").
+    You may not use this work except in compliance with the Licence.
+    You find a copy of the Licence in the "Licence" file or at
+    https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
+    In case of changes by gematik find details in the "Readme" file.
+    See the Licence for the specific language governing permissions and limitations under the Licence.
+    *******
+    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 import { DiseaseFormComponent } from './disease-form.component';
 import { Ifsg61Service } from '../ifsg61.service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
 import { AppModule } from '../app.module';
 import { ProgressService } from '../shared/progress.service';
@@ -30,6 +32,8 @@ import { environment } from '../../environments/environment';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_MSVD, EXAMPLE_VALUE_SET } from '../../test/shared/data/test-values';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
 
 const overrides = {
   get Ifsg61Service() {
@@ -44,13 +48,20 @@ const overrides = {
 describe('DiseaseFormComponent unit tests', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
+  let getCodeValueSetSpy: jasmine.Spy;
+  let getDiseaseOptionsSpy: jasmine.Spy;
+  let showErrorDialogSpy: jasmine.Spy;
+  const helpersServiceSpy = {
+    displayError: jasmine.createSpy('displayError') as jasmine.Spy,
+    exitApplication: jasmine.createSpy('exitApplication') as jasmine.Spy,
+  };
 
   beforeEach(() =>
     MockBuilder([DiseaseFormComponent, AppModule, NoopAnimationsModule])
       .provide(MockProvider(Ifsg61Service, overrides.Ifsg61Service))
       .provide(MockProvider(ChangeDetectorRef))
       .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
-      .provide(MockProvider(HelpersService))
+      .provide(MockProvider(HelpersService, helpersServiceSpy))
       .provide(MockProvider(ImportFieldValuesService))
       .provide(MockProvider(ProgressService))
       .provide(MockProvider(MatIconModule))
@@ -70,7 +81,9 @@ describe('DiseaseFormComponent unit tests', () => {
       pathToDisease: '/fhir-ui-data-model-translation/disease',
       pathToDiseaseQuestionnaire: '/fhir-ui-data-model-translation/disease/questionnaire',
       pathToFuts: '/fhir-ui-data-model-translation',
-      featureFlags: {},
+      featureFlags: {
+        FEATURE_FLAG_PORTAL_ERROR_DIALOG: true,
+      },
       ngxLoggerConfig: {
         level: 1,
         disableConsoleLogging: false,
@@ -79,6 +92,66 @@ describe('DiseaseFormComponent unit tests', () => {
     fixture = MockRender(DiseaseFormComponent);
     component = fixture.point.componentInstance;
     fixture.detectChanges();
+    getCodeValueSetSpy = TestBed.inject(Ifsg61Service).getCodeValueSet as jasmine.Spy;
+    getDiseaseOptionsSpy = TestBed.inject(Ifsg61Service).getDiseaseOptions as jasmine.Spy;
+    showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
+  });
+
+  describe('should display error dialog if error on init', () => {
+    beforeEach(() => {
+      helpersServiceSpy.displayError?.calls.reset();
+      helpersServiceSpy.exitApplication?.calls.reset();
+      showErrorDialogSpy.calls.reset();
+    });
+
+    it('error while getCodeValueSet()', fakeAsync(() => {
+      const error = new Error('Etwas ist schief gelaufen');
+      getCodeValueSetSpy.and.returnValue(throwError(() => error));
+
+      component.ngOnInit();
+      expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+        redirectToHome: true,
+        errorTitle: 'Systemfehler',
+        errors: [
+          {
+            text: 'Typen nicht abrufbar',
+          },
+        ],
+      });
+
+      // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
+      component.ngOnInit();
+      expect(helpersServiceSpy.displayError).toHaveBeenCalledOnceWith(error, 'Systemfehler: Typen nicht abrufbar');
+      tick(2500);
+      expect(helpersServiceSpy.exitApplication).toHaveBeenCalled();
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
+      //////////////////////////////////////////////////////////////////////////////
+    }));
+
+    it('error while getDiseaseOptions()', fakeAsync(() => {
+      const error = new Error('Etwas ist schief gelaufen');
+      getDiseaseOptionsSpy.and.returnValue(throwError(() => error));
+      component.ngOnInit();
+      expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+        redirectToHome: true,
+        errorTitle: 'Systemfehler',
+        errors: [
+          {
+            text: 'Meldetatbestände nicht verfügbar',
+          },
+        ],
+      });
+
+      // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
+      component.ngOnInit();
+      expect(helpersServiceSpy.displayError).toHaveBeenCalledOnceWith(error, 'Systemfehler: Meldetatbestände nicht verfügbar');
+      tick(2500);
+      expect(helpersServiceSpy.exitApplication).toHaveBeenCalled();
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
+      //////////////////////////////////////////////////////////////////////////////
+    }));
   });
 
   describe('test transformDate3Input', () => {

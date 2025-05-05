@@ -1,18 +1,20 @@
 /*
- Copyright (c) 2025 gematik GmbH
- Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
- the European Commission - subsequent versions of the EUPL (the "Licence");
- You may not use this work except in compliance with the Licence.
-    You may obtain a copy of the Licence at:
-    https://joinup.ec.europa.eu/software/page/eupl
-        Unless required by applicable law or agreed to in writing, software
- distributed under the Licence is distributed on an "AS IS" basis,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the Licence for the specific language governing permissions and
- limitations under the Licence.
+    Copyright (c) 2025 gematik GmbH
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
+    European Commission – subsequent versions of the EUPL (the "Licence").
+    You may not use this work except in compliance with the Licence.
+    You find a copy of the Licence in the "Licence" file or at
+    https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
+    In case of changes by gematik find details in the "Readme" file.
+    See the Licence for the specific language governing permissions and limitations under the Licence.
+    *******
+    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { getCheckBox, getInput, getRadioButton, getRadioGroup, selectRadioOption } from '../../shared/material-harness-utils';
+import { getCheckBox, getInput, getRadioButton, getRadioGroup, selectRadioOption, getAutocomplete, getTabGroup } from '../../shared/material-harness-utils';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { FIELD_CURRENT_ADDRESS_TYPE } from '../../shared/test-constants';
 import { AddressType } from '../../../api/notification';
@@ -22,6 +24,7 @@ import { MockedComponentFixture } from 'ng-mocks';
 import { ComponentFixture } from '@angular/core/testing';
 import { MatTabGroupHarness } from '@angular/material/tabs/testing';
 import { TestDataAddress } from '../../shared/data/test-objects';
+import { MatInputHarness } from '@angular/material/input/testing';
 
 export async function selectIsHospitalizedYes(loader: HarnessLoader) {
   const selectButton = await getRadioButton(loader, '#radio-button-LinkId_hospitalized-Ja');
@@ -252,4 +255,85 @@ export async function verifySelectedMeldetatbestand(fixture: MockedComponentFixt
 
 export function getStepHeader(fixture: ComponentFixture<any>): string {
   return fixture.nativeElement.querySelector('.section-title').textContent;
+}
+
+export async function selectDisease(loader: HarnessLoader, fixture: MockedComponentFixture<any>, display: RegExp) {
+  const inputSelector = '#disease-choice-input';
+  try {
+    const inputHarness = await getInput(loader, inputSelector);
+    await inputHarness.focus();
+    await fixture.whenStable();
+    const autocompleteHarness = await getAutocomplete(loader, inputSelector);
+    await autocompleteHarness.selectOption({ text: display });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function navigateToTabIndex(loader: HarnessLoader, fixture: MockedComponentFixture<any>, index: number, label: string) {
+  const selector = '#NAVIGATION';
+  try {
+    const tabGroup = await getTabGroup(loader, selector);
+    const tabs = await tabGroup.getTabs();
+    if (index < 0 || index >= tabs.length) {
+      const labels = await Promise.all(tabs.map(t => t.getLabel()));
+      throw new Error(`Invalid tab index ${index} for "${label}". Max index: ${tabs.length - 1}. Labels: ${labels.join(',')}`);
+    }
+    await tabs[index].select();
+    fixture.detectChanges();
+    await fixture.whenStable();
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function dispatchChangeEvents(fixture: MockedComponentFixture<any>, input: MatInputHarness): Promise<void> {
+  const inputElement = await input.host();
+  await inputElement.focus();
+  fixture.detectChanges();
+  await fixture.whenStable();
+  await inputElement.blur();
+  await inputElement.dispatchEvent('input');
+  await inputElement.dispatchEvent('change');
+  fixture.detectChanges();
+  await fixture.whenStable();
+}
+
+export async function simulateTypingWithDOM(
+  fixture: MockedComponentFixture<any>,
+  component: { previousDate3InputLength?: number },
+  nativeInput: HTMLInputElement,
+  text: string
+): Promise<void> {
+  nativeInput.value = '';
+  nativeInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+
+    if (component.previousDate3InputLength !== undefined) {
+      component.previousDate3InputLength = nativeInput.value.length;
+    }
+
+    nativeInput.value += char;
+
+    nativeInput.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+    nativeInput.dispatchEvent(new Event('input', { bubbles: true }));
+    nativeInput.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+
+    await new Promise(resolve => setTimeout(resolve, 5));
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
+  nativeInput.dispatchEvent(new Event('change', { bubbles: true }));
+  nativeInput.blur();
+  nativeInput.dispatchEvent(new Event('blur', { bubbles: true }));
+
+  fixture.detectChanges();
+  await fixture.whenStable();
 }
