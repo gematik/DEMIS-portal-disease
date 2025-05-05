@@ -1,15 +1,17 @@
 /*
- Copyright (c) 2025 gematik GmbH
- Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
- the European Commission - subsequent versions of the EUPL (the "Licence");
- You may not use this work except in compliance with the Licence.
-    You may obtain a copy of the Licence at:
-    https://joinup.ec.europa.eu/software/page/eupl
-        Unless required by applicable law or agreed to in writing, software
- distributed under the Licence is distributed on an "AS IS" basis,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the Licence for the specific language governing permissions and
- limitations under the Licence.
+    Copyright (c) 2025 gematik GmbH
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
+    European Commission – subsequent versions of the EUPL (the "Licence").
+    You may not use this work except in compliance with the Licence.
+    You find a copy of the Licence in the "Licence" file or at
+    https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
+    In case of changes by gematik find details in the "Readme" file.
+    See the Licence for the specific language governing permissions and limitations under the Licence.
+    *******
+    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 import { Injectable } from '@angular/core';
@@ -23,14 +25,26 @@ import { AddressAsModel, ContactsAsModel } from '../common/formlyConfigs/formly-
 import { PractitionerInfoAsModel } from '../common/formlyConfigs/notifier';
 import { DemisCoding } from '../../demis-types';
 import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
+import { environment } from '../../../environments/environment';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
 
 @Injectable({
   providedIn: 'root', // Makes it available app-wide
 })
 export class CopyAndKeepInSyncService {
+  static readonly MESSAGE_COPY_IMPOSSIBLE: string = 'Datenübernahme nicht möglich';
+  static readonly MESSAGE_ERROR_COPY_CONTACT: string =
+    'Option ist nur verfügbar, wenn der derzeitige Aufenthaltsort der betroffenen Person vom Typ "Adresse der meldenden Einrichtung" ist und die Pflichtfelder befüllt sind.';
+  static readonly MESSAGE_ERROR_COPY_ADDRESS: string =
+    'Option ist nur verfügbar, wenn für die betroffene Person eine Einrichtung als derzeitiger Aufenthaltsort ausgewählt wurde und die Pflichtfelder befüllt sind.';
+  static readonly MESSAGE_ERROR_COPY_NOTIFIER: string = 'Bitte geben Sie die Daten im Formular Meldende Person zunächst vollständig an.';
+
   private subscriptions: Map<string, Subscription>;
 
-  constructor(private helpers: HelpersService) {
+  constructor(
+    private helpers: HelpersService,
+    private messageDialogService: MessageDialogService
+  ) {
     this.subscriptions = new Map<string, Subscription>();
   }
 
@@ -69,11 +83,18 @@ export class CopyAndKeepInSyncService {
       const sourceAddressInstitutionName = this.getCurrentAddressInstitutionNameIfNotBlank(model, form);
       const sourceAddressControl = this.getCurrentAddressIfCopyable(model, form);
       if (sourceAddressControl === null || sourceAddressInstitutionName === null) {
-        this.helpers.displayError(
-          'Datenübernahme nicht möglich',
-          'Option ist nur verfügbar, wenn für die betroffene Person eine Einrichtung als derzeitiger Aufenthaltsort ausgewählt wurde und die Pflichtfelder befüllt sind.',
-          ''
-        );
+        if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
+          this.messageDialogService.showErrorDialog({
+            errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+            errors: [
+              {
+                text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_ADDRESS,
+              },
+            ],
+          });
+        } else {
+          this.helpers.displayError(CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE, CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_ADDRESS, '');
+        }
         field.formControl?.setValue(false);
       } else {
         addressTargetInHospitalization.resetIfCurrentAddressTypeChanges(field, form, this.subscriptions);
@@ -113,11 +134,18 @@ export class CopyAndKeepInSyncService {
       const sourceNotifierContactPersonControl = this.getNotifierContactControlIfCopyable(model, form);
       const sourceNotifierPhoneAndEmail = this.getNotifierPhoneAndEmail(form);
       if (sourceNotifierContactPersonControl === null) {
-        this.helpers.displayError(
-          'Datenübernahme nicht möglich',
-          'Option ist nur verfügbar, wenn der derzeitige Aufenthaltsort der betroffenen Person vom Typ "Adresse der meldenden Einrichtung" ist und die Pflichtfelder befüllt sind.',
-          ''
-        );
+        if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
+          this.messageDialogService.showErrorDialog({
+            errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+            errors: [
+              {
+                text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_CONTACT,
+              },
+            ],
+          });
+        } else {
+          this.helpers.displayError(CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE, CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_CONTACT, '');
+        }
         field.formControl?.setValue(false);
       } else {
         contactTargetInHospitalization.resetIfCurrentAddressTypeChanges(field, form, this.subscriptions);
@@ -165,10 +193,7 @@ export class CopyAndKeepInSyncService {
       const sourceAddressInstitutionName = this.getNotifierInstitutionNameIfNotBlank(model, form);
       const sourceAddress = this.getNotifierAddressIfCopyable(model, form);
       if (sourceAddressInstitutionName === null || sourceAddress === null) {
-        this.helpers.displayError('Fehler bei der Auswahl der Adresse', 'Bitte geben Sie die Daten im Formular Meldende Person zunächst vollständig an.', '');
-        setTimeout(() => {
-          currentAddressTypeField?.formControl?.setValue(null);
-        });
+        this.changeToSubmittingFacilityImpossible(currentAddressTypeField);
       } else {
         setTimeout(() => {
           //InstitutionName
@@ -189,6 +214,24 @@ export class CopyAndKeepInSyncService {
     } else {
       CopyTargetField.removeSubscriptions(this.subscriptions, [keyForNotifierInstitutionNameSubscription, keyForNotifierAddressSubscription]);
     }
+  }
+
+  private changeToSubmittingFacilityImpossible(currentAddressTypeField: FormlyFieldConfig) {
+    if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
+      this.messageDialogService.showErrorDialog({
+        errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+        errors: [
+          {
+            text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_NOTIFIER,
+          },
+        ],
+      });
+    } else {
+      this.helpers.displayError(CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE, CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_NOTIFIER, '');
+    }
+    setTimeout(() => {
+      currentAddressTypeField?.formControl?.setValue(null);
+    });
   }
 
   private getCurrentAddressInstitutionNameIfNotBlank(model: any, form: FormGroup): AbstractControl<string> | null {

@@ -1,15 +1,17 @@
 /*
- Copyright (c) 2025 gematik GmbH
- Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
- the European Commission - subsequent versions of the EUPL (the "Licence");
- You may not use this work except in compliance with the Licence.
-    You may obtain a copy of the Licence at:
-    https://joinup.ec.europa.eu/software/page/eupl
-        Unless required by applicable law or agreed to in writing, software
- distributed under the Licence is distributed on an "AS IS" basis,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the Licence for the specific language governing permissions and
- limitations under the Licence.
+    Copyright (c) 2025 gematik GmbH
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
+    European Commission – subsequent versions of the EUPL (the "Licence").
+    You may not use this work except in compliance with the Licence.
+    You find a copy of the Licence in the "Licence" file or at
+    https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
+    In case of changes by gematik find details in the "Readme" file.
+    See the Licence for the specific language governing permissions and limitations under the Licence.
+    *******
+    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 import { HttpErrorResponse } from '@angular/common/http';
@@ -43,9 +45,10 @@ import {
   ImportFieldValuesService,
   ImportTargetComponent,
 } from './services/import-field-values.service';
-import { cloneObject } from '@gematik/demis-portal-core-library';
 import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-service';
 import { ProcessFormService } from './services/process-form-service';
+import { NGXLogger } from 'ngx-logger';
+import { cloneObject, MessageDialogService } from '@gematik/demis-portal-core-library';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
 const IFSG61_NOTIFIER = 'IFSG61_NOTIFIER'; // key into local storage
@@ -100,6 +103,8 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   private readonly progressService = inject(ProgressService);
   private readonly copyAndKeepInSyncService = inject(CopyAndKeepInSyncService);
   private readonly processFormService = inject(ProcessFormService);
+  private readonly messageDialogService = inject(MessageDialogService);
+  private readonly logger = inject(NGXLogger);
 
   constructor() {
     this.token = (window as any)['token'];
@@ -190,16 +195,35 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
                 this.combineFields();
               },
               error: (err: any) => {
-                this.helpers.displayError(err, 'Systemfehler: Meldetatbestände nicht verfügbar');
-                this.helpers.exitApplication();
+                this.handleError(err, 'Meldetatbestände nicht verfügbar');
               },
             });
         },
         error: (err: any) => {
-          this.helpers.displayError(err, 'Systemfehler: Typen nicht abrufbar');
-          this.helpers.exitApplication();
+          this.handleError(err, 'Typen nicht abrufbar');
         },
       });
+  }
+
+  private handleError(error: any, message: string) {
+    if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
+      this.logger.error(error);
+      this.messageDialogService.showErrorDialog({
+        redirectToHome: true,
+        errorTitle: 'Systemfehler',
+        errors: [
+          {
+            text: message,
+          },
+        ],
+      });
+    } else {
+      this.helpers.displayError(error, 'Systemfehler: ' + message);
+      // timeout to give the user a chance to read the error message
+      setTimeout(() => {
+        this.helpers.exitApplication();
+      }, 2000);
+    }
   }
 
   private combineFields() {
@@ -365,7 +389,14 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
         if (e.value.code) {
           this.loadQuestionnaire(e.value.code).then(problems => {
             if (problems.length > 0) {
-              this.showErrorDialog('Systemfehler', problems);
+              if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
+                this.messageDialogService.showErrorDialog({
+                  errorTitle: 'Systemfehler',
+                  errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
+                });
+              } else {
+                this.showErrorDialog('Systemfehler', problems);
+              }
             }
           });
         } else if (this.prevDiseaseCode) {
@@ -396,7 +427,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
       reason => {
         console.error(reason);
         if (reason instanceof HttpErrorResponse) {
-          return [new ErrorMessage('E0005', (reason as HttpErrorResponse).error?.message)];
+          return [new ErrorMessage('E0005', reason.message)];
         }
         return [new ErrorMessage('E0005', reason.toString())];
       }
@@ -471,28 +502,42 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
       });
 
       if (problems.length > 0) {
-        this.showErrorDialog('Fehler bei der Datenübernahme', problems);
+        if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
+          this.messageDialogService.showErrorDialog({
+            errorTitle: 'Fehler bei der Datenübernahme',
+            errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
+          });
+        } else {
+          this.showErrorDialog('Fehler bei der Datenübernahme', problems);
+        }
       } else {
         window.navigator.clipboard.writeText('');
       }
     } catch (error) {
       console.error(error);
-
-      this.matDialog.open(
-        ErrorMessageDialogComponent,
-        ErrorMessageDialogComponent.getErrorDialogClose({
-          title: CLIPBOARD_ERROR_DIALOG_TITLE,
-          message: CLIPBOARD_ERROR_DIALOG_MESSAGE,
-          messageDetails: CLIPBOARD_ERROR_DIALOG_MESSAGE_DETAILS,
-          type: MessageType.WARNING,
-          error,
-        })
-      );
+      if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
+        this.logger.error(error);
+        this.messageDialogService.showErrorDialogInsertDataFromClipboard();
+      } else {
+        this.matDialog.open(
+          ErrorMessageDialogComponent,
+          ErrorMessageDialogComponent.getErrorDialogClose({
+            title: CLIPBOARD_ERROR_DIALOG_TITLE,
+            message: CLIPBOARD_ERROR_DIALOG_MESSAGE,
+            messageDetails: CLIPBOARD_ERROR_DIALOG_MESSAGE_DETAILS,
+            type: MessageType.WARNING,
+            error,
+          })
+        );
+      }
     } finally {
       dialogRef?.close();
     }
   }
 
+  /**
+   * Can be removed as soon as feature flag "FEATURE_FLAG_PORTAL_ERROR_DIALOG" is active on all stages
+   * */
   private showErrorDialog(title: string, problems: ErrorMessage[]) {
     const error: ErrorResult = {
       type: MessageType.ERROR,

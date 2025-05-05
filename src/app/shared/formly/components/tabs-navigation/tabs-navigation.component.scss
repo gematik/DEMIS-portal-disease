@@ -1,27 +1,23 @@
-/*.mat-mdc-tab-group {*/
-/*  --mat-tab-header-active-label-text-color: #000000;*/
-/*  --mat-tab-header-inactive-label-text-color: #000000;*/
-/*}*/
 :host ::ng-deep .mat-mdc-tab-body-content {
   overflow: hidden;
 }
 
 .section-header {
   display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin: 15px auto;
+  padding: 20px;
   max-width: 1140px;
-  padding-left: 20px;
-}
-
-.section-title {
-  font-size: 150%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .section-body {
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: calc(100% - 140px);
+  max-height: calc(100% - 160px);
   max-width: 1140px;
   padding-right: 1rem;
   margin-left: auto;
@@ -36,15 +32,17 @@
   text-align: center;
   font-size: 14px;
   overflow: hidden;
-  border: 1px solid #000;
+  border: 1px solid var(--color-black);
   padding: 0.2rem 0.5rem;
-  color: #161616;
+  color: var(--color-black);
 }
 
 .unselected-tab {
   font-weight: normal;
+  color: var(--color-primary);
 }
 
 .selected-tab {
   font-weight: bold;
+  color: var(--color-primary);
 }

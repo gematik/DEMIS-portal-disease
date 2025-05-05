@@ -11,8 +11,10 @@
       </ng-template>
       <mat-toolbar>{{ field.props['title'] }}</mat-toolbar>
       <div class="section-header">
-        <span class="section-title">{{ tab.props?.label }}</span>
-        <span class="oval-label"> Schritt {{ navtabs.selectedIndex !== null ? navtabs.selectedIndex + 1 : '?' }} von {{ tabCount() }} </span>
+        <h1 class="section-title">{{ tab.props?.label }}</h1>
+        <div class="oval-label"> Schritt {{ navtabs.selectedIndex !== null ? navtabs.selectedIndex + 1 : '?' }}
+          von {{ tabCount() }}
+        </div>
       </div>
       <div class="section-body">
         <formly-field [field]="tab"></formly-field>
