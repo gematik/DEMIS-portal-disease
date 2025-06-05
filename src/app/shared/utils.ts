@@ -32,18 +32,45 @@ export function isPromise(val: any | Promise<any>): val is Promise<any> {
   return val && (<Promise<any>>val).then !== undefined;
 }
 
+/**
+ * Converts a date string in one of the supported formats (DD.MM.YYYY, MM.YYYY, or YYYY)
+ * into a standardized ISO date string (YYYY-MM-DD).
+ * - Supports 1- or 2-digit days and months.
+ * - Returns an empty string if the input is invalid or doesn't match any expected format.
+ * - Assumes the input is valid and correctly formatted.
+ *
+ * Examples:
+ *   "03.04.2025"   → "2025-04-03"
+ *   "3.4.2025"   → "2025-04-03"
+ *   "4.2025"     → "2025-04-01"
+ *   "2025"       → "2025-01-01"
+ *
+ *@param s The input date string.
+ *@returns An ISO-formatted date string or an empty string.
+ */
 export function dateStringToIso(s?: string): string {
-  if (!s) {
-    return '';
+  if (!s) return '';
+  const trimmed = s.trim();
+
+  // Format: D.M.YYYY or DD.MM.YYYY → YYYY-MM-DD
+  const fullDateMatch = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.test(trimmed);
+  if (fullDateMatch) {
+    const [day, month, year] = trimmed.split('.');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
-  const match = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s);
-  if (match) {
-    const dString = `${match[3]}-${match[2]}-${match[1]}`;
-    const date = new Date(dString);
-    return date.toISOString();
-  } else {
-    return '';
+
+  // Format: M.YYYY or MM.YYYY → YYYY-MM-01
+  if (/^(\d{1,2})\.(\d{4})$/.test(trimmed)) {
+    const [month, year] = trimmed.split('.');
+    return `${year}-${month.padStart(2, '0')}-01`;
   }
+
+  // Format: YYYY → YYYY-01-01
+  if (/^\d{4}$/.test(s)) {
+    return `${s}-01-01`;
+  }
+
+  return '';
 }
 
 function enableOnEvery(fc: FormlyFieldConfig): boolean {

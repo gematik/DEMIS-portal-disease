@@ -17,9 +17,9 @@
 import { enableProdMode, NgZone } from '@angular/core';
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { Router, NavigationStart } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 
-import { singleSpaAngular, getSingleSpaExtraProviders } from 'single-spa-angular';
+import { getSingleSpaExtraProviders, singleSpaAngular } from 'single-spa-angular';
 
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
@@ -28,15 +28,21 @@ import { AppProps } from 'single-spa';
 import { setPublicPath } from 'systemjs-webpack-interop';
 
 const appId = 'notification-portal-mf-disease';
+let router: Router;
 
 if (environment.isProduction) {
   enableProdMode();
 }
 
 const lifecycles = singleSpaAngular({
-  bootstrapFunction: singleSpaProps => {
+  bootstrapFunction: async singleSpaProps => {
     singleSpaPropsSubject.next(singleSpaProps);
-    return platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule);
+    const appRef = await platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule);
+    if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
+      router = appRef.injector.get(Router);
+      syncUrlWithRouter();
+    }
+    return appRef;
   },
   template: '<app-disease-root />',
   Router,
@@ -46,12 +52,10 @@ const lifecycles = singleSpaAngular({
 
 function init() {
   setPublicPath(appId);
-
   return fetch(environment.pathToEnvironment)
     .then(response => response.json())
     .then(config => {
       environment.diseaseConfig = config;
-
       if (environment.isProduction) {
         enableProdMode();
       }
@@ -66,6 +70,20 @@ function bootstrapFn(props: AppProps) {
       return lifecycles.bootstrap;
     }
   });
+}
+
+/**
+ * shell and microfrontend are using different routers
+ * when switching tabs, the shell is switching the URL, but the angular router of this microfrontend is not updated automatically
+ * this is a workaround for this issue
+ */
+function syncUrlWithRouter() {
+  if (router) {
+    const currentUrl = window.location.href; // current url from portal-shell
+    if (router.url !== currentUrl) {
+      router.navigateByUrl(currentUrl).catch(err => console.error('Navigation Error:', err));
+    }
+  }
 }
 
 export const bootstrap = bootstrapFn;

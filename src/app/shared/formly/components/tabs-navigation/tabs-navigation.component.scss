@@ -8,7 +8,7 @@
   align-content: center;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 20px;
+  padding: 44px 20px 20px;
   max-width: 1140px;
   margin-left: auto;
   margin-right: auto;
@@ -17,7 +17,7 @@
 .section-body {
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: calc(100% - 160px);
+  // max-height: calc(100% - 160px);
   max-width: 1140px;
   padding-right: 1rem;
   margin-left: auto;

@@ -23,7 +23,6 @@ import { ChangeDetectorRef } from '@angular/core';
 import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
 import { HelpersService } from '../../../app/shared/helpers.service';
 import { ProgressService } from '../../../app/shared/progress.service';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { FORMLY_CONFIG } from '@ngx-formly/core';
 import { registerValueSetExtension } from '../../../app/legacy/value-set.extension';
 import { ValueSetService } from '../../../app/legacy/value-set.service';
@@ -33,6 +32,8 @@ import { of } from 'rxjs';
 import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { PasteBoxComponent } from '@gematik/demis-portal-core-library';
 
 const overrides = {
   get Ifsg61Service() {
@@ -57,6 +58,10 @@ export const mainConfig = {
   featureFlags: {
     FEATURE_FLAG_HOSP_COPY_CHECKBOXES: true,
     FEATURE_FLAG_PORTAL_ERROR_DIALOG: true,
+    FEATURE_FLAG_PORTAL_REPEAT: true,
+    FEATURE_FLAG_PORTAL_PASTEBOX: true,
+    FEATURE_FLAG_OUTLINE_DESIGN: true,
+    FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
   },
   ngxLoggerConfig: {
     level: 1,
@@ -65,14 +70,16 @@ export const mainConfig = {
 };
 
 export function buildMock() {
-  return MockBuilder([DiseaseFormComponent, AppModule, NoopAnimationsModule])
+  return MockBuilder(DiseaseFormComponent)
+    .keep(AppModule)
+    .keep(NoopAnimationsModule)
+    .keep(MatIconTestingModule)
+    .keep(PasteBoxComponent)
     .provide(MockProvider(Ifsg61Service, overrides.Ifsg61Service))
     .provide(MockProvider(ChangeDetectorRef))
     .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
     .provide(MockProvider(HelpersService))
     .provide(MockProvider(ProgressService))
-    .provide(MockProvider(MatIconModule))
-    .mock(MatIcon)
     .provide({
       provide: FORMLY_CONFIG,
       multi: true,
@@ -81,8 +88,8 @@ export function buildMock() {
     });
 }
 
-export function setupIntegrationTests() {
-  environment.diseaseConfig = mainConfig;
+export function setupIntegrationTests(customDiseaseConfig?: any) {
+  environment.diseaseConfig = customDiseaseConfig ?? mainConfig;
   fixture = MockRender(DiseaseFormComponent);
   component = fixture.point.componentInstance;
   loader = TestbedHarnessEnvironment.loader(fixture);

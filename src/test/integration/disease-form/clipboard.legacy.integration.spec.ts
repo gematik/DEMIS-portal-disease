@@ -31,7 +31,7 @@ import {
 import { clickNextButton } from '../../shared/test-utils';
 import { AddressType } from '../../../api/notification';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { buildMock, setupIntegrationTests } from './base.spec';
+import { buildMock, mainConfig, setupIntegrationTests } from './base.spec';
 import {
   getStepHeader,
   selectTab,
@@ -55,7 +55,7 @@ import { ImportFieldValuesService } from '../../../app/disease-form/services/imp
 import { ErrorMessage } from '../../../app/shared/error-message';
 import { VALUE_DEFAULT_PLACEHOLDER, VALUE_DEFUALT_SELECT_PLACEHOLDER } from 'src/app/legacy/common-utils';
 
-describe('User fills in form through clipboard', () => {
+describe('WITHOUT FEATURE_FLAG_PORTAL_PASTEBOX - User fills in form through clipboard', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
   let loader: HarnessLoader;
@@ -65,7 +65,7 @@ describe('User fills in form through clipboard', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    const result = setupIntegrationTests();
+    const result = setupIntegrationTests({ ...mainConfig, featureFlags: { ...mainConfig.featureFlags, FEATURE_FLAG_PORTAL_PASTEBOX: false } });
     fixture = result.fixture;
     component = result.component;
     loader = result.loader;

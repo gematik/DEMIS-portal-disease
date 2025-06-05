@@ -29,19 +29,22 @@ interface Configuration {
   pathToGatewayDisease: string;
   pathToDisease: string;
   pathToDiseaseQuestionnaire: string;
-  pathToFuts: string;
+  featureFlags: any;
   ngxLoggerConfig: NgxLoggerConfig;
+  pathToFuts: string;
 }
 
-class Environment {
+export class Environment {
   public headers: HttpHeaders;
-  public diseaseConfig: any;
   public local: boolean = false;
+  public diseaseConfig: any;
 
   constructor() {
-    this.headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-    });
+    this.headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+  }
+
+  public get pathToEnvironment() {
+    return assetUrl('../environment.json');
   }
 
   private get config(): Configuration {
@@ -78,10 +81,6 @@ class Environment {
 
   public get pathToFuts(): string {
     return this.config?.pathToFuts;
-  }
-
-  public get pathToEnvironment() {
-    return assetUrl('../environment.json');
   }
 }
 

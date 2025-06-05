@@ -2,6 +2,9 @@
 
 # Release portal-disease
 
+## Release 1.3.3
+- changed inputs to outline style
+
 ## Release 1.3.2
 - Updated ospo-resources for adding additional notes and disclaimer
 

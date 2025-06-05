@@ -110,6 +110,9 @@ export class ImportFieldValuesService {
     private logger: NGXLogger
   ) {}
 
+  /**
+   * @deprecated TODO: remove this method, once FEATURE_FLAG_PORTAL_PASTEBOX will be removed
+   */
   async getClipboardKVs(): Promise<string[][]> {
     const raw = await window.navigator.clipboard.readText();
     if (!matchesRegExp(/^URL .*/, raw)) {

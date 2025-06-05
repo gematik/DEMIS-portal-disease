@@ -264,6 +264,8 @@ export async function selectDisease(loader: HarnessLoader, fixture: MockedCompon
     await inputHarness.focus();
     await fixture.whenStable();
     const autocompleteHarness = await getAutocomplete(loader, inputSelector);
+    await (await autocompleteHarness.host()).click();
+    await fixture.whenStable();
     await autocompleteHarness.selectOption({ text: display });
     fixture.detectChanges();
     await fixture.whenStable();
