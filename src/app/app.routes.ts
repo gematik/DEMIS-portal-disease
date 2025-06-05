@@ -17,7 +17,19 @@
 import { Routes } from '@angular/router';
 import { DiseaseFormComponent } from './disease-form/disease-form.component';
 
+const DISEASE_NOTIFICATION_PATH = 'disease-notification';
+
+const diseaseNotificationRoutes: Routes = [
+  { path: '7_3/non-nominal', component: DiseaseFormComponent },
+  { path: '7_3/anonymous', component: DiseaseFormComponent },
+  { path: '7_1', component: DiseaseFormComponent },
+  { path: '', component: DiseaseFormComponent },
+];
+
 export const routes: Routes = [
-  { path: 'disease-notification', component: DiseaseFormComponent },
+  ...diseaseNotificationRoutes.map(route => ({
+    ...route,
+    path: `${DISEASE_NOTIFICATION_PATH}/${route.path}`,
+  })),
   { path: '**', component: DiseaseFormComponent },
 ];

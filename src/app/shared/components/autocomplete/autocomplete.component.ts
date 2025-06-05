@@ -42,7 +42,6 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   @Input() formlyField?: FieldTypeConfig;
   @Input() key: string | number | (string | number)[] = '';
   @Input() multi!: boolean;
-  @Input() placeholder: string = '';
   @Input() showCode!: boolean;
   @Input() options: DemisCoding[] = [];
   @ViewChild(MatAutocompleteTrigger) autocomplete?: MatAutocompleteTrigger;
@@ -51,8 +50,11 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   selectControl: FormControl = new FormControl('');
   filteredCodings!: Observable<DemisCoding[]>;
   activeOption?: DemisCoding;
+  initialPlaceholder: string = '';
+  @Input() placeholder: string = '';
 
   ngOnInit() {
+    this.initialPlaceholder = this.placeholder;
     this.filteredCodings = this.selectControl.valueChanges.pipe(
       startWith((this.selectControl.value as string) || ''),
       map((value: string | DemisCoding) => {
@@ -70,7 +72,6 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
       if (!this.multi && this.formControl.value !== value) {
         this.formControl.setValue(value);
         this.onChange(value);
-        this.markAsTouched();
       }
 
       if (!this.formControl.errors && this.formControl.value !== '') {
@@ -95,7 +96,7 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
       const i = this.selectData.findIndex(value => value.code === data.code);
       this.selectData.splice(i, 1);
     }
-
+    this.placeholder = this.selectData.length > 0 ? 'weitere auswählen' : this.initialPlaceholder;
     this.formControl.setValue(this.selectData);
     this.onChange(this.selectData);
     this.markAsTouched();

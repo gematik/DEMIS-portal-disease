@@ -17,6 +17,9 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 
+/**
+ * @deprecated Use the PateBoxComponent from @gematik/demis-portal-core-library instead.
+ */
 @Component({
   selector: 'app-paste-box',
   templateUrl: './paste-box.component.html',

@@ -49,6 +49,7 @@ import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-servi
 import { ProcessFormService } from './services/process-form-service';
 import { NGXLogger } from 'ngx-logger';
 import { cloneObject, MessageDialogService } from '@gematik/demis-portal-core-library';
+import { Router } from '@angular/router';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
 const IFSG61_NOTIFIER = 'IFSG61_NOTIFIER'; // key into local storage
@@ -105,6 +106,9 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   private readonly processFormService = inject(ProcessFormService);
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly logger = inject(NGXLogger);
+  private readonly router = inject(Router);
+
+  isNonNominal: boolean = false;
 
   constructor() {
     this.token = (window as any)['token'];
@@ -113,9 +117,10 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   notifierFields: FormlyFieldConfig[] = [];
   notifiedPersonFields: FormlyFieldConfig[] = [];
   diseaseChoiceFields: FormlyFieldConfig[] = [];
+  conditionFields: FormlyFieldConfig[] = NO_DISEASE_CHOOSEN;
   diseaseCommonFields: FormlyFieldConfig[] = NO_DISEASE_CHOOSEN;
   questionnaireFields: FormlyFieldConfig[] = NO_DISEASE_CHOOSEN;
-  conditionFields: FormlyFieldConfig[] = NO_DISEASE_CHOOSEN;
+
   prevDiseaseCode?: string;
   formOptions: FormlyFormOptions = {};
 
@@ -131,24 +136,15 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   ngOnInit() {
     const notifierJson = localStorage.getItem(IFSG61_NOTIFIER);
     this.model.tabNotifier = notifierJson ? JSON.parse(notifierJson) : {};
-
+    if (this.router.url === '/disease-notification/7_3/non-nominal' && environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
+      this.isNonNominal = true;
+    }
     //set default country for all addresses to germany.
     this.model.tabNotifier.address = {
       ...this.model.tabNotifier.address,
       country: 'DE',
     };
-    //initialize contacts with one empty phone because phone number of email is required
-    if (!this.model.tabNotifier.contacts || (!this.model.tabNotifier.contacts.phoneNumbers && !this.model.tabNotifier.contacts.emailAddresses)) {
-      this.model.tabNotifier.contacts = {
-        ...this.model.tabNotifier.contacts,
-        phoneNumbers: [
-          {
-            contactType: 'phone',
-            value: '',
-          },
-        ],
-      };
-    }
+
     this.model.tabPatient = {
       currentAddress: {
         country: 'DE',
@@ -203,6 +199,11 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
           this.handleError(err, 'Typen nicht abrufbar');
         },
       });
+  }
+
+  // TODO: Remove this getter, once FEATURE_FLAG_PORTAL_PASTEBOX will be removed
+  public get FEATURE_FLAG_PORTAL_PASTEBOX(): boolean {
+    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_PASTEBOX;
   }
 
   private handleError(error: any, message: string) {
@@ -489,12 +490,17 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
 
   /**
    * This method handles the import of data in the form using the clipboard
+   *
+   * TODO: Make parameter keyValuePairs mandatory, as soon as the feature flag "FEATURE_FLAG_PORTAL_PASTEBOX" is removed
+   * @param keyValuePairs - Map of key-value pairs to be imported from clipboard
    */
-  async paste() {
+  async paste(keyValuePairsFromClipboard?: Map<string, string>) {
     const dialogRef = this.progressService.startSpinner('Zwischenablage wird übernommen');
     try {
       window.focus();
-      const keyValuePairs: string[][] = await this.importFieldValuesService.getClipboardKVs();
+      const keyValuePairs: string[][] = this.FEATURE_FLAG_PORTAL_PASTEBOX
+        ? [...(keyValuePairsFromClipboard ?? [])]
+        : await this.importFieldValuesService.getClipboardKVs();
       const problems: ErrorMessage[] = await this.importFieldValuesService.fillModelFromKVs(this, keyValuePairs, {
         ...PERSON_RULES,
         ...PERSON_ADDRESS_RULES,
@@ -514,7 +520,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
         window.navigator.clipboard.writeText('');
       }
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
         this.logger.error(error);
         this.messageDialogService.showErrorDialogInsertDataFromClipboard();

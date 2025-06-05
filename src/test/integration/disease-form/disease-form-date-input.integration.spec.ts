@@ -96,7 +96,7 @@ describe('Date input without dots integration test', () => {
     return modifiedMock;
   }
 
-  beforeEach(async () => {
+  beforeEach(() => {
     const specificIfsg61ServiceMock = {
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(getModifiedMockQuestionnaire())),
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
@@ -104,8 +104,7 @@ describe('Date input without dots integration test', () => {
       sendNotification: jasmine.createSpy('sendNotification'),
     } as jasmine.SpyObj<Ifsg61Service>;
 
-    const mockBuilder = buildMock();
-    await TestBed.configureTestingModule(mockBuilder.provide(MockProvider(Ifsg61Service, specificIfsg61ServiceMock, 'useValue')).build()).compileComponents();
+    return buildMock().provide(MockProvider(Ifsg61Service, specificIfsg61ServiceMock, 'useValue'));
   });
 
   beforeEach(() => {

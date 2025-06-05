@@ -23,7 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MAT_RADIO_DEFAULT_OPTIONS, MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabHeader, MatTabsModule } from '@angular/material/tabs';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FORMLY_CONFIG, FormlyModule } from '@ngx-formly/core';
@@ -52,8 +52,7 @@ import { IconLoaderService } from './legacy/icon-loader.service';
 import { registerValueSetExtension } from './legacy/value-set.extension';
 import { ValueSetService } from './legacy/value-set.service';
 import { HexhexbuttonComponent } from './shared/components/hexhexbutton/hexhexbutton.component';
-import { PasteBoxComponent } from './shared/components/paste-box/paste-box.component';
-import { CheckLabelLengthDirective } from './shared/directives/check-label-length.directive';
+import { PasteBoxComponent as DeprecatedPasteBoxComponent } from './shared/components/paste-box/paste-box.component';
 import { AddBreadcrumbDirective } from './shared/formly/components/autocomplete-coding/add-breadcrumb.directive';
 import { Date123Validator, Date1Validator, Date2Validator, Date3Validator } from './shared/formly/validators/validators';
 import { ExpansionPanelWrapperComponent } from './shared/formly/wrappers/expansion-panel-wrapper/expansion-panel.wrapper';
@@ -63,6 +62,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AutocompleteMultiCodingComponent } from './shared/formly/components/autocomplete-multi-coding/autocomplete-multi-coding.component';
 import { AutocompleteComponent } from './shared/components/autocomplete/autocomplete.component';
 import { environment } from '../environments/environment';
+import { FormlyRepeaterComponent, MaxHeightContentContainerComponent, PasteBoxComponent } from '@gematik/demis-portal-core-library';
+import { defaultAppearanceExtension, defaultPlaceholderExtension } from './shared/formly-extensions';
+import { CheckLabelLengthDirective } from './shared/directives/check-label-length.directive';
 
 export function initIconLoaderService(iconLoaderService: IconLoaderService) {
   return (): Promise<void> => {
@@ -85,7 +87,7 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     RepeatComponent,
     EmptyRouteComponent,
     PanelWrapperComponent,
-    PasteBoxComponent,
+    DeprecatedPasteBoxComponent,
     HexhexbuttonComponent,
     ExpansionPanelWrapperComponent,
     AddBreadcrumbDirective,
@@ -100,6 +102,8 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     NotificationFormValidationModule,
     FormlyModule.forRoot({
       types: [
+        { name: 'repeater', component: FormlyRepeaterComponent },
+        { name: 'repeat', component: RepeatComponent },
         { name: 'repeat-section', component: RepeatSectionComponent },
         {
           name: 'autocomplete-coding',
@@ -114,7 +118,6 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
         { name: 'tabs-navigation', component: TabsNavigationComponent },
         { name: 'drop-down-coding', component: SelectCodingComponent },
         { name: 'radio-button-coding', component: RadioButtonCodingComponent },
-        { name: 'repeat', component: RepeatComponent },
       ],
       wrappers: [
         { name: 'panel', component: PanelWrapperComponent },
@@ -138,6 +141,16 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
         },
         { name: 'date123', message: 'TT.MM.JJJJ  oder MM.JJJJ oder JJJJ' },
       ],
+      extensions: [
+        {
+          name: 'default-placeholder',
+          extension: defaultPlaceholderExtension,
+        },
+        {
+          name: 'default-appearance',
+          extension: defaultAppearanceExtension,
+        },
+      ],
     }),
     ReactiveFormsModule,
     FormlyMaterialModule,
@@ -157,6 +170,9 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     MatButtonModule,
     MatChipsModule,
     MatCheckboxModule,
+    MatTabHeader,
+    PasteBoxComponent,
+    MaxHeightContentContainerComponent,
   ],
   providers: [
     {

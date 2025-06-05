@@ -15,7 +15,9 @@
  */
 
 import { AfterViewInit, Directive, ElementRef, OnDestroy, Renderer2 } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
+// delete with FEATURE_FLAG_OUTLINE_DESIGN and remove from sonar properties
 @Directive({
   selector: '[appCheckLabelLength]',
 })
@@ -28,24 +30,28 @@ export class CheckLabelLengthDirective implements AfterViewInit, OnDestroy {
   ) {}
 
   ngAfterViewInit() {
-    this.checkAndModifyLabels();
+    if (!environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN) {
+      this.checkAndModifyLabels();
 
-    // MutationObserver einrichten, um auf Änderungen zu reagieren
-    this.mutationObserver = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        this.checkAndModifyLabels();
+      // MutationObserver einrichten, um auf Änderungen zu reagieren
+      this.mutationObserver = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          this.checkAndModifyLabels();
+        });
       });
-    });
 
-    this.mutationObserver.observe(this.el.nativeElement, {
-      childList: true,
-      subtree: true,
-    });
+      this.mutationObserver.observe(this.el.nativeElement, {
+        childList: true,
+        subtree: true,
+      });
+    }
   }
 
   ngOnDestroy() {
-    if (this.mutationObserver) {
-      this.mutationObserver.disconnect();
+    if (!environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN) {
+      if (this.mutationObserver) {
+        this.mutationObserver.disconnect();
+      }
     }
   }
 

@@ -90,7 +90,7 @@ describe('DiseaseFormComponent institution regex integration tests', () => {
 
     TEST_PARAMETER_VALIDATION.phone.forEach(parameter => {
       it(`for phone number, the value: '${parameter.value}' should throw the error: '${parameter.expectedResult}'`, async () => {
-        await (await getButton(loader, '#btn-telefonnummer-hinzufügen')).click();
+        await (await getButton(loader, '#phoneNumbers-add-button')).click();
         const phoneNoInput = await getInput(loader, '[data-cy=phoneNo]');
         await phoneNoInput.setValue(parameter.value);
         await phoneNoInput.blur();
@@ -107,7 +107,7 @@ describe('DiseaseFormComponent institution regex integration tests', () => {
 
     TEST_PARAMETER_VALIDATION.email.forEach(parameter => {
       it(`for email, the value: '${parameter.value}' should throw the error: '${parameter.expectedResult}'`, async () => {
-        await (await getButton(loader, '#btn-email-adresse-hinzufügen')).click();
+        await (await getButton(loader, '#emailAddresses-add-button')).click();
         const emailInput = await getInput(loader, '[data-cy=email]');
         await emailInput.setValue(parameter.value);
         await emailInput.blur();

@@ -15,7 +15,6 @@
  */
 
 import { buildMock, setupIntegrationTests } from './base.spec';
-import { environment } from '../../../environments/environment';
 import { clickNextButton } from '../../shared/test-utils';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { MockedComponentFixture } from 'ng-mocks';
@@ -94,5 +93,10 @@ describe('DiseaseFormComponent example integration tests', () => {
     await expectAsync(navigateTo(loader, 100)).toBeRejectedWithError(
       `Could not navigate to tab 100: TypeError: Cannot read properties of undefined (reading 'select')`
     );
+  });
+
+  it('should show new stepper heading with default routing', async () => {
+    let textContent = fixture.nativeElement.textContent;
+    expect(textContent.includes('Krankheitsmeldung')).toBeTruthy();
   });
 });

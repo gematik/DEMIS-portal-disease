@@ -40,6 +40,10 @@ export async function getButton(loader: HarnessLoader, selector: string) {
   return loader.getHarness(MatButtonHarness.with({ selector }));
 }
 
+export async function getAllButtonsWithSameSelector(loader: HarnessLoader, selector: string) {
+  return loader.getAllHarnesses(MatButtonHarness.with({ selector }));
+}
+
 export async function getSelect(loader: HarnessLoader, selector: string) {
   return loader.getHarness(MatSelectHarness.with({ selector }));
 }

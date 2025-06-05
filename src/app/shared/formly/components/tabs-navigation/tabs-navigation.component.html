@@ -1,24 +1,26 @@
 <mat-tab-group class="tabs-navigation" #navtabs [id]="id" animationDuration="0ms">
   @for (tab of field.fieldGroup; let i = $index; track i) {
-    <mat-tab>
-      <ng-template mat-tab-label>
-        <div [ngClass]="i === navtabs.selectedIndex ? 'selected-tab' : 'unselected-tab'">
-          <div>
-            <mat-icon [svgIcon]="isValid(tab) ? 'checkmark-outline' : 'circle-dash'"></mat-icon>
-          </div>
-          {{ tab.props?.label }}
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <div [ngClass]="i === navtabs.selectedIndex ? 'selected-tab' : 'unselected-tab'">
+        <div>
+          <mat-icon [svgIcon]="isValid(tab) ? 'checkmark-outline' : 'circle-dash'"></mat-icon>
         </div>
-      </ng-template>
-      <mat-toolbar>{{ field.props['title'] }}</mat-toolbar>
-      <div class="section-header">
-        <h1 class="section-title">{{ tab.props?.label }}</h1>
-        <div class="oval-label"> Schritt {{ navtabs.selectedIndex !== null ? navtabs.selectedIndex + 1 : '?' }}
-          von {{ tabCount() }}
-        </div>
+        {{ tab.props?.label }}
       </div>
-      <div class="section-body">
+    </ng-template>
+    <div id="disease-form-section-header" class="section-header">
+      <h1 class="section-title">{{ tab.props?.label }}</h1>
+      <div class="oval-label"> Schritt {{ navtabs.selectedIndex !== null ? navtabs.selectedIndex + 1 : '?' }}
+        von {{ tabCount() }}
+      </div>
+    </div>
+    <div class="section-body">
+      <gem-demis-max-height-content-container
+        [elementSelectorsToSubtract]="['app-navbar', '#disease-form-section-header', '#disease-form-action-bar-wrapper']">
         <formly-field [field]="tab"></formly-field>
-      </div>
-    </mat-tab>
+      </gem-demis-max-height-content-container>
+    </div>
+  </mat-tab>
   }
 </mat-tab-group>

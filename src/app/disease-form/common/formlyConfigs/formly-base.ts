@@ -18,6 +18,7 @@ import { FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core';
 import { Observable } from 'rxjs';
 import { FormlyConstants } from '../../../legacy/formly-constants';
 import { ZIP_GERMANY_MAX_LENGTH, ZIP_GERMANY_MIN_LENGTH, ZIP_INTERNATIONAL_MAX_LENGTH, ZIP_INTERNATIONAL_MIN_LENGTH } from '../../../legacy/common-utils';
+import { environment } from '../../../../environments/environment';
 
 export type FormlyExpressionType = {
   [property: string]: string | ((field: FormlyFieldConfig) => any) | Observable<any>;
@@ -174,14 +175,23 @@ export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPe
       {
         key: 'phoneNumbers',
         id: 'phoneNumbers',
-        type: 'repeat',
-        defaultValue: [],
+        type: environment.diseaseConfig?.featureFlags.FEATURE_FLAG_PORTAL_REPEAT ? 'repeater' : 'repeat',
+        defaultValue: needsContact ? [{}] : [],
         wrappers: ['validation'],
-        props: {
-          addText: 'Telefonnummer hinzufügen',
-          keepLastItem: needsContact,
-          isContact: true,
-        },
+        props: environment.diseaseConfig?.featureFlags.FEATURE_FLAG_PORTAL_REPEAT
+          ? {
+              addButtonLabel: 'Telefonnummer hinzufügen',
+            }
+          : {
+              addText: 'Telefonnummer hinzufügen',
+              keepLastItem: needsContact,
+              isContact: true,
+            },
+        expressions: environment.diseaseConfig?.featureFlags.FEATURE_FLAG_PORTAL_REPEAT
+          ? {
+              'props.required': needsContact ? (field: FormlyFieldConfig) => field.form?.get('emailAddresses')?.value.length === 0 : () => false,
+            }
+          : undefined,
         fieldArray: {
           fieldGroupClassName: 'd-flex flex-column',
           fieldGroup: [
@@ -196,7 +206,6 @@ export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPe
             {
               className: 'flex-grow-1',
               type: 'input',
-              // id: 'phoneNo', // keep for Tests
               key: 'value',
               defaultValue: '',
               props: {
@@ -221,14 +230,23 @@ export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPe
       {
         id: 'emailAddresses',
         key: 'emailAddresses',
-        type: 'repeat',
-        defaultValue: [],
+        type: environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_REPEAT ? 'repeater' : 'repeat',
+        defaultValue: needsContact ? [{}] : [],
         wrappers: ['validation'],
-        props: {
-          addText: 'Email-Adresse hinzufügen',
-          keepLastItem: needsContact,
-          isContact: true,
-        },
+        props: environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_REPEAT
+          ? {
+              addButtonLabel: 'Email-Adresse hinzufügen',
+            }
+          : {
+              addText: 'Email-Adresse hinzufügen',
+              keepLastItem: needsContact,
+              isContact: true,
+            },
+        expressions: environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_REPEAT
+          ? {
+              'props.required': needsContact ? (field: FormlyFieldConfig) => field.form?.get('phoneNumbers')?.value.length === 0 : () => false,
+            }
+          : undefined,
         fieldArray: {
           fieldGroupClassName: 'd-flex flex-column',
           fieldGroup: [
@@ -239,7 +257,6 @@ export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPe
             {
               className: 'flex-grow-1',
               type: 'input',
-              // id: 'email', // keep for Tests
               key: 'value',
               defaultValue: '',
               props: {

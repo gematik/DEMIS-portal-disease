@@ -1,3 +1,10 @@
+$max-side-container-width: 437px; //17.5vw;
+$content-width: 345px; //15
+$stepper-top: 44px;
+$tab-top:calc($stepper-top + 60px);
+$hexhex-top: calc($tab-top + 280px);
+$paste-top: calc($hexhex-top + 50px);
+
 :host {
   --mdc-text-button-label-text-color: var(--color-primary);;
 }
@@ -5,114 +12,120 @@
 ::ng-deep .mat-mdc-tab-label-container {
   padding-top: 15px;
   padding-bottom: 15px;
+  --mdc-text-button-label-text-color: var(--color-primary);
 }
 
-:host ::ng-deep .mat-mdc-tab {
-  letter-spacing: normal;
-}
 
-:host ::ng-deep .mat-mdc-button {
-  letter-spacing: normal;
-}
+:host ::ng-deep {
 
-:host ::ng-deep .mat-mdc-tab-label-container {
-  width: 25vw;
-  background-color: var(--color-white);
-  border-bottom-right-radius: 0;
-  border-right-color: rgba(0, 3, 3, 0.12);
-  border-right-style: solid;
-  border-right-width: 1px;
-  border-top-right-radius: 0;
-}
+  .mat-mdc-tab {
+    letter-spacing: normal;
+  }
 
-:host ::ng-deep .mat-mdc-outlined-button {
-  letter-spacing: normal;
-}
+  .mat-mdc-button {
+    letter-spacing: normal;
+  }
 
-:host ::ng-deep .info-notification-text {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 4px;
-  margin-bottom: 8px;
+  .mat-mdc-tab-label-container {
+    width: $max-side-container-width;
+    padding-top: $tab-top;
+    background-color: var(--color-white);
+    border-bottom-right-radius: 0;
+    border-right-color: rgba(0, 3, 3, 0.12);
+    border-right-style: solid;
+    border-right-width: 1px;
+    border-top-right-radius: 0;
+  }
+
+  .mat-mdc-outlined-button {
+    letter-spacing: normal;
+  }
+
+  .info-notification-text {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
 
   span.message {
     padding-top: 4px;
   }
+
+  formly-group.row formly-field formly-wrapper-mat-form-field mat-form-field, formly-group.QUESTIONS formly-field formly-group formly-field formly-wrapper-mat-form-field mat-form-field {
+    margin-bottom: 10px;
+  }
+
+  .info-link {
+    margin-left: 28px;
+    margin-bottom: 1rem;
+  }
+
+  .ITEM_GROUP {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0, 3, 3, 0.12);
+    display: block;
+  }
+
+  .action-bar-wrapper {
+    margin-left: $max-side-container-width;
+    display: flex;
+    border-left-color: rgba(0, 3, 3, 0.12);
+    border-left-style: solid;
+    border-left-width: 1px;
+  }
+
+  .action-bar {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 1140px;
+    padding: 20px;
+  }
+
+  .back-button-container {
+    margin-right: auto;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+  }
+
+  .stepper-heading {
+    position: absolute;
+    left: 1vw;
+    top: $stepper-top;
+    width: $content-width;
+    z-index: 999;
+    color: var(--color-primary);
+  }
+
+  app-hexhexbutton {
+    position: absolute;
+    left: 0;
+    top: $hexhex-top;
+    width: $content-width;
+    z-index: 999;
+  }
+
+  app-paste-box, gem-demis-paste-box {
+    position: absolute;
+    top: $paste-top;
+    left: 0;
+    margin: 24px;
+    width: $content-width;
+    z-index: 999;
+  }
 }
 
-:host ::ng-deep .info-link {
-  margin-left: 28px;
-  margin-bottom: 1rem;
-}
-
-:host ::ng-deep .ITEM_GROUP {
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid rgba(0, 3, 3, 0.12);
-  display: block;
-}
-//
-//.action-bar-wrapper {
-//  margin-left: calc(25vw - 0.5px);
-//  display: flex;
-//  border-left-color: rgba(0, 3, 3, 0.12);
-//  border-left-style: solid;
-//  border-left-width: 1px;
-//}
-//
-//.action-bar {
-//  display: flex;
-//  flex: 1;
-//  justify-content: space-between;
-//  margin-right: auto;
-//  margin-left: auto;
-//  max-width: 1140px;
-//  padding: 20px;
-//}
-
-.action-bar-wrapper {
-  margin-left: calc(25vw - 0.5px);
-  display: flex;
-  border-left-color: rgba(0, 3, 3, 0.12);
-  border-left-style: solid;
-  border-left-width: 1px;
-}
-
-.action-bar {
-  display: flex;
-  flex: 1;
-  justify-content: space-between;
-  align-items: center;
-  margin-right: auto;
-  margin-left: auto;
-  max-width: 1140px;
-  padding: 20px;
-}
-
-.back-button-container {
-  margin-right: auto;
-}
-
-.button-group {
-  display: flex;
-  gap: 10px;
-}
-
-
-app-hexhexbutton {
-  position: absolute;
-  left: 0;
-  top: 300px;
-  width: 25vw;
-  z-index: 999;
-}
-
-app-paste-box {
-  position: absolute;
-  top: 350px;
-  left: 0;
-  width: 25vw;
-  z-index: 999;
+:host ::ng-deep #disease-form gem-demis-max-height-content-container > div {
+  overflow-x: hidden;
+  padding-right: 16px;
 }
