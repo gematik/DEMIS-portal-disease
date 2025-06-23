@@ -2,6 +2,10 @@
 
 # Release portal-disease
 
+## Release 1.3.4
+- Updated Readme license disclaimer
+- Move paste box to core lib
+
 ## Release 1.3.3
 - changed inputs to outline style
 
