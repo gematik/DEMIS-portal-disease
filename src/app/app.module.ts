@@ -65,6 +65,7 @@ import { environment } from '../environments/environment';
 import { FormlyRepeaterComponent, MaxHeightContentContainerComponent, PasteBoxComponent } from '@gematik/demis-portal-core-library';
 import { defaultAppearanceExtension, defaultPlaceholderExtension } from './shared/formly-extensions';
 import { CheckLabelLengthDirective } from './shared/directives/check-label-length.directive';
+import { AcknowledgedComponent } from './shared/acknowledged/acknowledged.component';
 
 export function initIconLoaderService(iconLoaderService: IconLoaderService) {
   return (): Promise<void> => {
@@ -173,6 +174,7 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     MatTabHeader,
     PasteBoxComponent,
     MaxHeightContentContainerComponent,
+    AcknowledgedComponent,
   ],
   providers: [
     {

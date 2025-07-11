@@ -26,11 +26,12 @@
     </div>
   </form>
   <div class="stepper-heading">
-  @if (!isNonNominal) {
+  @if (notificationType === NotificationType.NominalNotification6_1) {
     <h1>Krankheitsmeldung (§6.1)</h1>
   }
-  @if (isNonNominal) {
-    <h1>Krankheit (§7.3)</h1>
+  @if (notificationType === NotificationType.NonNominalNotification7_3) {
+    <h1>Krankheit</h1>
+    <h4>Meldung einer Krankheit gemäß § 7 Abs. 3 IfSG</h4>
   }
 </div>
 <app-hexhexbutton (paste)="hexHex()"></app-hexhexbutton>

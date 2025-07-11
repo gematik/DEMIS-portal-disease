@@ -24,11 +24,18 @@ interface NgxLoggerConfig {
   serverLogLevel: number;
 }
 
+interface GatewayPaths {
+  [key: string]: string;
+}
+
+interface FutsPaths {
+  [key: string]: string;
+}
+
 interface Configuration {
   production: boolean;
-  pathToGatewayDisease: string;
-  pathToDisease: string;
-  pathToDiseaseQuestionnaire: string;
+  gatewayPaths: GatewayPaths;
+  futsPaths: FutsPaths;
   featureFlags: any;
   ngxLoggerConfig: NgxLoggerConfig;
   pathToFuts: string;
@@ -67,16 +74,49 @@ export class Environment {
     };
   }
 
+  // remove all unused none-paragraph paths with FEATURE_FLAG_NON_NOMINAL_NOTIFICATION
   public get pathToGatewayDisease(): string {
-    return this.config?.pathToGatewayDisease;
+    return this.config?.gatewayPaths?.['main'];
   }
 
+  public get pathToGatewayDiseaseNonNominal(): string {
+    return this.config?.gatewayPaths?.['main'] + this.config?.gatewayPaths?.['disease_7_3_non_nominal'];
+  }
+
+  /**
+   * Meldetatbestände §6.1
+   */
   public get pathToDisease(): string {
-    return this.config?.pathToDisease;
+    return this.config?.futsPaths?.['main'];
   }
 
+  public get pathToNotificationCategories6_1(): string {
+    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['notificationCategories_6_1'];
+  }
+
+  /**
+   * Meldetatbestände §7.3 (nichtnamentlich)
+   */
+  public get pathToNotificationCategories7_3(): string {
+    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['notificationCategories_7_3'];
+  }
+
+  /**
+   * Fragebögen §6.1
+   */
   public get pathToDiseaseQuestionnaire(): string {
-    return this.config?.pathToDiseaseQuestionnaire;
+    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['questionnaire'];
+  }
+
+  public get pathToDiseaseQuestionnaire6_1(): string {
+    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['questionnaire_6_1'];
+  }
+
+  /**
+   * Fragebögen §7.3 (nichtnamentlich)
+   */
+  public get pathToDiseaseQuestionnaire7_3(): string {
+    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['questionnaire_7_3'];
   }
 
   public get pathToFuts(): string {

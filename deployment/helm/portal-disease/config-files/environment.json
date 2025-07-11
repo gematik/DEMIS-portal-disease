@@ -1,8 +1,7 @@
 {
   "production": {{ .Values.config.production }},
-  "pathToGatewayDisease": "{{ .Values.config.pathToGatewayDisease }}",
-  "pathToDisease": "{{ .Values.config.pathToDisease }}",
-  "pathToDiseaseQuestionnaire": "{{ .Values.config.pathToDiseaseQuestionnaire }}",
+  "gatewayPaths": {{ .Values.config.gatewayPaths | toJson }},
+  "futsPaths": {{ .Values.config.futsPaths | toJson }},
   "pathToFuts": "{{ .Values.config.pathToFuts }}",
   "ngxLoggerConfig": {
     "level": 1,

@@ -16,18 +16,17 @@
 
 import { CommonModule } from '@angular/common';
 import { HttpResponse } from '@angular/common/http';
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { RouterLink } from '@angular/router';
 import { MessageType, SuccessResult } from '../../legacy/message';
 
 @Component({
   selector: 'app-notification-acknowledged',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, RouterLink, MatDialogActions, MatDialogClose],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatDialogActions, MatDialogClose],
   templateUrl: './acknowledged.component.html',
   styleUrl: './acknowledged.component.scss',
 })
@@ -42,12 +41,20 @@ export class AcknowledgedComponent {
       response: HttpResponse<any>;
       fileName: string;
       href: string;
-    }
-  ) {}
+    },
+    private cdr: ChangeDetectorRef
+  ) {
+    // Hotfix for DEMIS-3774
+    // TODO fix finally with DEMIS-2758
+    setTimeout(() => {
+      this.initialize();
+    });
+  }
 
-  ngOnInit() {
+  initialize() {
     this.pdfDownloadUrl = this.sanitizer.bypassSecurityTrustUrl(this.data.href);
     this.result = this.toSuccessResult(this.data.response.body);
+    this.cdr.detectChanges();
     this.triggerDownload(this.data.href, this.data.fileName);
   }
 

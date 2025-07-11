@@ -77,12 +77,24 @@ describe('DiseaseFormComponent unit tests', () => {
   beforeEach(() => {
     environment.diseaseConfig = {
       production: false,
-      pathToGatewayDisease: '/gateway/notification/api/ng/notification/disease',
-      pathToDisease: '/fhir-ui-data-model-translation/disease',
-      pathToDiseaseQuestionnaire: '/fhir-ui-data-model-translation/disease/questionnaire',
+      gatewayPaths: {
+        main: '/gateway/notification/api/ng/notification/disease',
+        disease_6_1: '/6.1',
+        disease_7_3_non_nominal: '/7.3/non_nominal',
+      },
+      futsPaths: {
+        main: '/fhir-ui-data-model-translation/disease',
+        notificationCategories_6_1: '/6.1',
+        disease_7_3: '/7.3/non_nominal',
+        notificationCategories_7_3: '/7.3',
+        questionnaire: '/questionnaire',
+        questionnaire_6_1: '/6.1/questionnaire',
+        questionnaire_7_3: '/7.3/questionnaire',
+      },
       pathToFuts: '/fhir-ui-data-model-translation',
       featureFlags: {
         FEATURE_FLAG_PORTAL_ERROR_DIALOG: true,
+        FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
       },
       ngxLoggerConfig: {
         level: 1,
@@ -222,6 +234,46 @@ describe('DiseaseFormComponent unit tests', () => {
       expect(tabDiseaseConditionGroup?.controls).toEqual({});
       expect(tabDiseaseCommonGroup?.controls).toEqual({});
       expect(tabQuestionnaireGroup?.controls).toEqual({});
+    });
+
+    it('should call createNotification and sendNotification on submitForm', async () => {
+      // Preparation
+      const processFormService = (component as any)['processFormService'];
+      const ifsg61Service = (component as any)['ifsg61Service'];
+      const notificationMock = { common: { item: [] }, disease: { item: [] } };
+      spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
+      spyOn(ifsg61Service, 'sendNotification');
+
+      (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
+      component.model = { foo: 'bar' };
+      component.notificationType = (component as any).NotificationType.NominalNotification6_1;
+
+      // Excecution
+      await component.submitForm();
+
+      // Assertion
+      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model);
+      expect(ifsg61Service.sendNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
+    });
+
+    it('should call createNotification and sendNotification on submitForm with 7.3 notification type', async () => {
+      // Preparation
+      const processFormService = (component as any)['processFormService'];
+      const ifsg61Service = (component as any)['ifsg61Service'];
+      const notificationMock = { common: { item: [] }, disease: { item: [] } };
+      spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
+      spyOn(ifsg61Service, 'sendNotification');
+
+      (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
+      component.model = { foo: 'bar' };
+      component.notificationType = (component as any).NotificationType.NonNominalNotification7_3;
+
+      // Excecution
+      await component.submitForm();
+
+      // Assertion
+      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, jasmine.any(Map));
+      expect(ifsg61Service.sendNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
     });
   });
 });

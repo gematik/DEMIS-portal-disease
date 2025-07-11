@@ -35,8 +35,8 @@ import {
   HOUSE_NBR_REG_EXP,
   MINIMUM_LENGTH_NOT_REACHED,
   NAME_REG_EXP,
-  NUMBER_OF_BEDS,
-  NUMBER_OF_BEDS_ERROR_MSG,
+  POSITIVE_NUMBER,
+  NUMBER_ERROR_MSG,
   OPTION_INCOMPLETE,
   OPTION_MISMATCH,
   PARTIAL_DATE_FORMAT_ERROR_MSG,
@@ -72,7 +72,7 @@ export const NotificationFormValidationModule = FormlyModule.forRoot({
     { name: 'emailValidator', validation: emailValidation, options: { required: true } },
     { name: 'nameValidator', validation: nameValidation },
     { name: 'additionalInfoTextValidator', validation: additionalInfoTextValidation },
-    { name: 'numberOfBedsValidator', validation: numberOfBedsValidation },
+    { name: 'numberValidator', validation: numberValidator },
     { name: 'nonBlankValidator', validation: nonBlankValidator },
     { name: 'optionMatches', validation: optionMatchesValidation },
     { name: 'isCodeChoosen', validation: validOptionHasBeenSelectedFromDropdownMenu },
@@ -139,37 +139,6 @@ export function isFutureDate(date: Date): boolean {
   let today = DateTime.local();
   let givenDate = DateTime.fromJSDate(date);
   return givenDate.startOf('day') > today.startOf('day');
-}
-
-export function startDateValidator(startDate: string, endDate: string, errorMsg?: string): any {
-  const startDateNotValid: any = validateDateInput(startDate);
-  return !startDateNotValid
-    ? !!endDate && !validateDateInput(endDate)
-      ? !isEndDateLaterThanStartDate(startDate, endDate)
-        ? setValidationMessage(errorMsg ?? END_DATE_LATER_THAN_START_DATE_ERROR_MSG)
-        : null
-      : null
-    : startDateNotValid;
-}
-
-export function endDateValidator(startDate: string, endDate: string, errorMsg?: string): any {
-  const endDateNotValid: any = validateDateInput(endDate);
-  return !endDateNotValid
-    ? !!startDate && !validateDateInput(startDate)
-      ? !isEndDateLaterThanStartDate(startDate, endDate)
-        ? setValidationMessage(errorMsg ?? END_DATE_LATER_THAN_START_DATE_ERROR_MSG)
-        : null
-      : null
-    : endDateNotValid;
-}
-
-export function isEndDateLaterThanStartDate(startDate: string, endDate: string): boolean {
-  const d1 = stringToDateFromLuxon(startDate);
-  const d2 = stringToDateFromLuxon(endDate);
-  if (!d1 || !d2) {
-    return false;
-  }
-  return d1 <= d2;
 }
 
 export function validateGermanZip(zip: string): any {
@@ -250,14 +219,11 @@ function validateEmailRegex(email: string): boolean {
   return matchesRegExp(EMAIL_REG_EXP, emailToValidate) ? null : setValidationMessage(EMAIL_ERROR_MSG);
 }
 
-export function checkNumberOfBeds(noOfBeds: string): any {
-  if (!noOfBeds) {
+export function checkIsNumber(value: string | undefined | null): { fieldMatch: { message: string } } | null {
+  if (!value) {
     return null;
   }
-  if (!matchesRegExp(NUMBER_OF_BEDS, noOfBeds)) {
-    return setValidationMessage(NUMBER_OF_BEDS_ERROR_MSG);
-  }
-  return null;
+  return matchesRegExp(POSITIVE_NUMBER, value) ? null : setValidationMessage(NUMBER_ERROR_MSG);
 }
 
 export function matchesRegExp(regExp: RegExp, value: string): boolean {
@@ -343,8 +309,8 @@ function additionalInfoTextValidation(control: AbstractControl): any {
   return checkAdditionalInfoText(control.value);
 }
 
-function numberOfBedsValidation(control: AbstractControl): any {
-  return checkNumberOfBeds(control.value);
+function numberValidator(control: AbstractControl): any {
+  return checkIsNumber(control.value);
 }
 
 function nonBlankValidator(control: AbstractControl): any {

@@ -26,6 +26,7 @@ import { environment } from './environments/environment';
 import { singleSpaPropsSubject } from './single-spa/single-spa-props';
 import { AppProps } from 'single-spa';
 import { setPublicPath } from 'systemjs-webpack-interop';
+import { allowedRoutes } from './app/demis-types';
 
 const appId = 'notification-portal-mf-disease';
 let router: Router;
@@ -79,10 +80,14 @@ function bootstrapFn(props: AppProps) {
  */
 function syncUrlWithRouter() {
   if (router) {
-    const currentUrl = window.location.href; // current url from portal-shell
-    if (router.url !== currentUrl) {
-      router.navigateByUrl(currentUrl).catch(err => console.error('Navigation Error:', err));
-    }
+    const redirectUrl = window.location.hash.replace(/^#\//, '').split('?')[0];
+    router.navigateByUrl('').then(_ => {
+      if (redirectUrl.includes('non-nominal')) {
+        router.navigateByUrl(allowedRoutes['nonNominal']);
+      } else {
+        router.navigateByUrl(allowedRoutes['main']);
+      }
+    });
   }
 }
 
