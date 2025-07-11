@@ -19,7 +19,7 @@ import { HttpClient, HttpEvent, HttpResponse } from '@angular/common/http';
 import { lastValueFrom, Observable, tap } from 'rxjs';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { environment } from '../environments/environment';
-import { DemisCoding, QuestionnaireDescriptor } from './demis-types';
+import { DemisCoding, NotificationType, QuestionnaireDescriptor } from './demis-types';
 import { ProgressService } from './shared/progress.service';
 import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
@@ -55,13 +55,20 @@ export class Ifsg61Service {
     });
   }
 
-  getDiseaseOptions(): Observable<DemisCoding[]> {
-    const url = `${environment.pathToDisease}`;
+  getDiseaseOptions(type: NotificationType): Observable<DemisCoding[]> {
+    let url = type === NotificationType.NonNominalNotification7_3 ? environment.pathToNotificationCategories7_3 : environment.pathToNotificationCategories6_1;
+    if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
+      url = environment.pathToDisease;
+    }
     return this.httpClient.get<DemisCoding[]>(url, { headers: environment.headers });
   }
 
-  getQuestionnaire(questionnaireName: string): Observable<QuestionnaireDescriptor> {
-    const url = `${environment.pathToDiseaseQuestionnaire}/${questionnaireName}/formly`;
+  getQuestionnaire(questionnaireName: string, type: NotificationType): Observable<QuestionnaireDescriptor> {
+    let basePath = type === NotificationType.NonNominalNotification7_3 ? environment.pathToDiseaseQuestionnaire7_3 : environment.pathToDiseaseQuestionnaire6_1;
+    if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
+      basePath = environment.pathToDiseaseQuestionnaire;
+    }
+    const url = `${basePath}/${questionnaireName}/formly`;
 
     return this.httpClient.get<QuestionnaireDescriptor>(url, { headers: environment.headers }).pipe(
       tap(questionnaire => {
@@ -72,8 +79,8 @@ export class Ifsg61Service {
     );
   }
 
-  sendNotification(ifgs61Message: DiseaseNotification) {
-    const post$ = this.postMessage(ifgs61Message);
+  sendNotification(ifgs61Message: DiseaseNotification, type: NotificationType) {
+    const post$ = this.postMessage(ifgs61Message, type);
     this.progressService.showProgress(post$, 'Erkrankungsmeldung wird gesendet').then(
       (response: HttpResponse<any>) => {
         const content = encodeURIComponent(response.body.content);
@@ -115,8 +122,11 @@ export class Ifsg61Service {
     );
   }
 
-  postMessage(ifgs61Message: DiseaseNotification): Observable<HttpEvent<Object>> {
-    const fullUrl = `${environment.pathToGatewayDisease}`;
+  postMessage(ifgs61Message: DiseaseNotification, type: NotificationType): Observable<HttpEvent<Object>> {
+    let fullUrl = type === NotificationType.NonNominalNotification7_3 ? environment.pathToGatewayDiseaseNonNominal : environment.pathToGatewayDisease;
+    if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
+      fullUrl = environment.pathToGatewayDisease;
+    }
     return this.httpClient.post(fullUrl, JSON.stringify(ifgs61Message), {
       headers: environment.headers,
       reportProgress: true,

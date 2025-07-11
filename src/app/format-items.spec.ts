@@ -14,7 +14,8 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { makeFieldSequence } from './format-items';
+import { formatItems, makeFieldSequence } from './format-items';
+import { Quantity } from '../api/notification';
 
 const FIELDS = [
   {
@@ -27680,5 +27681,76 @@ describe('utils', () => {
   it('should give the correct sequence numbers', () => {
     const index = makeFieldSequence(FIELDS);
     expect(42).toEqual(42);
+  });
+});
+
+describe('formatItems', () => {
+  it('formats quantities correctly', () => {
+    const quantityFields = new Map<string, Quantity>();
+    quantityFields.set('q1', { value: 0, unit: 'mg', system: 'http://unitsofmeasure.org' });
+    const model = { q1: { answer: { q1: 42 } } };
+    const result = formatItems(model, quantityFields);
+    expect(result).toEqual([
+      {
+        linkId: 'q1',
+        answer: [{ valueQuantity: { value: 42, unit: 'mg', system: 'http://unitsofmeasure.org' } }],
+      },
+    ]);
+  });
+
+  it('ignores quantities with empty map', () => {
+    const quantityFields = new Map<string, Quantity>();
+    const model = { q1: { answer: { q1: 42 } } };
+    const result = formatItems(model, quantityFields);
+    expect(result).toEqual([
+      {
+        linkId: 'q1',
+        answer: [{ item: [{ linkId: 'q1' }] }],
+      },
+    ]);
+  });
+
+  it('ignores quantity mapping when no quantityMap', () => {
+    const model = { q1: { answer: { q1: 42 } } };
+    const result = formatItems(model, undefined);
+    // @ts-ignore
+    expect(result).toEqual([
+      {
+        linkId: 'q1',
+        answer: [{ item: [{ linkId: 'q1' }] }],
+      },
+    ]);
+  });
+
+  it('formats boolean answers', () => {
+    const model = { foo: true };
+    const result = formatItems(model);
+    expect(result).toEqual([{ linkId: 'foo', answer: [{ valueBoolean: true }] }]);
+  });
+
+  it('transforms valueString', () => {
+    const model = { bar: { answer: { valueString: 'abc' } } };
+    const result = formatItems(model);
+    expect(result).toEqual([{ linkId: 'bar', answer: [{ valueString: 'abc' }] }]);
+  });
+
+  it('transforms nested components', () => {
+    const model = {
+      parent: {
+        answer: [
+          {
+            valueString: 'foo',
+            child: { answer: { valueString: 'bar' } },
+          },
+        ],
+      },
+    };
+    const result = formatItems(model);
+    expect(result[0].linkId).toBe('parent');
+    expect(result[0].answer![0].valueString).toBe('foo');
+    expect(result[0].answer![0].item![0]).toEqual({
+      linkId: 'child',
+      answer: [{ valueString: 'bar' }],
+    });
   });
 });

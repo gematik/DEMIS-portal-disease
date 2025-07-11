@@ -15,10 +15,18 @@
  */
 
 import { AddressType, DiseaseStatus } from '../../../api/notification';
-import StatusEnum = DiseaseStatus.StatusEnum;
 import { GERMANY_COUNTRY_CODE, ZIP_CODE_DEFAULT } from '../../legacy/common-utils';
+import { NotificationType } from '../../demis-types';
+import StatusEnum = DiseaseStatus.StatusEnum;
 
-export class MaxMasern {
+export class HexHexDummy {
+  getDummy(type: NotificationType) {
+    if (type === NotificationType.NonNominalNotification7_3) {
+      return this.maxHivDummy;
+    }
+    return this.maxMasernDummy;
+  }
+
   get maxMasernDummy() {
     return {
       tabNotifier: {
@@ -77,30 +85,6 @@ export class MaxMasern {
           ],
         },
       },
-      tabDiseaseChoice: {
-        diseaseChoice: {
-          answer: {
-            valueCoding: {
-              code: 'msvd',
-              display: 'Masern',
-              designations: [],
-            },
-          },
-        },
-        clinicalStatus: {
-          answer: {
-            valueString: StatusEnum.Final,
-          },
-        },
-        statusNoteGroup: {
-          statusNote: {
-            answer: {
-              valueString: 'Wichtiger Hinweis zum Status der betroffenen Person.',
-            },
-          },
-          initialNotificationId: '',
-        },
-      },
       tabPatient: {
         residenceAddress: {
           zip: ZIP_CODE_DEFAULT,
@@ -123,6 +107,30 @@ export class MaxMasern {
           firstname: ' Max',
           lastname: 'Melderson',
           birthDate: '01.01.1970',
+        },
+      },
+      tabDiseaseChoice: {
+        diseaseChoice: {
+          answer: {
+            valueCoding: {
+              code: 'msvd',
+              display: 'Masern',
+              designations: [],
+            },
+          },
+        },
+        clinicalStatus: {
+          answer: {
+            valueString: StatusEnum.Final,
+          },
+        },
+        statusNoteGroup: {
+          statusNote: {
+            answer: {
+              valueString: 'Wichtiger Hinweis zum Status der betroffenen Person.',
+            },
+          },
+          initialNotificationId: '',
         },
       },
       tabDiseaseCondition: {
@@ -720,6 +728,155 @@ export class MaxMasern {
                 valueString: 'Es gab einen Ausbruch der zugeordnet werden konnte. Wir finden leider dessen Meldungs-ID gerade nicht.',
               },
             },
+          },
+        },
+      },
+    };
+  }
+
+  get maxHivDummy() {
+    return {
+      tabNotifier: this.maxMasernDummy.tabNotifier,
+      tabPatient: this.maxMasernDummy.tabPatient,
+      tabDiseaseChoice: {
+        diseaseChoice: {
+          answer: {
+            valueCoding: {
+              code: 'hivd',
+              display: 'Humanes Immundefizienz-Virus (HIV)',
+              designations: [],
+            },
+          },
+        },
+        clinicalStatus: {
+          answer: {
+            valueString: StatusEnum.Final,
+          },
+        },
+        statusNoteGroup: {
+          statusNote: {
+            answer: {
+              valueString: 'Wichtiger Hinweis zum Status der betroffenen Person.',
+            },
+          },
+          initialNotificationId: '',
+        },
+      },
+      tabDiseaseCondition: this.maxMasernDummy.tabDiseaseCondition,
+      tabQuestionnaire: {
+        'repeat-section-1': [
+          {
+            infectionPathRisk: {
+              answer: {
+                valueCoding: {
+                  code: '16090731000119102',
+                  display: 'Berufliche Exposition',
+                  designations: null,
+                  system: 'http://snomed.info/sct',
+                },
+                medicinalWorkerNote: {
+                  answer: {
+                    valueString: '',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        firstDiagnosisGER: {
+          answer: {
+            valueCoding: {
+              code: '261665006',
+              display: 'Unbekannt',
+              designations: null,
+              system: 'http://snomed.info/sct',
+            },
+            lastNegTest: {
+              answer: {
+                valueDate: '',
+              },
+            },
+            firstPosTest: {
+              answer: {
+                valueDate: '',
+              },
+            },
+          },
+        },
+        firstDiagnosisAbroad: {
+          answer: {
+            valueCoding: {
+              code: '261665006',
+              display: 'Unbekannt',
+              designations: null,
+              system: 'http://snomed.info/sct',
+            },
+          },
+        },
+        countryOrigin: {
+          answer: {
+            valueCoding: {
+              code: '261665006',
+              display: 'Unbekannt',
+              designations: null,
+              system: 'http://snomed.info/sct',
+            },
+            countryOriginOfInfection: {
+              answer: {
+                valueCoding: {
+                  code: '261665006',
+                  display: 'Unbekannt',
+                  designations: null,
+                  system: 'http://snomed.info/sct',
+                },
+              },
+            },
+          },
+        },
+        stadiumHIVD: {
+          answer: {
+            valueCoding: {
+              code: '261665006',
+              display: 'Unbekannt',
+              designations: null,
+              system: 'http://snomed.info/sct',
+            },
+          },
+        },
+        coinfections: {
+          answer: {
+            valueCoding: [
+              {
+                code: '261665006',
+                display: 'Unbekannt',
+                designations: null,
+                system: 'http://snomed.info/sct',
+                selected: true,
+              },
+            ],
+          },
+        },
+        hivPrEPStatusHIVD: {
+          answer: {
+            valueCoding: {
+              code: '261665006',
+              display: 'Unbekannt',
+              designations: null,
+              system: 'http://snomed.info/sct',
+            },
+          },
+        },
+        sexWork: {
+          answer: {
+            valueCoding: [
+              {
+                code: '261665006',
+                display: 'Unbekannt',
+                designations: null,
+                system: 'http://snomed.info/sct',
+                selected: true,
+              },
+            ],
           },
         },
       },

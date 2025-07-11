@@ -23,7 +23,7 @@ import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
 import { lastValueFrom, take, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FACILITY_RULES, PERSON_ADDRESS_RULES, PERSON_RULES } from '../data-transfer/functionRules';
-import { DemisCoding, QuestionnaireDescriptor } from '../demis-types';
+import { DemisCoding, getNotificationTypeByRouterUrl, NotificationType, QuestionnaireDescriptor } from '../demis-types';
 import { makeFieldSequence, sortItems } from '../format-items';
 import { Ifsg61Service } from '../ifsg61.service';
 import { ErrorResult, MessageType } from '../legacy/message';
@@ -33,9 +33,9 @@ import { ErrorMessageDialogComponent } from '../shared/error-message-dialog/erro
 import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
 import { HelpersService } from '../shared/helpers.service';
 import { ProgressService } from '../shared/progress.service';
-import { createExpressions } from '../shared/utils';
+import { createExpressions, findQuantityFieldsByProp } from '../shared/utils';
 import { getDiseaseChoiceFields } from './common/formlyConfigs/disease-choice';
-import { MaxMasern } from './common/maxMasern';
+import { HexHexDummy } from './common/hexHexDummy';
 import { notifiedPersonFormConfigFields } from './common/formlyConfigs/notified-person';
 import { notifierFacilityFormConfigFields } from './common/formlyConfigs/notifier';
 import {
@@ -91,7 +91,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   form = new FormGroup({});
   fields: FormlyFieldConfig[] = [
     {
-      template: '<div class="loading-message"><h1>Bitte einen Moment Geduld</h1><p>Erkrankungsmeldung wird geladen...</p></div>',
+      template: '<div class="loading-message"><h1><br></h1><p>Erkrankungsmeldung wird geladen...</p></div>',
     },
   ];
 
@@ -108,7 +108,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   private readonly logger = inject(NGXLogger);
   private readonly router = inject(Router);
 
-  isNonNominal: boolean = false;
+  notificationType = NotificationType.NominalNotification6_1;
 
   constructor() {
     this.token = (window as any)['token'];
@@ -136,8 +136,8 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   ngOnInit() {
     const notifierJson = localStorage.getItem(IFSG61_NOTIFIER);
     this.model.tabNotifier = notifierJson ? JSON.parse(notifierJson) : {};
-    if (this.router.url === '/disease-notification/7_3/non-nominal' && environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
-      this.isNonNominal = true;
+    if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
+      this.notificationType = getNotificationTypeByRouterUrl(this.router.url);
     }
     //set default country for all addresses to germany.
     this.model.tabNotifier.address = {
@@ -183,11 +183,11 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
           this.notifiedPersonFields = notifiedPersonFormConfigFields(true);
 
           this.ifsg61Service
-            .getDiseaseOptions()
+            .getDiseaseOptions(this.notificationType)
             .pipe(take(1))
             .subscribe({
               next: (diseaseOptions: DemisCoding[]) => {
-                this.diseaseChoiceFields = getDiseaseChoiceFields(diseaseOptions);
+                this.diseaseChoiceFields = getDiseaseChoiceFields(diseaseOptions, this.notificationType === NotificationType.NonNominalNotification7_3);
                 this.combineFields();
               },
               error: (err: any) => {
@@ -271,11 +271,15 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
             props: { label: 'Angaben zu Symptomen' },
             fieldGroup: cloneObject(this.conditionFields),
           },
-          {
-            key: 'tabDiseaseCommon',
-            props: { label: 'Klinische und epidemiologische Angaben' },
-            fieldGroup: cloneObject(this.diseaseCommonFields),
-          },
+          ...(this.notificationType === NotificationType.NominalNotification6_1
+            ? [
+                {
+                  key: 'tabDiseaseCommon',
+                  props: { label: 'Klinische und epidemiologische Angaben' },
+                  fieldGroup: cloneObject(this.diseaseCommonFields),
+                },
+              ]
+            : []),
           {
             key: 'tabQuestionnaire',
             props: { label: 'Spezifische Angaben' },
@@ -299,10 +303,20 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   }
 
   async submitForm() {
-    const notification = this.processFormService.createNotification(this.model);
-    sortItems(notification.common.item, this.fieldSequence.tabDiseaseCommon);
-    sortItems(notification.disease.item, this.fieldSequence.tabQuestionnaire);
-    this.ifsg61Service.sendNotification(notification);
+    let notification;
+    if (this.notificationType === NotificationType.NonNominalNotification7_3) {
+      const quantityFields = findQuantityFieldsByProp(this.questionnaireFields);
+      notification = this.processFormService.createNotification(this.model, quantityFields);
+    } else {
+      notification = this.processFormService.createNotification(this.model);
+    }
+    if (notification.common?.item) {
+      sortItems(notification.common.item, this.fieldSequence.tabDiseaseCommon);
+    }
+    if (notification.disease?.item) {
+      sortItems(notification.disease.item, this.fieldSequence.tabQuestionnaire);
+    }
+    this.ifsg61Service.sendNotification(notification, this.notificationType);
   }
 
   private storeFacilityOnUpdate(e: FormlyValueChangeEvent) {
@@ -411,13 +425,13 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     this.prevDiseaseCode = diseaseCode;
 
     return lastValueFrom(
-      this.ifsg61Service.getQuestionnaire(diseaseCode).pipe(
+      this.ifsg61Service.getQuestionnaire(diseaseCode, this.notificationType).pipe(
         tap((descriptor: QuestionnaireDescriptor) => {
           if (document.activeElement) (document.activeElement as HTMLInputElement)['blur']();
           this.resetDiseaseChoiceDependentInput();
           this.questionnaireFields = descriptor.questionnaireConfigs;
           this.conditionFields = descriptor.conditionConfigs || [];
-          this.diseaseCommonFields = descriptor.commonConfig;
+          this.diseaseCommonFields = this.notificationType ? [] : descriptor.commonConfig;
           this.combineFields();
           this.changeDetector.detectChanges();
           this.chooseTabAfterChoosing();
@@ -452,10 +466,10 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   }
 
   async hexHex() {
-    const maxMasern = new MaxMasern();
-    const j = JSON.stringify(maxMasern.maxMasernDummy);
+    const dummy = new HexHexDummy();
+    const j = JSON.stringify(dummy.getDummy(this.notificationType));
     this.model = JSON.parse(j);
-    const descriptor = await this.loadQuestionnaire(maxMasern.maxMasernDummy.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code);
+    await this.loadQuestionnaire(dummy.getDummy(this.notificationType).tabDiseaseChoice.diseaseChoice.answer.valueCoding.code);
     setTimeout(() => {
       this.model = JSON.parse(j);
     }, 10);
@@ -572,4 +586,6 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
       this.goBack();
     }
   }
+
+  protected readonly NotificationType = NotificationType;
 }

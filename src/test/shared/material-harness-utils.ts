@@ -75,9 +75,13 @@ export async function getDialog(loader: HarnessLoader, selector: string) {
   return loader.getHarness(MatDialogHarness.with({ selector }));
 }
 
-export async function navigateTo(loader: HarnessLoader, tab: number) {
+export async function getTabList(loader: HarnessLoader) {
   const tabGroup = await getTabGroup(loader, '#NAVIGATION');
-  const tabList = await tabGroup.getTabs();
+  return await tabGroup.getTabs();
+}
+
+export async function navigateTo(loader: HarnessLoader, tab: number) {
+  const tabList = await getTabList(loader);
   try {
     await tabList[tab].select();
   } catch (e) {

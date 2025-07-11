@@ -15,7 +15,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { AddressType, DiseaseNotification, NotifiedPersonAddressInfo } from '../../../api/notification';
+import { AddressType, DiseaseNotification, NotifiedPersonAddressInfo, Quantity } from '../../../api/notification';
 import { formatItems } from '../../format-items';
 import { trimStrings } from '@gematik/demis-portal-core-library';
 import { dateStringToIso } from '../../shared/utils';
@@ -25,7 +25,7 @@ import { ExtendedSalutationEnum } from '../../legacy/common-utils';
   providedIn: 'root', // Makes it available app-wide
 })
 export class ProcessFormService {
-  createNotification(model: any): DiseaseNotification {
+  createNotification(model: any, quantityFields?: Map<string, Quantity>): DiseaseNotification {
     const message: DiseaseNotification = {
       status: {
         category: model.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code,
@@ -60,14 +60,22 @@ export class ProcessFormService {
         contacts: [...model.tabPatient.contacts.emailAddresses, ...model.tabPatient.contacts.phoneNumbers],
       },
       condition: this.makeCondition(model.tabDiseaseCondition),
-      common: {
-        questionnaire: 'common',
-        item: formatItems(model.tabDiseaseCommon),
-      },
-      disease: {
-        questionnaire: model.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code,
-        item: formatItems(model.tabQuestionnaire),
-      },
+      ...(model.tabDiseaseCommon
+        ? {
+            common: {
+              questionnaire: 'common',
+              item: formatItems(model.tabDiseaseCommon),
+            },
+          }
+        : {}),
+      ...(model.tabQuestionnaire
+        ? {
+            disease: {
+              questionnaire: model.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code,
+              item: formatItems(model.tabQuestionnaire, quantityFields),
+            },
+          }
+        : {}),
     };
 
     const trimmedMessage: DiseaseNotification = trimStrings(message);

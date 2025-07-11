@@ -15,7 +15,7 @@
  */
 
 import { FormlyFieldConfig } from '@ngx-formly/core';
-import { dateStringToIso, findFormlyFieldIterativeByKey } from './utils';
+import { dateStringToIso, findFormlyFieldIterativeByKey, findQuantityFieldsByProp } from './utils';
 
 describe('test utils', () => {
   describe('findFormlyFieldIterativeByKey', () => {
@@ -383,6 +383,45 @@ describe('test utils', () => {
     it('can return a deep nested config field from futs config', () => {
       const result = findFormlyFieldIterativeByKey(configFromFuts, 'copyNotifiedPersonCurrentAddress');
       expect(result?.type).toBe('checkbox');
+    });
+  });
+
+  describe('findQuantityFieldsByProp', () => {
+    it('finds fields with quantity prop and returns map with Quantities', () => {
+      const fields: FormlyFieldConfig[] = [
+        { key: 'a', props: { quantity: { unit: 'mg', system: 'http://unitsofmeasure.org' } } },
+        { key: 'b', props: { quantity: { unit: 'kg', system: 'http://unitsofmeasure.org' } } },
+      ];
+      const result = findQuantityFieldsByProp(fields);
+      expect(result.size).toBe(2);
+      expect(result.get('a')).toEqual({ value: 0, unit: 'mg', system: 'http://unitsofmeasure.org' });
+      expect(result.get('b')).toEqual({ value: 0, unit: 'kg', system: 'http://unitsofmeasure.org' });
+    });
+
+    // TODO can be removed when FUTS is ready for all quantities
+    it('finds fields with numberValidator and returns standard quantity', () => {
+      const fields: FormlyFieldConfig[] = [{ key: 'c', validators: { validation: ['numberValidator'] } }];
+      const result = findQuantityFieldsByProp(fields);
+      expect(result.size).toBe(1);
+      expect(result.get('c')).toEqual({ value: 0, unit: 'placeholder-unit', system: 'https://unitsofmeasure.org' });
+    });
+
+    it('finds nested fields with quantity prop and returns quantity object', () => {
+      const fields: FormlyFieldConfig[] = [
+        {
+          key: 'parent',
+          fieldGroup: [{ key: 'child', props: { quantity: { unit: 'ml', system: 'http://unitsofmeasure.org' } } }],
+        },
+      ];
+      const result = findQuantityFieldsByProp(fields);
+      expect(result.size).toBe(1);
+      expect(result.get('child')).toEqual({ value: 0, unit: 'ml', system: 'http://unitsofmeasure.org' });
+    });
+
+    it('returns empty map when no matching fields can be found', () => {
+      const fields: FormlyFieldConfig[] = [{ key: 'x', props: {} }];
+      const result = findQuantityFieldsByProp(fields);
+      expect(result.size).toBe(0);
     });
   });
 

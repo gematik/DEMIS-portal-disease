@@ -19,7 +19,7 @@ import { clickNextButton } from '../../shared/test-utils';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { navigateTo } from '../../shared/material-harness-utils';
+import { getTabList, navigateTo } from '../../shared/material-harness-utils';
 import { getHtmlSpanElement } from '../../shared/html-element-utils';
 
 describe('DiseaseFormComponent example integration tests', () => {
@@ -98,5 +98,11 @@ describe('DiseaseFormComponent example integration tests', () => {
   it('should show new stepper heading with default routing', async () => {
     let textContent = fixture.nativeElement.textContent;
     expect(textContent.includes('Krankheitsmeldung')).toBeTruthy();
+  });
+
+  it('should show epidemiologische Angaben', async () => {
+    const tabList = await getTabList(loader);
+    expect(tabList.length).toBe(6);
+    await expectAsync(tabList[4].getLabel()).toBeResolvedTo('Klinische und epidemiologische Angaben');
   });
 });

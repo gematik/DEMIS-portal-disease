@@ -16,7 +16,7 @@
 
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { EnableWhen } from '../demis-types';
-import { NotifiedPersonAddressInfo } from '../../api/notification';
+import { NotifiedPersonAddressInfo, Quantity } from '../../api/notification';
 
 export async function sleep(durationInMillies: number): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -206,4 +206,46 @@ export function findFormlyFieldIterativeByKey(rootFields: FormlyFieldConfig[], k
     }
   }
   return undefined;
+}
+
+/**
+ * Finds all fields with a 'quantity' prop in the given root fields and returns a map
+ * where the keys are the field keys and the values are initialized Quantity objects.
+ * Necessary for §7.3 notifications
+ * @param rootFields
+ */
+export function findQuantityFieldsByProp(rootFields: FormlyFieldConfig[]): Map<string, Quantity> {
+  const stack = [...rootFields];
+  const quantityFields = new Map<string, Quantity>();
+
+  while (stack.length > 0) {
+    const field = stack.pop();
+    if (!field) continue;
+    if (field.props && field.props['quantity']) {
+      quantityFields.set(field.key!.toString(), {
+        value: 0,
+        unit: field.props['quantity'].unit,
+        system: field!.props['quantity'].system,
+      });
+    }
+    // TODO can be removed when FUTS is ready for all quantities
+    else if (field.validators?.validation.includes('numberValidator')) {
+      quantityFields.set(field.key!.toString(), {
+        value: 0,
+        unit: 'placeholder-unit',
+        system: 'https://unitsofmeasure.org',
+      });
+    }
+    if (field.fieldGroup) {
+      stack.push(...field.fieldGroup);
+    }
+    if (field.fieldArray) {
+      if (typeof field.fieldArray === 'function') {
+        stack.push(field.fieldArray(field));
+      } else {
+        stack.push(field.fieldArray);
+      }
+    }
+  }
+  return quantityFields;
 }

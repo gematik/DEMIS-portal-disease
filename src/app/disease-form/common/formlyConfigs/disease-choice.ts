@@ -20,12 +20,15 @@ import { DemisCoding } from '../../../demis-types';
 import { DiseaseStatus } from '../../../../api/notification';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
-export function getDiseaseChoiceFields(diseaseOptions: DemisCoding[]): FormlyFieldConfig[] {
+export function getDiseaseChoiceFields(diseaseOptions: DemisCoding[], isNonNominal: boolean): FormlyFieldConfig[] {
   return [
     infoOutline,
     {
       template:
         '<div class="info-link" id="knowledge-db-info-link">Weiterführende Informationen zur Meldung gemäß § 6 IfSG finden Sie in der <a href="https://go.gematik.de/demis-info-disease" target="_blank">DEMIS-Wissensdatenbank</a></div>',
+      expressions: {
+        hide: () => isNonNominal,
+      },
     },
     {
       template: '<div class="question-title">Erkrankung *</div>',

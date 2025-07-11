@@ -37,3 +37,28 @@ export type QuestionnaireDescriptor = {
   conditionConfigs: FormlyFieldConfig[];
   commonConfig: FormlyFieldConfig[];
 };
+
+export enum NotificationType {
+  NominalNotification6_1,
+  NonNominalNotification7_3,
+  AnonymousNotification7_3,
+}
+
+interface AllowedRoutes {
+  [key: string]: string;
+}
+
+export const allowedRoutes: AllowedRoutes = {
+  nominal: 'disease-notification/6.1',
+  nonNominal: 'disease-notification/7.3/non-nominal',
+  anonymous: 'disease-notification/7.3/anonymous',
+  main: 'disease-notification',
+};
+
+export const getNotificationTypeByRouterUrl = (url: string): NotificationType => {
+  if (url.includes(allowedRoutes['nonNominal'])) {
+    return NotificationType.NonNominalNotification7_3;
+  } else {
+    return NotificationType.NominalNotification6_1;
+  }
+};

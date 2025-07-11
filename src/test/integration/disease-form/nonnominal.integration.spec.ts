@@ -19,6 +19,7 @@ import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.com
 import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { Router } from '@angular/router';
+import { getTabList } from '../../shared/material-harness-utils';
 
 describe('DiseaseFormComponent nonnominal integration tests', () => {
   let component: DiseaseFormComponent;
@@ -29,7 +30,7 @@ describe('DiseaseFormComponent nonnominal integration tests', () => {
   beforeEach(() =>
     buildMock().provide({
       provide: Router,
-      useValue: { url: '/disease-notification/7_3/non-nominal' },
+      useValue: { url: '/disease-notification/7.3/non-nominal' },
     })
   );
 
@@ -48,5 +49,11 @@ describe('DiseaseFormComponent nonnominal integration tests', () => {
     let textContent = fixture.nativeElement.textContent;
     expect(textContent.includes('Krankheit')).toBeTruthy();
     expect(textContent.includes('Krankheitsmeldung')).toBeFalsy();
+  });
+
+  it('should not show epidemiologische Angaben', async () => {
+    const tabList = await getTabList(loader);
+    expect(tabList.length).toBe(5);
+    await expectAsync(tabList[4].getLabel()).toBeResolvedTo('Spezifische Angaben');
   });
 });

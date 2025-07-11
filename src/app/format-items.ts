@@ -16,7 +16,7 @@
 
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { combinePaths } from './shared/utils';
-import { QuestionnaireResponseAnswer, QuestionnaireResponseItem } from '../api/notification';
+import { Quantity, QuestionnaireResponseAnswer, QuestionnaireResponseItem } from '../api/notification';
 
 /*
  * As the Gateway accepts the answers only in the original sequence in the questionnaire
@@ -50,7 +50,29 @@ export function sortItems(items: QuestionnaireResponseItem[] | undefined, subSeq
   recurse(items, subSequence);
 }
 
-export function formatItems(model: any): QuestionnaireResponseItem[] {
+/**
+ *
+ * @param key the key of the item
+ * @param body the body of the item
+ * @param quantityFields as Quantity from formly field configuration
+ * Formly field configurations contains information about quantity unit and system which is mapped here to the questionnaire response item
+ * depending on the key
+ */
+function handleQuantityField(key: string, body: any, quantityFields?: Map<string, Quantity>): QuestionnaireResponseItem | undefined {
+  if (quantityFields && quantityFields.size > 0) {
+    const qKey = quantityFields.get(key);
+    if (qKey) {
+      qKey.value = body.answer[key];
+      return {
+        linkId: key,
+        answer: [{ valueQuantity: qKey }],
+      };
+    }
+  }
+  return undefined;
+}
+
+export function formatItems(model: any, quantityFields?: Map<string, Quantity>): QuestionnaireResponseItem[] {
   if (!model) throw new Error(model);
 
   const items: QuestionnaireResponseItem[] = Object.entries(model).map(entry => {
@@ -67,6 +89,11 @@ export function formatItems(model: any): QuestionnaireResponseItem[] {
     if (typeof body === 'boolean') {
       item.answer = [{ valueBoolean: body }];
       return item;
+    }
+
+    const quantityItem = handleQuantityField(key, body, quantityFields);
+    if (quantityItem) {
+      return quantityItem;
     }
 
     if (Array.isArray(body.answer)) {

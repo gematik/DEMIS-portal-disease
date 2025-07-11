@@ -51,9 +51,20 @@ let loader: HarnessLoader;
 
 export const mainConfig = {
   production: false,
-  pathToGatewayDisease: '/gateway/notification/api/ng/notification/disease',
-  pathToDisease: '/fhir-ui-data-model-translation/disease',
-  pathToDiseaseQuestionnaire: '/fhir-ui-data-model-translation/disease/questionnaire',
+  gatewayPaths: {
+    main: '/gateway/notification/api/ng/notification/disease',
+    disease_6_1: '/6.1',
+    disease_7_3_non_nominal: '/7.3/non_nominal',
+  },
+  futsPaths: {
+    main: '/fhir-ui-data-model-translation/disease',
+    notificationCategories_6_1: '/6.1',
+    disease_7_3: '/7.3/non_nominal',
+    notificationCategories_7_3: '/7.3',
+    questionnaire: '/questionnaire',
+    questionnaire_6_1: '/6.1/questionnaire',
+    questionnaire_7_3: '/7.3/questionnaire',
+  },
   pathToFuts: '/fhir-ui-data-model-translation',
   featureFlags: {
     FEATURE_FLAG_HOSP_COPY_CHECKBOXES: true,
