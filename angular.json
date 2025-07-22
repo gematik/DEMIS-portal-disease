@@ -110,7 +110,10 @@
             "styles": ["src/styles.scss"],
             "scripts": [],
             "codeCoverage": true,
-            "codeCoverageExclude": ["src/test/**/*"]
+            "codeCoverageExclude": [
+              "src/test/**/*",
+              "src/api/**/*"
+            ]
           }
         }
       }

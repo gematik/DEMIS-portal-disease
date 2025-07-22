@@ -21,5 +21,6 @@ import { FieldWrapper } from '@ngx-formly/core';
   selector: 'app-panel-wrapper',
   templateUrl: './panel-wrapper.component.html',
   styleUrl: './panel-wrapper.component.scss',
+  standalone: false,
 })
 export class PanelWrapperComponent extends FieldWrapper {}

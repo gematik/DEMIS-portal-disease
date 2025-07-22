@@ -15,7 +15,7 @@
  */
 
 import { AsyncPipe } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatProgressSpinnerModule, ProgressSpinnerMode } from '@angular/material/progress-spinner';
 import { Observable } from 'rxjs';
@@ -27,18 +27,14 @@ import { Observable } from 'rxjs';
  */
 @Component({
   selector: 'app-super-spinner',
-  standalone: true,
   imports: [MatProgressSpinnerModule, AsyncPipe],
   templateUrl: './super-spinner.component.html',
   styleUrl: './super-spinner.component.scss',
 })
 export class SuperSpinnerComponent {
-  constructor(
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      title: string;
-      mode: ProgressSpinnerMode;
-      progress$: Observable<number>;
-    }
-  ) {}
+  data = inject<{
+    title: string;
+    mode: ProgressSpinnerMode;
+    progress$: Observable<number>;
+  }>(MAT_DIALOG_DATA);
 }

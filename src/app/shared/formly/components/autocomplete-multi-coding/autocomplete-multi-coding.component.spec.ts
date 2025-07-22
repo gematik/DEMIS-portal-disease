@@ -181,6 +181,7 @@ describe('AutocompleteMultiCodingComponent', () => {
       <formly-form [fields]="fields" [form]="form" [model]="model"></formly-form>
     </form>
   `,
+  standalone: false,
 })
 class MockComponent {
   form = new FormGroup({});

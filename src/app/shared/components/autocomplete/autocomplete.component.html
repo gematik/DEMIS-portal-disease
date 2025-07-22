@@ -1,4 +1,4 @@
-<div [ngClass]="multi ? 'chip-list-wrapper' : ''">
+<div [ngClass]="multi() ? 'chip-list-wrapper' : ''">
   <mat-chip-grid #chipList>
     @for (select of selectData; track select.code) {
       <mat-chip-row class="cardinal-colors" (removed)="removeChip(select)">
@@ -24,14 +24,14 @@
       [formControl]="selectControl"
       [formlyAttributes]="formlyField"
       [placeholder]="placeholder || ''"
-      [errorStateMatcher]="errorStateMatcher"
-      (keydown.space)="multi ? handleSpace($event) : null"
+      [errorStateMatcher]="errorStateMatcher()"
+      (keydown.space)="multi() ? handleSpace($event) : null"
       (click)="onClick()"
       (blur)="onBlur()" />
   } @else {
-    <input matInput [matAutocomplete]="auto" [formControl]="selectControl" [placeholder]="placeholder || ''" [errorStateMatcher]="errorStateMatcher" />
+    <input matInput [matAutocomplete]="auto" [formControl]="selectControl" [placeholder]="placeholder || ''" [errorStateMatcher]="errorStateMatcher()" />
   }
-  @if (clearable && selectControl.value) {
+  @if (clearable() && selectControl.value) {
     <span style="position: absolute; left: calc(100% - 30px); top: +5px">
       <button
         matSuffix
@@ -52,7 +52,7 @@
     (optionActivated)="activateOption($event)"
     (closed)="onClosePanel()">
     @for (coding of filteredCodings | async; track coding.code) {
-      @if (multi) {
+      @if (multi()) {
         <mat-option (keydown.space)="toggleSelection(coding)" [value]="coding" class="autocomplete-option">
           <mat-checkbox [checked]="coding.selected" (click)="toggleSelection(coding); $event.stopPropagation()" class="opt-{{ coding.code }}">
             {{ displayFn(coding) }}{{ coding.breadcrumb && ' - ' + coding.breadcrumb }}

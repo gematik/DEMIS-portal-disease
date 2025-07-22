@@ -15,7 +15,7 @@
  */
 
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { NgModule, inject, provideAppInitializer } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
@@ -177,12 +177,10 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     AcknowledgedComponent,
   ],
   providers: [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initIconLoaderService,
-      deps: [IconLoaderService],
-      multi: true,
-    },
+    provideAppInitializer(() => {
+      const initializerFn = initIconLoaderService(inject(IconLoaderService));
+      return initializerFn();
+    }),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,

@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { lastValueFrom } from 'rxjs';
@@ -25,11 +25,9 @@ import { ErrorMessageDialogComponent } from './error-message-dialog/error-messag
   providedIn: 'root',
 })
 export class HelpersService {
-  constructor(
-    private matDialog: MatDialog,
-    private router: Router,
-    private logger: NGXLogger
-  ) {}
+  private matDialog = inject(MatDialog);
+  private router = inject(Router);
+  private logger = inject(NGXLogger);
 
   exitApplication() {
     this.router.navigate(['/welcome']);

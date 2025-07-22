@@ -24,6 +24,7 @@ import { DemisCoding } from '../../../../demis-types';
   selector: 'app-select-coding',
   templateUrl: './select-coding.component.html',
   styleUrls: ['./select-coding.component.scss'],
+  standalone: false,
 })
 export class SelectCodingComponent extends FieldType<FieldTypeConfig> implements OnInit, OnDestroy {
   codings: DemisCoding[] = [];

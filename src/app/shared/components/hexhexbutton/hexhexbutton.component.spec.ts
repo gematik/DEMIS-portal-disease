@@ -14,24 +14,83 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { environment } from '../../../../environments/environment';
 import { HexhexbuttonComponent } from './hexhexbutton.component';
 
 describe('HexhexbuttonComponent', () => {
   let component: HexhexbuttonComponent;
-  let fixture: ComponentFixture<HexhexbuttonComponent>;
+  let fixture: MockedComponentFixture<HexhexbuttonComponent>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [HexhexbuttonComponent],
-    });
-    fixture = TestBed.createComponent(HexhexbuttonComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    return MockBuilder(HexhexbuttonComponent);
+  });
+
+  beforeEach(() => {
+    fixture = MockRender(HexhexbuttonComponent);
+    component = fixture.point.componentInstance;
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should add hexhexbutton class to element on construction', () => {
+    // The constructor already ran, so we need to check the component's nativeElement
+    const element = component['targetElement'].nativeElement;
+    expect(element.classList.contains('hexhexbutton')).toBeTruthy();
+  });
+
+  it('should emit paste event when doPaste is called', () => {
+    spyOn(component.paste, 'emit');
+
+    component.doPaste();
+
+    expect(component.paste.emit).toHaveBeenCalled();
+  });
+
+  it('should show hexhex button when not in production', () => {
+    spyOnProperty(environment, 'isProduction', 'get').and.returnValue(false);
+
+    const result = component.showHexHex();
+
+    expect(result).toBeTruthy();
+  });
+
+  it('should not show hexhex button when in production', () => {
+    spyOnProperty(environment, 'isProduction', 'get').and.returnValue(true);
+
+    const result = component.showHexHex();
+
+    expect(result).toBeFalsy();
+  });
+
+  it('should animate button on click', () => {
+    const mockButton = {
+      classList: {
+        remove: jasmine.createSpy('remove'),
+        add: jasmine.createSpy('add'),
+      },
+    };
+
+    const targetElement = component['targetElement'].nativeElement;
+    spyOn(targetElement, 'querySelector').and.returnValue(mockButton);
+
+    component.animate();
+
+    expect(mockButton.classList.remove).toHaveBeenCalledWith('animate');
+
+    // Test that add is called after timeout
+    setTimeout(() => {
+      expect(mockButton.classList.add).toHaveBeenCalledWith('animate');
+    }, 15);
+  });
+
+  it('should handle animate when button is not found', () => {
+    const targetElement = component['targetElement'].nativeElement;
+    spyOn(targetElement, 'querySelector').and.returnValue(null);
+
+    // Should not throw error
+    expect(() => component.animate()).not.toThrow();
   });
 });

@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, filter, from, lastValueFrom, Observable, of, tap } from 'rxjs';
 import { HttpEvent, HttpEventType, HttpProgressEvent, HttpResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
@@ -25,7 +25,7 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class ProgressService {
-  constructor(private matDialog: MatDialog) {}
+  private matDialog = inject(MatDialog);
 
   startSpinner(title: string, progress$: Observable<number> = of(0), isTotalAvailable: boolean = false) {
     return this.matDialog.open(SuperSpinnerComponent, {

@@ -24,6 +24,7 @@ import { DemisCoding } from '../../../../demis-types';
   selector: 'app-radio-button-coding',
   templateUrl: './radio-button-coding.component.html',
   styleUrls: ['./radio-button-coding.component.scss'],
+  standalone: false,
 })
 export class RadioButtonCodingComponent extends FieldType<FieldTypeConfig> implements OnInit {
   codings: DemisCoding[] = [];

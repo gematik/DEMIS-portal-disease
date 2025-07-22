@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTableModule } from '@angular/material/table';
@@ -30,12 +30,11 @@ import { MatButton } from '@angular/material/button';
   templateUrl: './error-message-dialog.component.html',
   styleUrl: './error-message-dialog.component.scss',
   imports: [MatExpansionModule, MatIcon, MatTableModule, MatDialogModule, MatIcon, MatButton],
-  standalone: true,
 })
 export class ErrorMessageDialogComponent {
-  displayedColumns: string[] = ['code', 'message'];
+  error = inject<ErrorResult>(MAT_DIALOG_DATA);
 
-  constructor(@Inject(MAT_DIALOG_DATA) public error: ErrorResult) {}
+  displayedColumns: string[] = ['code', 'message'];
 
   isError(messageType: MessageType) {
     return messageType === MessageType.ERROR;

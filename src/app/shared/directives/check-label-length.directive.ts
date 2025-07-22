@@ -14,20 +14,19 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { AfterViewInit, Directive, ElementRef, OnDestroy, Renderer2 } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, OnDestroy, Renderer2, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
 // delete with FEATURE_FLAG_OUTLINE_DESIGN and remove from sonar properties
 @Directive({
   selector: '[appCheckLabelLength]',
+  standalone: false,
 })
 export class CheckLabelLengthDirective implements AfterViewInit, OnDestroy {
-  private mutationObserver?: MutationObserver;
+  private el = inject(ElementRef);
+  private renderer = inject(Renderer2);
 
-  constructor(
-    private el: ElementRef,
-    private renderer: Renderer2
-  ) {}
+  private mutationObserver?: MutationObserver;
 
   ngAfterViewInit() {
     if (!environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN) {

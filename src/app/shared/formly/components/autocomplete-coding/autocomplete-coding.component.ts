@@ -23,6 +23,7 @@ import { DemisCoding } from '../../../../demis-types';
   selector: 'app-autocomplete-coding',
   templateUrl: './autocomplete-coding.component.html',
   styleUrls: ['./autocomplete-coding.component.scss'],
+  standalone: false,
 })
 export class AutocompleteCodingComponent extends FieldType<FieldTypeConfig> implements OnInit {
   codings: DemisCoding[] = [];

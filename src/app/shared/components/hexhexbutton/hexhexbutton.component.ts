@@ -14,18 +14,21 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Component, ElementRef, EventEmitter, HostListener, Output } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, output } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-hexhexbutton',
   templateUrl: './hexhexbutton.component.html',
   styleUrls: ['./hexhexbutton.component.scss'],
+  standalone: false,
 })
 export class HexhexbuttonComponent {
-  @Output() paste = new EventEmitter<void>();
+  private targetElement = inject(ElementRef);
 
-  constructor(private targetElement: ElementRef) {
+  readonly paste = output<void>();
+
+  constructor() {
     this.targetElement.nativeElement.classList.add('hexhexbutton');
   }
 
@@ -40,6 +43,7 @@ export class HexhexbuttonComponent {
   }
 
   doPaste() {
+    // TODO: The 'emit' function requires a mandatory void argument
     this.paste.emit();
   }
 

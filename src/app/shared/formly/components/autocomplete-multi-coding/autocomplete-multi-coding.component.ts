@@ -24,6 +24,7 @@ import { take } from 'rxjs';
   selector: 'app-autocomplete-multi-coding',
   templateUrl: 'autocomplete-multi-coding.component.html',
   styleUrls: ['./autocomplete-multi-coding.component.scss'],
+  standalone: false,
 })
 export class AutocompleteMultiCodingComponent extends FieldType<FieldTypeConfig> implements OnInit {
   codings: DemisCoding[] = [];

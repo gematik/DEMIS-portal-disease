@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, OnInit, output, input } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 
 /**
@@ -24,14 +24,15 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-paste-box',
   templateUrl: './paste-box.component.html',
   styleUrl: './paste-box.component.scss',
+  standalone: false,
 })
 export class PasteBoxComponent implements OnInit {
-  @Output() paste = new EventEmitter<void>();
-  @Input() buttonId!: string;
+  readonly paste = output<void>();
 
   constructor() {}
 
   doPaste() {
+    // TODO: The 'emit' function requires a mandatory void argument
     this.paste.emit();
   }
 
