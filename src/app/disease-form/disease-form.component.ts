@@ -76,6 +76,7 @@ const NO_DISEASE_CHOOSEN: FormlyFieldConfig[] = [
   selector: 'app-disease-form',
   templateUrl: './disease-form.component.html',
   styleUrls: ['./disease-form.component.scss'],
+  standalone: false,
 })
 export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   get formlyConfigFields(): FormlyFieldConfig[] {

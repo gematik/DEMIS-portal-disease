@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
 import { matchesRegExp } from '../../legacy/notification-form-validation-module';
@@ -105,10 +105,8 @@ async function setModelValue(model: any, path: string, values: any[], multi: boo
   providedIn: 'root',
 })
 export class ImportFieldValuesService {
-  constructor(
-    public dialog: MatDialog,
-    private logger: NGXLogger
-  ) {}
+  dialog = inject(MatDialog);
+  private logger = inject(NGXLogger);
 
   /**
    * @deprecated TODO: remove this method, once FEATURE_FLAG_PORTAL_PASTEBOX will be removed

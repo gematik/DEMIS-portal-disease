@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Component, forwardRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, forwardRef, Input, OnInit, ViewChild, input } from '@angular/core';
 import { DemisCoding } from '../../../demis-types';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { FieldTypeConfig } from '@ngx-formly/core';
@@ -34,16 +34,20 @@ import { MatAutocompleteActivatedEvent, MatAutocompleteTrigger } from '@angular/
       multi: true,
     },
   ],
+  standalone: false,
 })
 export class AutocompleteComponent implements OnInit, ControlValueAccessor {
-  @Input() formControl: FormControl = new FormControl();
-  @Input() clearable: boolean = true;
-  @Input() errorStateMatcher: ErrorStateMatcher = new ErrorStateMatcher();
+  readonly formControl = input<FormControl>(new FormControl());
+  readonly clearable = input<boolean>(true);
+  readonly errorStateMatcher = input<ErrorStateMatcher>(new ErrorStateMatcher());
+  // TODO: Skipped for migration because:
+  //  This input is used in a control flow expression (e.g. `@if` or `*ngIf`)
+  //  and migrating would break narrowing currently.
   @Input() formlyField?: FieldTypeConfig;
-  @Input() key: string | number | (string | number)[] = '';
-  @Input() multi!: boolean;
-  @Input() showCode!: boolean;
-  @Input() options: DemisCoding[] = [];
+  readonly key = input<string | number | (string | number)[]>('');
+  readonly multi = input<boolean>(false);
+  readonly showCode = input<boolean>(false);
+  readonly options = input<DemisCoding[]>([]);
   @ViewChild(MatAutocompleteTrigger) autocomplete?: MatAutocompleteTrigger;
   latestValidSelection?: DemisCoding;
   selectData: Array<DemisCoding> = [];
@@ -51,6 +55,8 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   filteredCodings!: Observable<DemisCoding[]>;
   activeOption?: DemisCoding;
   initialPlaceholder: string = '';
+  // TODO: Skipped for migration because:
+  //  Your application code writes to the input. This prevents migration.
   @Input() placeholder: string = '';
 
   ngOnInit() {
@@ -69,21 +75,23 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
     );
 
     this.selectControl.valueChanges.subscribe((value: DemisCoding | string) => {
-      if (!this.multi && this.formControl.value !== value) {
-        this.formControl.setValue(value);
+      const formControl = this.formControl();
+      if (!this.multi() && formControl.value !== value) {
+        formControl.setValue(value);
         this.onChange(value);
       }
 
-      if (!this.formControl.errors && this.formControl.value !== '') {
-        this.latestValidSelection = this.formControl.value;
+      if (!formControl.errors && formControl.value !== '') {
+        this.latestValidSelection = formControl.value;
       }
     });
   }
 
   private findMatchingOptions(value: string): DemisCoding[] {
     const filterValue = value ? value.toLowerCase() : '';
-    return this.options && this.options.length
-      ? this.options.filter(coding => coding.display.toLowerCase().includes(filterValue) || (this.showCode && coding.code.includes(filterValue)))
+    const options = this.options();
+    return options && options.length
+      ? options.filter(coding => coding.display.toLowerCase().includes(filterValue) || (this.showCode() && coding.code.includes(filterValue)))
       : [];
   }
 
@@ -97,7 +105,7 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
       this.selectData.splice(i, 1);
     }
     this.placeholder = this.selectData.length > 0 ? 'weitere auswählen' : this.initialPlaceholder;
-    this.formControl.setValue(this.selectData);
+    this.formControl().setValue(this.selectData);
     this.onChange(this.selectData);
     this.markAsTouched();
     setTimeout(() => {
@@ -113,7 +121,7 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
 
   handleSpace(evt: Event): boolean {
     evt.preventDefault();
-    if (!this.multi || !this.activeOption) {
+    if (!this.multi() || !this.activeOption) {
       return true;
     }
     if (this.activeOption) {
@@ -126,13 +134,13 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
     this.activeOption = evt.option?.value;
   }
 
-  displayFn(coding: DemisCoding | undefined): string {
-    if (this.showCode) {
+  displayFn = (coding: DemisCoding | undefined): string => {
+    if (this.showCode()) {
       return coding ? `${coding.display} | ${coding.code}` : '';
     } else {
       return coding ? coding.display : '';
     }
-  }
+  };
 
   // This method is called when the form control value in the parent changes
   // to ensure that the custom control’s UI reflects the updated value.
@@ -142,8 +150,9 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
       return;
     }
 
-    if (this.multi && Array.isArray(obj)) {
-      this.options.forEach(opt => {
+    const multi = this.multi();
+    if (multi && Array.isArray(obj)) {
+      this.options().forEach(opt => {
         opt.selected = !!obj.find(item => item.code === opt.code);
       });
 
@@ -151,7 +160,7 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
       return;
     }
 
-    if (!this.multi && obj.code) {
+    if (!multi && obj.code) {
       this.selectControl.setValue(obj);
       return;
     }
@@ -160,7 +169,7 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   onTouched() {}
 
   markAsTouched() {
-    this.formControl.markAsTouched();
+    this.formControl().markAsTouched();
     this.onTouched();
   }
 
@@ -191,20 +200,20 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   }
 
   onBlur() {
-    if (this.multi) {
+    if (this.multi()) {
       this.selectControl.setValue('');
     }
   }
 
   private populateLatestValidSelectionIfNothingHasBeenSelected() {
-    const currentValueDisplayed = this.formControl.value;
+    const currentValueDisplayed = this.formControl().value;
     if (currentValueDisplayed === '' && this.latestValidSelection) {
       this.selectControl.setValue(this.latestValidSelection);
     }
   }
 
   getCurrentBreadcrumb(): string {
-    return this.formControl.value?.breadcrumb ?? '';
+    return this.formControl().value?.breadcrumb ?? '';
   }
 
   onRemoveSelection(event: MouseEvent) {

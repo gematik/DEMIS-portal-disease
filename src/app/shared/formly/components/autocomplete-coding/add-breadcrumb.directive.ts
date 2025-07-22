@@ -14,24 +14,23 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { ChangeDetectorRef, Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit, Renderer2, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Directive, ElementRef, OnChanges, OnDestroy, OnInit, Renderer2, SimpleChanges, inject, input } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 @Directive({
   selector: '[appAddBreadcrumb]',
+  standalone: false,
 })
 export class AddBreadcrumbDirective implements OnInit, OnDestroy, OnChanges {
-  @Input() currentSelectionBreadcrumb: string | undefined | null = null;
-  @Input() hasError!: boolean;
+  private el = inject(ElementRef);
+  private renderer = inject(Renderer2);
+  private cdr = inject(ChangeDetectorRef);
+
+  readonly currentSelectionBreadcrumb = input<string | undefined | null>(null);
+  readonly hasError = input<boolean>(false);
 
   private subscription: Subscription = new Subscription();
   private breadcrumbDiv: HTMLElement | null = null;
-
-  constructor(
-    private el: ElementRef,
-    private renderer: Renderer2,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnInit() {
     this.updateBreadcrumb();
@@ -51,15 +50,16 @@ export class AddBreadcrumbDirective implements OnInit, OnDestroy, OnChanges {
   private updateBreadcrumb() {
     const parentFormField = this.findParentFormField(this.el.nativeElement);
     if (parentFormField) {
-      if (!this.hasError && this.currentSelectionBreadcrumb) {
+      const currentSelectionBreadcrumb = this.currentSelectionBreadcrumb();
+      if (!this.hasError() && currentSelectionBreadcrumb) {
         if (!this.breadcrumbDiv) {
           this.breadcrumbDiv = this.renderer.createElement('div');
-          const text = this.renderer.createText(this.currentSelectionBreadcrumb);
+          const text = this.renderer.createText(currentSelectionBreadcrumb);
           this.renderer.appendChild(this.breadcrumbDiv, text);
           this.renderer.addClass(this.breadcrumbDiv, 'autocomplete-breadcrumb');
           this.renderer.appendChild(parentFormField, this.breadcrumbDiv);
         } else {
-          this.renderer.setProperty(this.breadcrumbDiv, 'innerText', this.currentSelectionBreadcrumb);
+          this.renderer.setProperty(this.breadcrumbDiv, 'innerText', currentSelectionBreadcrumb);
         }
       } else {
         if (this.breadcrumbDiv) {

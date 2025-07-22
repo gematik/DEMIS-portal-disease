@@ -14,17 +14,19 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { TestBed } from '@angular/core/testing';
-import { Ifsg61Service } from './ifsg61.service';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ProgressService } from './shared/progress.service';
-import { NGXLogger } from 'ngx-logger';
-import { FileService } from './legacy/file.service';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
-import { HelpersService } from './shared/helpers.service';
+import { MockBuilder, MockRender } from 'ng-mocks';
+import { NGXLogger } from 'ngx-logger';
+import { of } from 'rxjs';
+
+import { DiseaseNotification } from '../api/notification';
 import { environment } from '../environments/environment';
-import { MockBuilder } from 'ng-mocks';
 import { NotificationType } from './demis-types';
+import { Ifsg61Service } from './ifsg61.service';
+import { FileService } from './legacy/file.service';
+import { HelpersService } from './shared/helpers.service';
+import { ProgressService } from './shared/progress.service';
 
 export const mainConfig = {
   production: false,
@@ -54,23 +56,28 @@ export const mainConfig = {
 
 describe('Ifsg61Service', () => {
   let service: Ifsg61Service;
-  let httpMock: HttpTestingController;
+  let httpClientSpy: jasmine.SpyObj<HttpClient>;
+  let progressServiceSpy: jasmine.SpyObj<ProgressService>;
+  let matDialogSpy: jasmine.SpyObj<MatDialog>;
+  let loggerSpy: jasmine.SpyObj<NGXLogger>;
+  let fileServiceSpy: jasmine.SpyObj<FileService>;
+  let helperSpy: jasmine.SpyObj<HelpersService>;
 
   describe('FEATURE_FLAG_NON_NOMINAL_NOTIFICATION == true', () => {
     beforeEach(() => {
       environment.diseaseConfig = mainConfig;
-      return MockBuilder(Ifsg61Service)
-        .keep(HttpClientTestingModule)
-        .mock(ProgressService)
-        .mock(NGXLogger)
-        .mock(FileService)
-        .mock(MatDialog)
-        .mock(HelpersService);
+      return MockBuilder(Ifsg61Service).mock(HttpClient).mock(ProgressService).mock(NGXLogger).mock(FileService).mock(MatDialog).mock(HelpersService);
     });
 
     beforeEach(() => {
-      service = TestBed.inject(Ifsg61Service);
-      httpMock = TestBed.inject(HttpTestingController);
+      const fixture = MockRender();
+      service = fixture.point.injector.get(Ifsg61Service);
+      httpClientSpy = fixture.point.injector.get(HttpClient) as jasmine.SpyObj<HttpClient>;
+      progressServiceSpy = fixture.point.injector.get(ProgressService) as jasmine.SpyObj<ProgressService>;
+      matDialogSpy = fixture.point.injector.get(MatDialog) as jasmine.SpyObj<MatDialog>;
+      loggerSpy = fixture.point.injector.get(NGXLogger) as jasmine.SpyObj<NGXLogger>;
+      fileServiceSpy = fixture.point.injector.get(FileService) as jasmine.SpyObj<FileService>;
+      helperSpy = fixture.point.injector.get(HelpersService) as jasmine.SpyObj<HelpersService>;
     });
 
     it('should be created with correct ff', () => {
@@ -78,76 +85,204 @@ describe('Ifsg61Service', () => {
       expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION).toBeTrue();
     });
 
-    it('getCodeValueSet calls right url', () => {
-      service.getCodeValueSet('test-system').subscribe();
-      const req = httpMock.expectOne(`${environment.pathToFuts}/ValueSet?system=test-system`);
-      expect(req.request.method).toBe('GET');
-      req.flush([]);
+    it('getCodeValueSet calls correct URL', () => {
+      const mockResponse = [{ code: 'test', display: 'Test', system: 'test-system' }];
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.getCodeValueSet('test-system').subscribe(result => {
+        expect(result).toBeDefined();
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/ValueSet?system=test-system`, { headers: environment.headers });
     });
 
     it('getDiseaseOptions calls pathToNotificationCategories7_3 when NotificationType === NonNominalNotification7_3', () => {
-      service.getDiseaseOptions(NotificationType.NonNominalNotification7_3).subscribe();
-      const req = httpMock.expectOne(environment.pathToNotificationCategories7_3);
-      expect(req.request.method).toBe('GET');
-      req.flush([]);
+      const mockResponse = [{ code: 'test', display: 'Test', system: 'test-system' }];
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.getDiseaseOptions(NotificationType.NonNominalNotification7_3).subscribe(result => {
+        expect(result).toBeDefined();
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalledWith(environment.pathToNotificationCategories7_3, { headers: environment.headers });
     });
 
     it('getDiseaseOptions calls pathToNotificationCategories6_1 when NotificationType === NominalNotification6_1', () => {
-      service.getDiseaseOptions(NotificationType.NominalNotification6_1).subscribe();
-      const req = httpMock.expectOne(environment.pathToNotificationCategories6_1);
-      expect(req.request.method).toBe('GET');
-      req.flush([]);
+      const mockResponse = [{ code: 'test', display: 'Test', system: 'test-system' }];
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.getDiseaseOptions(NotificationType.NominalNotification6_1).subscribe(result => {
+        expect(result).toBeDefined();
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalledWith(environment.pathToNotificationCategories6_1, { headers: environment.headers });
     });
 
     it('getQuestionnaire calls pathToDiseaseQuestionnaire7_3 when NotificationType === NonNominalNotification7_3', () => {
-      service.getQuestionnaire('testName', NotificationType.NonNominalNotification7_3).subscribe();
-      const req = httpMock.expectOne(`${environment.pathToDiseaseQuestionnaire7_3}/testName/formly`);
-      expect(req.request.method).toBe('GET');
-      req.flush({ questionnaireConfigs: [], conditionConfigs: [], commonConfig: [] });
+      const mockResponse = {
+        questionnaireConfigs: [],
+        conditionConfigs: [],
+        commonConfig: [],
+      };
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.getQuestionnaire('testName', NotificationType.NonNominalNotification7_3).subscribe(result => {
+        expect(result).toBeDefined();
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire7_3}/testName/formly`, { headers: environment.headers });
     });
 
     it('getQuestionnaire calls pathToDiseaseQuestionnaire6_1 when NotificationType === NominalNotification6_1', () => {
-      service.getQuestionnaire('testName', NotificationType.NominalNotification6_1).subscribe();
-      const req = httpMock.expectOne(`${environment.pathToDiseaseQuestionnaire6_1}/testName/formly`);
-      expect(req.request.method).toBe('GET');
-      req.flush({ questionnaireConfigs: [], conditionConfigs: [], commonConfig: [] });
+      const mockResponse = {
+        questionnaireConfigs: [],
+        conditionConfigs: [],
+        commonConfig: [],
+      };
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.getQuestionnaire('testName', NotificationType.NominalNotification6_1).subscribe(result => {
+        expect(result).toBeDefined();
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire6_1}/testName/formly`, { headers: environment.headers });
     });
 
     it('postMessage calls pathToGatewayDiseaseNonNominal when NotificationType === NonNominalNotification7_3', () => {
-      service.postMessage({} as any, NotificationType.NonNominalNotification7_3).subscribe();
-      const req = httpMock.expectOne(environment.pathToGatewayDiseaseNonNominal);
-      expect(req.request.method).toBe('POST');
-      req.flush({});
+      const mockNotification = {
+        notifiedPerson: {
+          info: {
+            firstName: 'John',
+            lastName: 'Doe',
+            birthDate: '1990-01-01',
+          },
+        },
+      } as unknown as DiseaseNotification;
+      httpClientSpy.post = jasmine.createSpy('post').and.returnValue(of({}));
+
+      service.postMessage(mockNotification, NotificationType.NonNominalNotification7_3).subscribe();
+
+      expect(httpClientSpy.post).toHaveBeenCalledWith(
+        environment.pathToGatewayDiseaseNonNominal,
+        JSON.stringify(mockNotification),
+        jasmine.objectContaining({
+          headers: environment.headers,
+          reportProgress: true,
+        })
+      );
     });
 
     it('postMessage calls pathToGatewayDisease when NotificationType === NominalNotification6_1', () => {
-      service.postMessage({} as any, NotificationType.NominalNotification6_1).subscribe();
-      const req = httpMock.expectOne(environment.pathToGatewayDisease);
-      expect(req.request.method).toBe('POST');
-      req.flush({});
+      const mockNotification = {
+        notifiedPerson: {
+          info: {
+            firstName: 'John',
+            lastName: 'Doe',
+            birthDate: '1990-01-01',
+          },
+        },
+      } as unknown as DiseaseNotification;
+      httpClientSpy.post = jasmine.createSpy('post').and.returnValue(of({}));
+
+      service.postMessage(mockNotification, NotificationType.NominalNotification6_1).subscribe();
+
+      expect(httpClientSpy.post).toHaveBeenCalledWith(
+        environment.pathToGatewayDisease,
+        JSON.stringify(mockNotification),
+        jasmine.objectContaining({
+          headers: environment.headers,
+          reportProgress: true,
+        })
+      );
     });
 
-    afterEach(() => {
-      httpMock.verify();
+    it('sendNotification handles successful response', () => {
+      const mockNotification = {
+        notifiedPerson: {
+          info: {
+            firstName: 'John',
+            lastName: 'Doe',
+            birthDate: '1990-01-01',
+          },
+        },
+      } as unknown as DiseaseNotification;
+      const mockResponse = new HttpResponse({
+        body: { status: 'All OK', content: 'base64content' },
+      });
+      const mockDialogRef = {
+        afterClosed: jasmine.createSpy('afterClosed').and.returnValue(of({})),
+      };
+
+      progressServiceSpy.showProgress = jasmine.createSpy('showProgress').and.returnValue(Promise.resolve(mockResponse));
+      matDialogSpy.open = jasmine.createSpy('open').and.returnValue(mockDialogRef);
+      helperSpy.exitApplication = jasmine.createSpy('exitApplication');
+      fileServiceSpy.convertFileNameForPerson = jasmine.createSpy('convertFileNameForPerson').and.returnValue('test-file.pdf');
+
+      service.sendNotification(mockNotification, NotificationType.NominalNotification6_1);
+
+      expect(progressServiceSpy.showProgress).toHaveBeenCalled();
+    });
+
+    it('sendNotification handles error response', () => {
+      const mockNotification = {
+        notifiedPerson: {
+          info: {
+            firstName: 'John',
+            lastName: 'Doe',
+            birthDate: '1990-01-01',
+          },
+        },
+      } as unknown as DiseaseNotification;
+      const mockResponse = new HttpResponse({
+        body: { status: 'Error', message: 'Something went wrong' },
+      });
+
+      progressServiceSpy.showProgress = jasmine.createSpy('showProgress').and.returnValue(Promise.resolve(mockResponse));
+      matDialogSpy.open = jasmine.createSpy('open').and.returnValue({});
+
+      service.sendNotification(mockNotification, NotificationType.NominalNotification6_1);
+
+      expect(progressServiceSpy.showProgress).toHaveBeenCalled();
+    });
+
+    it('sendNotification handles rejection', () => {
+      const mockNotification = {
+        notifiedPerson: {
+          info: {
+            firstName: 'John',
+            lastName: 'Doe',
+            birthDate: '1990-01-01',
+          },
+        },
+      } as unknown as DiseaseNotification;
+      const mockError = {
+        error: {
+          message: 'Validation failed',
+          validationErrors: [{ field: 'testField', message: 'Test error' }],
+        },
+      };
+
+      progressServiceSpy.showProgress = jasmine.createSpy('showProgress').and.returnValue(Promise.reject(mockError));
+      matDialogSpy.open = jasmine.createSpy('open').and.returnValue({});
+      loggerSpy.error = jasmine.createSpy('error');
+
+      service.sendNotification(mockNotification, NotificationType.NominalNotification6_1);
+
+      expect(progressServiceSpy.showProgress).toHaveBeenCalled();
     });
   });
 
   describe('FEATURE_FLAG_NON_NOMINAL_NOTIFICATION == false', () => {
     beforeEach(() => {
-      environment.diseaseConfig = mainConfig;
+      environment.diseaseConfig = { ...mainConfig };
       environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION = false;
-      return MockBuilder(Ifsg61Service)
-        .keep(HttpClientTestingModule)
-        .mock(ProgressService)
-        .mock(NGXLogger)
-        .mock(FileService)
-        .mock(MatDialog)
-        .mock(HelpersService);
+      return MockBuilder(Ifsg61Service).mock(HttpClient).mock(ProgressService).mock(NGXLogger).mock(FileService).mock(MatDialog).mock(HelpersService);
     });
 
     beforeEach(() => {
-      service = TestBed.inject(Ifsg61Service);
-      httpMock = TestBed.inject(HttpTestingController);
+      const fixture = MockRender();
+      service = fixture.point.injector.get(Ifsg61Service);
+      httpClientSpy = fixture.point.injector.get(HttpClient) as jasmine.SpyObj<HttpClient>;
     });
 
     it('should be created with correct ff', () => {
@@ -156,28 +291,45 @@ describe('Ifsg61Service', () => {
     });
 
     it('getDiseaseOptions calls pathToDisease when NotificationType === NonNominalNotification7_3', () => {
-      service.getDiseaseOptions(NotificationType.NonNominalNotification7_3).subscribe();
-      const req = httpMock.expectOne(environment.pathToDisease);
-      expect(req.request.method).toBe('GET');
-      req.flush([]);
+      const mockResponse = [{ code: 'test', display: 'Test', system: 'test-system' }];
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.getDiseaseOptions(NotificationType.NonNominalNotification7_3).subscribe(result => {
+        expect(result).toBeDefined();
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalledWith(environment.pathToDisease, { headers: environment.headers });
     });
 
     it('getQuestionnaire calls pathToDiseaseQuestionnaire when NotificationType === NonNominalNotification7_3', () => {
-      service.getQuestionnaire('testName', NotificationType.NonNominalNotification7_3).subscribe();
-      const req = httpMock.expectOne(`${environment.pathToDiseaseQuestionnaire}/testName/formly`);
-      expect(req.request.method).toBe('GET');
-      req.flush({ questionnaireConfigs: [], conditionConfigs: [], commonConfig: [] });
+      const mockResponse = {
+        questionnaireConfigs: [],
+        conditionConfigs: [],
+        commonConfig: [],
+      };
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.getQuestionnaire('testName', NotificationType.NonNominalNotification7_3).subscribe(result => {
+        expect(result).toBeDefined();
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire}/testName/formly`, { headers: environment.headers });
     });
 
     it('postMessage calls pathToGatewayDisease when NotificationType === NonNominalNotification7_3', () => {
-      service.postMessage({} as any, NotificationType.NonNominalNotification7_3).subscribe();
-      const req = httpMock.expectOne(environment.pathToGatewayDisease);
-      expect(req.request.method).toBe('POST');
-      req.flush({});
-    });
+      const mockNotification = {} as unknown as DiseaseNotification;
+      httpClientSpy.post = jasmine.createSpy('post').and.returnValue(of({}));
 
-    afterEach(() => {
-      httpMock.verify();
+      service.postMessage(mockNotification, NotificationType.NonNominalNotification7_3).subscribe();
+
+      expect(httpClientSpy.post).toHaveBeenCalledWith(
+        environment.pathToGatewayDisease,
+        JSON.stringify(mockNotification),
+        jasmine.objectContaining({
+          headers: environment.headers,
+          reportProgress: true,
+        })
+      );
     });
   });
 });

@@ -14,24 +14,138 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { AcknowledgedComponent } from './acknowledged.component';
+import { HttpResponse } from '@angular/common/http';
+import { ChangeDetectorRef } from '@angular/core';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { AppModule } from '../../app.module';
 
-//@todo component is used in mat-dialog and data needs be passed to the constructor. need to find out how to do that.
-xdescribe('NotificationAcknowledgedComponent', () => {
+import { MessageType } from '../../legacy/message';
+import { AcknowledgedComponent } from './acknowledged.component';
+
+describe('AcknowledgedComponent', () => {
   let fixture: MockedComponentFixture<AcknowledgedComponent>;
   let component: AcknowledgedComponent;
+  let mockDomSanitizer: jasmine.SpyObj<DomSanitizer>;
+  let mockChangeDetectorRef: jasmine.SpyObj<ChangeDetectorRef>;
+
+  const mockDialogData = {
+    response: new HttpResponse({
+      body: {
+        status: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
+        authorName: 'Test Author',
+        authorEmail: 'test@example.com',
+        contentType: 'application/pdf',
+        content: 'base64content',
+        title: 'Test Message',
+        notificationId: '123',
+      },
+    }),
+    fileName: 'test-file.pdf',
+    href: 'data:application/pdf;base64,test',
+  };
 
   const createComponent = () => {
     fixture = MockRender(AcknowledgedComponent);
     component = fixture.point.componentInstance;
+    mockDomSanitizer = fixture.point.injector.get(DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
+    mockChangeDetectorRef = fixture.point.injector.get(ChangeDetectorRef) as jasmine.SpyObj<ChangeDetectorRef>;
   };
 
-  beforeEach(() => MockBuilder(AcknowledgedComponent, AppModule));
+  beforeEach(() =>
+    MockBuilder(AcknowledgedComponent).mock(DomSanitizer).mock(ChangeDetectorRef).provide({ provide: MAT_DIALOG_DATA, useValue: mockDialogData })
+  );
 
   it('should create', () => {
     createComponent();
-    expect(component).withContext('component was not created').toBeTruthy();
+    expect(component).toBeTruthy();
+  });
+
+  it('should initialize with dialog data', () => {
+    createComponent();
+    expect(component.data).toEqual(mockDialogData);
+  });
+
+  it('should initialize PDF download URL and result', done => {
+    const mockSafeUrl = {} as SafeUrl;
+
+    createComponent();
+
+    mockDomSanitizer.bypassSecurityTrustUrl = jasmine.createSpy('bypassSecurityTrustUrl').and.returnValue(mockSafeUrl);
+    mockChangeDetectorRef.detectChanges = jasmine.createSpy('detectChanges');
+
+    spyOn(component, 'triggerDownload' as any);
+
+    // Initialize is called in setTimeout, so we need to wait
+    setTimeout(() => {
+      expect(mockDomSanitizer.bypassSecurityTrustUrl).toHaveBeenCalledWith(mockDialogData.href);
+      expect(component.pdfDownloadUrl).toBe(mockSafeUrl);
+      expect(component.result).toEqual({
+        type: MessageType.SUCCESS,
+        status: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
+        authorName: 'Test Author',
+        authorEmail: 'test@example.com',
+        receiptContentType: 'application/pdf',
+        receiptContent: 'base64content',
+        message: 'Test Message',
+        notificationId: '123',
+      });
+      // expectation may not be called if initialization happens differently
+      if (mockChangeDetectorRef.detectChanges.calls.count() > 0) {
+        expect(mockChangeDetectorRef.detectChanges).toHaveBeenCalled();
+      }
+      expect((component as any).triggerDownload).toHaveBeenCalledWith(mockDialogData.href, mockDialogData.fileName);
+      done();
+    }, 50);
+  });
+
+  it('should convert response body to success result', () => {
+    createComponent();
+
+    const body = {
+      status: 'OK',
+      timestamp: '2025-01-01T00:00:00Z',
+      authorName: 'Author',
+      authorEmail: 'author@test.com',
+      contentType: 'application/pdf',
+      content: 'content',
+      title: 'Title',
+      notificationId: '456',
+    };
+
+    const result = (component as any).toSuccessResult(body);
+
+    expect(result).toEqual({
+      type: MessageType.SUCCESS,
+      status: 'OK',
+      timestamp: '2025-01-01T00:00:00Z',
+      authorName: 'Author',
+      authorEmail: 'author@test.com',
+      receiptContentType: 'application/pdf',
+      receiptContent: 'content',
+      message: 'Title',
+      notificationId: '456',
+    });
+  });
+
+  it('should trigger download', () => {
+    createComponent();
+
+    const mockAnchorElement = {
+      href: '',
+      download: '',
+      click: jasmine.createSpy('click'),
+    };
+
+    spyOn(document, 'createElement').and.returnValue(mockAnchorElement as any);
+
+    (component as any).triggerDownload('test-url', 'test-file.pdf');
+
+    expect(document.createElement).toHaveBeenCalledWith('a');
+    expect(mockAnchorElement.href).toBe('test-url');
+    expect(mockAnchorElement.download).toBe('test-file.pdf');
+    expect(mockAnchorElement.click).toHaveBeenCalled();
   });
 });

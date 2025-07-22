@@ -15,7 +15,7 @@
  */
 
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Observable } from 'rxjs';
 import { map, retry, shareReplay } from 'rxjs/operators';
@@ -43,12 +43,10 @@ export interface ValueSetResponse {
   providedIn: 'root',
 })
 export class ValueSetService {
-  private valueSetCache: Record<string, Observable<ValueSetOption[]>> = {};
+  private http = inject(HttpClient);
+  private logger = inject(NGXLogger);
 
-  constructor(
-    private http: HttpClient,
-    private logger: NGXLogger
-  ) {}
+  private valueSetCache: Record<string, Observable<ValueSetOption[]>> = {};
 
   get(identifier: string): Observable<ValueSetOption[]> {
     let cached = this.valueSetCache[identifier];

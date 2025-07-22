@@ -15,9 +15,10 @@
  */
 
 import { RejectedComponent } from './rejected.component';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
 import { AppComponent } from '../../app.component';
 import { AppModule } from '../../app.module';
+import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 
 describe('NotificationRejectedComponent', () => {
   let fixture: MockedComponentFixture<RejectedComponent>;
@@ -28,7 +29,7 @@ describe('NotificationRejectedComponent', () => {
     component = fixture.point.componentInstance;
   };
 
-  beforeEach(() => MockBuilder(RejectedComponent, AppModule));
+  beforeEach(() => MockBuilder(RejectedComponent).keep(AppModule).provide(MockProvider(MAT_DIALOG_DATA)));
 
   it('should create', () => {
     createComponent();

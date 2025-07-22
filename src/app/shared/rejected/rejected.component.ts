@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,11 +24,10 @@ import { MatButton } from '@angular/material/button';
 
 @Component({
   selector: 'app-notification-rejected',
-  standalone: true,
   imports: [MatExpansionModule, MatIconModule, MatTableModule, MatDialogModule, MatButton],
   templateUrl: './rejected.component.html',
   styleUrl: './rejected.component.scss',
 })
 export class RejectedComponent {
-  constructor(@Inject(MAT_DIALOG_DATA) public result: ErrorResult) {}
+  result = inject<ErrorResult>(MAT_DIALOG_DATA);
 }

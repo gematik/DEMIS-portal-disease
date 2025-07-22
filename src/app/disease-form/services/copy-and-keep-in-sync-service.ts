@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Subscription, take } from 'rxjs';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { AbstractControl, FormGroup } from '@angular/forms';
@@ -32,6 +32,9 @@ import { MessageDialogService } from '@gematik/demis-portal-core-library';
   providedIn: 'root', // Makes it available app-wide
 })
 export class CopyAndKeepInSyncService {
+  private helpers = inject(HelpersService);
+  private messageDialogService = inject(MessageDialogService);
+
   static readonly MESSAGE_COPY_IMPOSSIBLE: string = 'Datenübernahme nicht möglich';
   static readonly MESSAGE_ERROR_COPY_CONTACT: string =
     'Option ist nur verfügbar, wenn der derzeitige Aufenthaltsort der betroffenen Person vom Typ "Adresse der meldenden Einrichtung" ist und die Pflichtfelder befüllt sind.';
@@ -41,10 +44,7 @@ export class CopyAndKeepInSyncService {
 
   private subscriptions: Map<string, Subscription>;
 
-  constructor(
-    private helpers: HelpersService,
-    private messageDialogService: MessageDialogService
-  ) {
+  constructor() {
     this.subscriptions = new Map<string, Subscription>();
   }
 

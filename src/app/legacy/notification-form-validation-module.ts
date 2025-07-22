@@ -206,7 +206,7 @@ export function validateNotBlank(s: string): any {
   return matchesRegExp(/.*\S.*/, s) ? null : setValidationMessage(BLANK_ERROR_MSG);
 }
 
-export function validateEmail(email: string, required: boolean = true): boolean | null {
+export function validateEmail(email: string, required: boolean = true): ValidationErrors | null {
   if (required || email) {
     return validateEmailRegex(email);
   } else {
@@ -214,7 +214,7 @@ export function validateEmail(email: string, required: boolean = true): boolean 
   }
 }
 
-function validateEmailRegex(email: string): boolean {
+function validateEmailRegex(email: string): ValidationErrors | null {
   const emailToValidate = Array.isArray(email) ? email[0].email : email;
   return matchesRegExp(EMAIL_REG_EXP, emailToValidate) ? null : setValidationMessage(EMAIL_ERROR_MSG);
 }

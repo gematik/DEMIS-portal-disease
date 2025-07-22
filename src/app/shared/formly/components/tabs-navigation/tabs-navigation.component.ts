@@ -14,7 +14,18 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, signal, ViewChild, WritableSignal } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  signal,
+  ViewChild,
+  WritableSignal,
+  inject,
+} from '@angular/core';
 import { MatTabGroup } from '@angular/material/tabs';
 import { FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
 import { FieldType } from '@ngx-formly/material';
@@ -30,8 +41,12 @@ import { TabsNavigationService } from './tabs-navigation.service';
   templateUrl: './tabs-navigation.component.html',
   styleUrls: ['./tabs-navigation.component.scss'],
   changeDetection: ChangeDetectionStrategy.Default,
+  standalone: false,
 })
 export class TabsNavigationComponent extends FieldType<FieldTypeConfig> implements OnInit, AfterViewInit, OnDestroy {
+  private tabsNavigationService = inject(TabsNavigationService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   matTabGroup?: MatTabGroup;
   unsubscribed = new Subject<void>();
   tabCount: WritableSignal<number> = signal(0);
@@ -42,13 +57,6 @@ export class TabsNavigationComponent extends FieldType<FieldTypeConfig> implemen
   }
 
   currentIndex: WritableSignal<number | undefined> = signal(this.matTabGroup ? this.matTabGroup.selectedIndex || 0 : undefined);
-
-  constructor(
-    private tabsNavigationService: TabsNavigationService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
-    super();
-  }
 
   isValid(fielFormlyFieldConfig: FormlyFieldConfig): boolean {
     return !!fielFormlyFieldConfig.formControl?.valid;

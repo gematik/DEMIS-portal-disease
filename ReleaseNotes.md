@@ -2,6 +2,12 @@
 
 # Release portal-disease
 
+## Release 1.3.7
+- Upgraded to Angular 19
+
+## Release 1.3.6
+- Added hotfix for submit dialog
+
 ## Release 1.3.5
 - Implementation of §7.3 notification (non nominal)
 

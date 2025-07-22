@@ -21,6 +21,7 @@ import { FieldArrayType, FieldTypeConfig } from '@ngx-formly/core';
   selector: 'app-repeat-section',
   templateUrl: './repeat-section.component.html',
   styleUrls: ['./repeat-section.component.scss'],
+  standalone: false,
 })
 export class RepeatSectionComponent extends FieldArrayType<FieldTypeConfig> implements OnInit {
   itemName: string = '';

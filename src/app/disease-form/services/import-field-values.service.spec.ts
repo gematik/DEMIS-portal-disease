@@ -18,11 +18,12 @@ import { TestBed } from '@angular/core/testing';
 
 import { ImportFieldValuesService } from './import-field-values.service';
 import { MockBuilder } from 'ng-mocks';
+import { NGXLogger } from 'ngx-logger';
 
 describe('ImportFieldValuesService', () => {
   let service: ImportFieldValuesService;
 
-  beforeEach(() => MockBuilder(ImportFieldValuesService));
+  beforeEach(() => MockBuilder(ImportFieldValuesService).mock(NGXLogger));
   beforeEach(() => {
     service = TestBed.inject(ImportFieldValuesService);
   });

@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpEvent, HttpResponse } from '@angular/common/http';
 import { lastValueFrom, Observable, tap } from 'rxjs';
 import { FormlyFieldConfig } from '@ngx-formly/core';
@@ -37,14 +37,12 @@ const PREFFERED_LANGUAGES = [/de-DE/, /de.*/];
   providedIn: 'root',
 })
 export class Ifsg61Service {
-  constructor(
-    private httpClient: HttpClient,
-    private progressService: ProgressService,
-    private logger: NGXLogger,
-    private fileService: FileService,
-    private matDialog: MatDialog,
-    private helper: HelpersService
-  ) {}
+  private httpClient = inject(HttpClient);
+  private progressService = inject(ProgressService);
+  private logger = inject(NGXLogger);
+  private fileService = inject(FileService);
+  private matDialog = inject(MatDialog);
+  private helper = inject(HelpersService);
 
   // TODO würde eigentlich in core-lib reingehören, die gibt es aber nicht mehr
   getCodeValueSet(system: string): Observable<DemisCoding[]> {

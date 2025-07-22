@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core';
+import { computed, Injectable, signal, Signal, WritableSignal, inject } from '@angular/core';
 import { TabsNavigationComponent } from './tabs-navigation.component';
 import { NGXLogger } from 'ngx-logger';
 
@@ -22,9 +22,9 @@ import { NGXLogger } from 'ngx-logger';
   providedIn: 'root',
 })
 export class TabsNavigationService {
-  tnc: WritableSignal<TabsNavigationComponent | undefined> = signal(undefined);
+  private logger = inject(NGXLogger);
 
-  constructor(private logger: NGXLogger) {}
+  tnc: WritableSignal<TabsNavigationComponent | undefined> = signal(undefined);
 
   register(tnc: TabsNavigationComponent) {
     this.tnc.set(tnc);

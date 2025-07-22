@@ -16,7 +16,7 @@
 
 import { CommonModule } from '@angular/common';
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, Inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -25,25 +25,23 @@ import { MessageType, SuccessResult } from '../../legacy/message';
 
 @Component({
   selector: 'app-notification-acknowledged',
-  standalone: true,
   imports: [CommonModule, MatIconModule, MatButtonModule, MatDialogActions, MatDialogClose],
   templateUrl: './acknowledged.component.html',
   styleUrl: './acknowledged.component.scss',
 })
 export class AcknowledgedComponent {
+  private sanitizer = inject(DomSanitizer);
+  data = inject<{
+    response: HttpResponse<any>;
+    fileName: string;
+    href: string;
+  }>(MAT_DIALOG_DATA);
+  private cdr = inject(ChangeDetectorRef);
+
   result: SuccessResult | undefined;
   pdfDownloadUrl: SafeUrl | undefined;
 
-  constructor(
-    private sanitizer: DomSanitizer,
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      response: HttpResponse<any>;
-      fileName: string;
-      href: string;
-    },
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     // Hotfix for DEMIS-3774
     // TODO fix finally with DEMIS-2758
     setTimeout(() => {

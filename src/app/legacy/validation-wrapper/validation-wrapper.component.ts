@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Component, ElementRef, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, ViewContainerRef, inject } from '@angular/core';
 import { FieldWrapper } from '@ngx-formly/core';
 import { FocusMonitor } from '@angular/cdk/a11y';
 import { Subject } from 'rxjs';
@@ -23,17 +23,14 @@ import { Subject } from 'rxjs';
   selector: 'app-validation-wrapper',
   templateUrl: './validation-wrapper.component.html',
   styleUrls: ['./validation-wrapper.component.scss'],
+  standalone: false,
 })
 export class ValidationWrapperComponent extends FieldWrapper implements OnInit {
+  private focusMonitor = inject(FocusMonitor);
+  private elementRef = inject(ElementRef);
+
   stateChanges = new Subject<void>();
   _errorState = false;
-
-  constructor(
-    private focusMonitor: FocusMonitor,
-    private elementRef: ElementRef
-  ) {
-    super();
-  }
 
   // @ts-ignore
   get showError(): boolean {
