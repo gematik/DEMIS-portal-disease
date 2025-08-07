@@ -122,6 +122,10 @@ export class Environment {
   public get pathToFuts(): string {
     return this.config?.pathToFuts;
   }
+
+  public get futsHeaders(): HttpHeaders {
+    return this.headers.set(this.config?.featureFlags?.FEATURE_FLAG_NEW_API_ENDPOINTS ? 'x-fhir-profile' : 'fhirProfile', 'fhir-profile-snapshots');
+  }
 }
 
 export const environment = new Environment();

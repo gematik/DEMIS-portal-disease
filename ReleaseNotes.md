@@ -2,6 +2,11 @@
 
 # Release portal-disease
 
+## Release 1.4.0
+- Switch to errorDialog from CoreLibrary for submit (FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT)
+- add new API endpoints activated by feature flag FEATURE_FLAG_NEW_API_ENDPOINTS
+- add fhir-profile header for futs requests
+
 ## Release 1.3.7
 - Upgraded to Angular 19
 

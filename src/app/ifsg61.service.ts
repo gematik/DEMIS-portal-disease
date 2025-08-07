@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpResponse } from '@angular/common/http';
 import { lastValueFrom, Observable, tap } from 'rxjs';
 import { FormlyFieldConfig } from '@ngx-formly/core';
@@ -30,6 +30,7 @@ import { HelpersService } from './shared/helpers.service';
 import { DiseaseNotification, ValidationError } from '../api/notification';
 import { MessageType } from './legacy/message';
 import { infoOutline } from './disease-form/common/formlyConfigs/formly-base';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
 
 const PREFFERED_LANGUAGES = [/de-DE/, /de.*/];
 
@@ -43,13 +44,14 @@ export class Ifsg61Service {
   private fileService = inject(FileService);
   private matDialog = inject(MatDialog);
   private helper = inject(HelpersService);
+  private readonly messageDialogService = inject(MessageDialogService);
 
   // TODO würde eigentlich in core-lib reingehören, die gibt es aber nicht mehr
   getCodeValueSet(system: string): Observable<DemisCoding[]> {
     const systemEncoded: string = encodeURIComponent(system);
     const url = `${environment.pathToFuts}/ValueSet?system=${systemEncoded}`;
     return this.httpClient.get<DemisCoding[]>(url, {
-      headers: environment.headers,
+      headers: environment.futsHeaders,
     });
   }
 
@@ -58,7 +60,7 @@ export class Ifsg61Service {
     if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
       url = environment.pathToDisease;
     }
-    return this.httpClient.get<DemisCoding[]>(url, { headers: environment.headers });
+    return this.httpClient.get<DemisCoding[]>(url, { headers: environment.futsHeaders });
   }
 
   getQuestionnaire(questionnaireName: string, type: NotificationType): Observable<QuestionnaireDescriptor> {
@@ -68,7 +70,7 @@ export class Ifsg61Service {
     }
     const url = `${basePath}/${questionnaireName}/formly`;
 
-    return this.httpClient.get<QuestionnaireDescriptor>(url, { headers: environment.headers }).pipe(
+    return this.httpClient.get<QuestionnaireDescriptor>(url, { headers: environment.futsHeaders }).pipe(
       tap(questionnaire => {
         updateQuestionnaireConfigsI18n(questionnaire);
         setQuestionnaireFieldDefaults(questionnaire);
@@ -87,7 +89,7 @@ export class Ifsg61Service {
         if (response.body.status === 'All OK') {
           const data = {
             response,
-            fileName: this.fileService.convertFileNameForPerson(ifgs61Message.notifiedPerson.info),
+            fileName: this.fileService.getFileNameByNotificationType(ifgs61Message.notifiedPerson.info, type, response.body?.notificationId),
             href,
           };
           const dialogRef = this.matDialog.open(AcknowledgedComponent, { height: '450px', width: '700px', data });
@@ -102,20 +104,44 @@ export class Ifsg61Service {
       },
       err => {
         this.logger.error('error', err);
-        const data = {
-          ...err.error,
-          ...{
-            type: MessageType.ERROR,
-            message: 'Es ist ein Fehler aufgetreten.',
-            messageDetails: err.error?.message,
-            locations: [],
-            problems: (err.error.validationErrors || []).map((ve: ValidationError) => ({
-              code: ve.field,
-              message: ve.message,
-            })),
-          },
-        };
-        this.matDialog.open(RejectedComponent, { height: '400px', width: '600px', data });
+        if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT) {
+          const errorMessage = this.messageDialogService.extractMessageFromError(err.error);
+          const validationErrors = err.error.validationErrors || [];
+          let errors;
+          if (validationErrors.length > 0) {
+            errors = validationErrors.map((ve: ValidationError) => ({
+              text: ve.message,
+              queryString: ve.message || '',
+            }));
+          } else {
+            errors = [
+              {
+                text: errorMessage,
+                queryString: errorMessage || '',
+              },
+            ];
+          }
+
+          this.messageDialogService.showErrorDialog({
+            errorTitle: 'Meldung konnte nicht zugestellt werden!',
+            errors,
+          });
+        } else {
+          const data = {
+            ...err.error,
+            ...{
+              type: MessageType.ERROR,
+              message: 'Es ist ein Fehler aufgetreten.',
+              messageDetails: err.error?.message,
+              locations: [],
+              problems: (err.error.validationErrors || []).map((ve: ValidationError) => ({
+                code: ve.field,
+                message: ve.message,
+              })),
+            },
+          };
+          this.matDialog.open(RejectedComponent, { height: '400px', width: '600px', data });
+        }
       }
     );
   }

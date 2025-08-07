@@ -17,6 +17,7 @@
 import { Injectable } from '@angular/core';
 import { NotifiedPersonBasicInfo } from '../../api/notification';
 import { transliterator } from './transliterator';
+import { NotificationType } from '../demis-types';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +26,13 @@ export class FileService {
   abbreviation = '.pdf';
 
   constructor() {}
+
+  public getFileNameByNotificationType(person: NotifiedPersonBasicInfo, notificationType: NotificationType, notificationId: string): string {
+    if (notificationType === NotificationType.NonNominalNotification7_3) {
+      return this.convertFileNameForNonNominal(notificationId);
+    }
+    return this.convertFileNameForPerson(person);
+  }
 
   /**
    * @returns current time as YYMMDDhhmmss
@@ -47,8 +55,8 @@ export class FileService {
 
   /**
    *
-   * @param birthDate i.e. 05.11.1998
-   * @returns birthDate as " YYMMDD"
+   * @param birthDate in format "YYYY-MM-DD"
+   * @returns birthDate as "YYMMDD"
    */
   private isoDateToDigits(birthDate?: string): string {
     if (birthDate) {
@@ -61,7 +69,12 @@ export class FileService {
     return transliterator(name);
   }
 
-  public convertFileNameForPerson(person: NotifiedPersonBasicInfo) {
+  private convertFileNameForNonNominal(notificationId: string) {
+    const time = this.getCurrentTime();
+    return `${time}-${notificationId ?? ''}${this.abbreviation}`;
+  }
+
+  private convertFileNameForPerson(person: NotifiedPersonBasicInfo) {
     return (
       this.getCurrentTime() +
       ' ' +
