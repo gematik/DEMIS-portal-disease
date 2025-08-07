@@ -1,6 +1,6 @@
 {
   "name": "portal-disease",
-  "version": "1.0.10-snapshot",
+  "version": "1.3.8-snapshot",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4202",

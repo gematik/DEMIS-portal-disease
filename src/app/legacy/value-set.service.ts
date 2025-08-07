@@ -64,7 +64,7 @@ export class ValueSetService {
   }
 
   private getLocalValueSetRequest(url: string): Observable<ValueSetOption[]> {
-    return this.http.get<ValueSetResponse[]>(url).pipe(
+    return this.http.get<ValueSetResponse[]>(url, { headers: environment.futsHeaders }).pipe(
       map(res =>
         res.map(val => {
           const option: ValueSetOption = {

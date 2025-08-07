@@ -93,7 +93,7 @@ describe('Ifsg61Service', () => {
         expect(result).toBeDefined();
       });
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/ValueSet?system=test-system`, { headers: environment.headers });
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/ValueSet?system=test-system`, { headers: environment.futsHeaders });
     });
 
     it('getDiseaseOptions calls pathToNotificationCategories7_3 when NotificationType === NonNominalNotification7_3', () => {
@@ -104,7 +104,7 @@ describe('Ifsg61Service', () => {
         expect(result).toBeDefined();
       });
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(environment.pathToNotificationCategories7_3, { headers: environment.headers });
+      expect(httpClientSpy.get).toHaveBeenCalledWith(environment.pathToNotificationCategories7_3, { headers: environment.futsHeaders });
     });
 
     it('getDiseaseOptions calls pathToNotificationCategories6_1 when NotificationType === NominalNotification6_1', () => {
@@ -115,7 +115,7 @@ describe('Ifsg61Service', () => {
         expect(result).toBeDefined();
       });
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(environment.pathToNotificationCategories6_1, { headers: environment.headers });
+      expect(httpClientSpy.get).toHaveBeenCalledWith(environment.pathToNotificationCategories6_1, { headers: environment.futsHeaders });
     });
 
     it('getQuestionnaire calls pathToDiseaseQuestionnaire7_3 when NotificationType === NonNominalNotification7_3', () => {
@@ -130,7 +130,7 @@ describe('Ifsg61Service', () => {
         expect(result).toBeDefined();
       });
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire7_3}/testName/formly`, { headers: environment.headers });
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire7_3}/testName/formly`, { headers: environment.futsHeaders });
     });
 
     it('getQuestionnaire calls pathToDiseaseQuestionnaire6_1 when NotificationType === NominalNotification6_1', () => {
@@ -145,7 +145,7 @@ describe('Ifsg61Service', () => {
         expect(result).toBeDefined();
       });
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire6_1}/testName/formly`, { headers: environment.headers });
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire6_1}/testName/formly`, { headers: environment.futsHeaders });
     });
 
     it('postMessage calls pathToGatewayDiseaseNonNominal when NotificationType === NonNominalNotification7_3', () => {
@@ -216,7 +216,7 @@ describe('Ifsg61Service', () => {
       progressServiceSpy.showProgress = jasmine.createSpy('showProgress').and.returnValue(Promise.resolve(mockResponse));
       matDialogSpy.open = jasmine.createSpy('open').and.returnValue(mockDialogRef);
       helperSpy.exitApplication = jasmine.createSpy('exitApplication');
-      fileServiceSpy.convertFileNameForPerson = jasmine.createSpy('convertFileNameForPerson').and.returnValue('test-file.pdf');
+      fileServiceSpy.getFileNameByNotificationType = jasmine.createSpy('getFileNameByNotificationType').and.returnValue('test-file.pdf');
 
       service.sendNotification(mockNotification, NotificationType.NominalNotification6_1);
 
@@ -298,7 +298,7 @@ describe('Ifsg61Service', () => {
         expect(result).toBeDefined();
       });
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(environment.pathToDisease, { headers: environment.headers });
+      expect(httpClientSpy.get).toHaveBeenCalledWith(environment.pathToDisease, { headers: environment.futsHeaders });
     });
 
     it('getQuestionnaire calls pathToDiseaseQuestionnaire when NotificationType === NonNominalNotification7_3', () => {
@@ -313,7 +313,7 @@ describe('Ifsg61Service', () => {
         expect(result).toBeDefined();
       });
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire}/testName/formly`, { headers: environment.headers });
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire}/testName/formly`, { headers: environment.futsHeaders });
     });
 
     it('postMessage calls pathToGatewayDisease when NotificationType === NonNominalNotification7_3', () => {
