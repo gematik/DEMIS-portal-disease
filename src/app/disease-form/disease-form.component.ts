@@ -240,9 +240,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
       });
     }
 
-    if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_HOSP_COPY_CHECKBOXES) {
-      this.copyAndKeepInSyncService.addChangeListenersForCopyCheckboxesInHospitalization(this.diseaseCommonFields, this.form, this.model);
-    }
+    this.copyAndKeepInSyncService.addChangeListenersForCopyCheckboxesInHospitalization(this.diseaseCommonFields, this.form, this.model);
 
     this.fields = [
       {
@@ -317,7 +315,11 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     if (notification.disease?.item) {
       sortItems(notification.disease.item, this.fieldSequence.tabQuestionnaire);
     }
-    this.ifsg61Service.sendNotification(notification, this.notificationType);
+    if (environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_SUBMIT) {
+      this.ifsg61Service.submitNotification(notification, this.notificationType);
+    } else {
+      this.ifsg61Service.sendNotification(notification, this.notificationType);
+    }
   }
 
   private storeFacilityOnUpdate(e: FormlyValueChangeEvent) {

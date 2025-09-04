@@ -95,6 +95,7 @@ describe('DiseaseFormComponent unit tests', () => {
       featureFlags: {
         FEATURE_FLAG_PORTAL_ERROR_DIALOG: true,
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
+        FEATURE_FLAG_PORTAL_SUBMIT: true,
       },
       ngxLoggerConfig: {
         level: 1,
@@ -109,171 +110,224 @@ describe('DiseaseFormComponent unit tests', () => {
     showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
   });
 
-  describe('should display error dialog if error on init', () => {
+  describe('FEATURE_FLAG_PORTAL_SUBMIT == true', () => {
+    describe('test createNotification and submitNotification', () => {
+      it('should call createNotification and submitNotification on submitForm', async () => {
+        // Preparation
+        const processFormService = (component as any)['processFormService'];
+        const ifsg61Service = (component as any)['ifsg61Service'];
+        const notificationMock = { common: { item: [] }, disease: { item: [] } };
+        spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
+        spyOn(ifsg61Service, 'submitNotification');
+
+        (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
+        component.model = { foo: 'bar' };
+        component.notificationType = (component as any).NotificationType.NominalNotification6_1;
+
+        // Excecution
+        await component.submitForm();
+
+        // Assertion
+        expect(processFormService.createNotification).toHaveBeenCalledWith(component.model);
+        expect(ifsg61Service.submitNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
+      });
+
+      it('should call createNotification and submitNotification on submitForm with 7.3 notification type', async () => {
+        // Preparation
+        const processFormService = (component as any)['processFormService'];
+        const ifsg61Service = (component as any)['ifsg61Service'];
+        const notificationMock = { common: { item: [] }, disease: { item: [] } };
+        spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
+        spyOn(ifsg61Service, 'submitNotification');
+
+        (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
+        component.model = { foo: 'bar' };
+        component.notificationType = (component as any).NotificationType.NonNominalNotification7_3;
+
+        // Excecution
+        await component.submitForm();
+
+        // Assertion
+        expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, jasmine.any(Map));
+        expect(ifsg61Service.submitNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
+      });
+    });
+
+    describe('should display error dialog if error on init', () => {
+      beforeEach(() => {
+        helpersServiceSpy.displayError?.calls.reset();
+        helpersServiceSpy.exitApplication?.calls.reset();
+        showErrorDialogSpy.calls.reset();
+      });
+
+      it('error while getCodeValueSet()', fakeAsync(() => {
+        const error = new Error('Etwas ist schief gelaufen');
+        getCodeValueSetSpy.and.returnValue(throwError(() => error));
+
+        component.ngOnInit();
+        expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+          redirectToHome: true,
+          errorTitle: 'Systemfehler',
+          errors: [
+            {
+              text: 'Typen nicht abrufbar',
+            },
+          ],
+        });
+
+        // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
+        environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
+        component.ngOnInit();
+        expect(helpersServiceSpy.displayError).toHaveBeenCalledOnceWith(error, 'Systemfehler: Typen nicht abrufbar');
+        tick(2500);
+        expect(helpersServiceSpy.exitApplication).toHaveBeenCalled();
+        environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
+        //////////////////////////////////////////////////////////////////////////////
+      }));
+
+      it('error while getDiseaseOptions()', fakeAsync(() => {
+        const error = new Error('Etwas ist schief gelaufen');
+        getDiseaseOptionsSpy.and.returnValue(throwError(() => error));
+        component.ngOnInit();
+        expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+          redirectToHome: true,
+          errorTitle: 'Systemfehler',
+          errors: [
+            {
+              text: 'Meldetatbestände nicht verfügbar',
+            },
+          ],
+        });
+
+        // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
+        environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
+        component.ngOnInit();
+        expect(helpersServiceSpy.displayError).toHaveBeenCalledOnceWith(error, 'Systemfehler: Meldetatbestände nicht verfügbar');
+        tick(2500);
+        expect(helpersServiceSpy.exitApplication).toHaveBeenCalled();
+        environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
+        //////////////////////////////////////////////////////////////////////////////
+      }));
+    });
+
+    describe('test transformDate3Input', () => {
+      it('should append period to date of length 2', () => {
+        component.previousDate3InputLength = 1;
+        const transformedDate = component.transformDate3Input('01');
+        expect(transformedDate).toEqual('01.');
+      });
+
+      it('should append period to date of length 5', () => {
+        component.previousDate3InputLength = 4;
+        const transformedDate = component.transformDate3Input('01.01');
+        expect(transformedDate).toEqual('01.01.');
+      });
+    });
+
+    describe('test transformDate123Input', () => {
+      it('should format date of length 6 correctly', () => {
+        const transformedDate = component.transformDate123Input('012024');
+        expect(transformedDate).toEqual('01.2024');
+      });
+
+      it('should format date of length 8 correctly', () => {
+        const transformedDate = component.transformDate123Input('01012024');
+        expect(transformedDate).toEqual('01.01.2024');
+      });
+
+      it('should return the same date if length is not 6 or 8', () => {
+        const transformedDate = component.transformDate123Input('2024');
+        expect(transformedDate).toEqual('2024');
+      });
+    });
+
+    describe('resetDiseaseChoiceDependentInput', () => {
+      it('should reset the model and remove form controls', () => {
+        // Preparation
+        let formBuilder = new FormBuilder();
+        component.form = formBuilder.group({
+          tabDiseaseCondition: formBuilder.group({
+            symptom1: new FormControl('Husten'),
+          }),
+          tabDiseaseCommon: formBuilder.group({
+            allergy1: new FormControl('Pollen'),
+          }),
+          tabQuestionnaire: formBuilder.group({
+            question1: new FormControl('Ja'),
+          }),
+        }) as any;
+        component.model = {
+          tabDiseaseCondition: { symptom1: 'Husten' },
+          tabDiseaseCommon: { allergy1: 'Pollen' },
+          tabQuestionnaire: { question1: 'Ja' },
+        };
+
+        // Execution
+        component.resetDiseaseChoiceDependentInput();
+
+        // Assertions
+        // --> Model should be empty
+        expect(component.model.tabDiseaseCondition).toEqual({});
+        expect(component.model.tabDiseaseCommon).toEqual({});
+        expect(component.model.tabQuestionnaire).toEqual({});
+
+        // --> Controls should be empty
+        const tabDiseaseConditionGroup = component.form.get('tabDiseaseCondition') as unknown as FormGroup;
+        const tabDiseaseCommonGroup = component.form.get('tabDiseaseCommon') as unknown as FormGroup;
+        const tabQuestionnaireGroup = component.form.get('tabQuestionnaire') as unknown as FormGroup;
+        expect(tabDiseaseConditionGroup?.controls).toEqual({});
+        expect(tabDiseaseCommonGroup?.controls).toEqual({});
+        expect(tabQuestionnaireGroup?.controls).toEqual({});
+      });
+    });
+  });
+  describe('FEATURE_FLAG_PORTAL_SUBMIT == false', () => {
     beforeEach(() => {
-      helpersServiceSpy.displayError?.calls.reset();
-      helpersServiceSpy.exitApplication?.calls.reset();
-      showErrorDialogSpy.calls.reset();
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_SUBMIT = false;
     });
+    describe('test createNotification and sendNotification', () => {
+      it('should call createNotification and sendNotification on submitForm', async () => {
+        // Preparation
+        const processFormService = (component as any)['processFormService'];
+        const ifsg61Service = (component as any)['ifsg61Service'];
+        const notificationMock = { common: { item: [] }, disease: { item: [] } };
+        spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
+        spyOn(ifsg61Service, 'sendNotification');
 
-    it('error while getCodeValueSet()', fakeAsync(() => {
-      const error = new Error('Etwas ist schief gelaufen');
-      getCodeValueSetSpy.and.returnValue(throwError(() => error));
+        (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
+        component.model = { foo: 'bar' };
+        component.notificationType = (component as any).NotificationType.NominalNotification6_1;
 
-      component.ngOnInit();
-      expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
-        redirectToHome: true,
-        errorTitle: 'Systemfehler',
-        errors: [
-          {
-            text: 'Typen nicht abrufbar',
-          },
-        ],
+        // Excecution
+        await component.submitForm();
+
+        // Assertion
+        expect(processFormService.createNotification).toHaveBeenCalledWith(component.model);
+        expect(ifsg61Service.sendNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
       });
 
-      // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
-      component.ngOnInit();
-      expect(helpersServiceSpy.displayError).toHaveBeenCalledOnceWith(error, 'Systemfehler: Typen nicht abrufbar');
-      tick(2500);
-      expect(helpersServiceSpy.exitApplication).toHaveBeenCalled();
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
-      //////////////////////////////////////////////////////////////////////////////
-    }));
+      it('should call createNotification and sendNotification on submitForm with 7.3 notification type', async () => {
+        // Preparation
+        const processFormService = (component as any)['processFormService'];
+        const ifsg61Service = (component as any)['ifsg61Service'];
+        const notificationMock = { common: { item: [] }, disease: { item: [] } };
+        spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
+        spyOn(ifsg61Service, 'sendNotification');
 
-    it('error while getDiseaseOptions()', fakeAsync(() => {
-      const error = new Error('Etwas ist schief gelaufen');
-      getDiseaseOptionsSpy.and.returnValue(throwError(() => error));
-      component.ngOnInit();
-      expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
-        redirectToHome: true,
-        errorTitle: 'Systemfehler',
-        errors: [
-          {
-            text: 'Meldetatbestände nicht verfügbar',
-          },
-        ],
+        (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
+        component.model = { foo: 'bar' };
+        component.notificationType = (component as any).NotificationType.NonNominalNotification7_3;
+
+        // Excecution
+        await component.submitForm();
+
+        // Assertion
+        expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, jasmine.any(Map));
+        expect(ifsg61Service.sendNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
       });
-
-      // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
-      component.ngOnInit();
-      expect(helpersServiceSpy.displayError).toHaveBeenCalledOnceWith(error, 'Systemfehler: Meldetatbestände nicht verfügbar');
-      tick(2500);
-      expect(helpersServiceSpy.exitApplication).toHaveBeenCalled();
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
-      //////////////////////////////////////////////////////////////////////////////
-    }));
-  });
-
-  describe('test transformDate3Input', () => {
-    it('should append period to date of length 2', () => {
-      component.previousDate3InputLength = 1;
-      const transformedDate = component.transformDate3Input('01');
-      expect(transformedDate).toEqual('01.');
     });
-
-    it('should append period to date of length 5', () => {
-      component.previousDate3InputLength = 4;
-      const transformedDate = component.transformDate3Input('01.01');
-      expect(transformedDate).toEqual('01.01.');
-    });
-  });
-
-  describe('test transformDate123Input', () => {
-    it('should format date of length 6 correctly', () => {
-      const transformedDate = component.transformDate123Input('012024');
-      expect(transformedDate).toEqual('01.2024');
-    });
-
-    it('should format date of length 8 correctly', () => {
-      const transformedDate = component.transformDate123Input('01012024');
-      expect(transformedDate).toEqual('01.01.2024');
-    });
-
-    it('should return the same date if length is not 6 or 8', () => {
-      const transformedDate = component.transformDate123Input('2024');
-      expect(transformedDate).toEqual('2024');
-    });
-  });
-
-  describe('resetDiseaseChoiceDependentInput', () => {
-    it('should reset the model and remove form controls', () => {
-      // Preparation
-      let formBuilder = new FormBuilder();
-      component.form = formBuilder.group({
-        tabDiseaseCondition: formBuilder.group({
-          symptom1: new FormControl('Husten'),
-        }),
-        tabDiseaseCommon: formBuilder.group({
-          allergy1: new FormControl('Pollen'),
-        }),
-        tabQuestionnaire: formBuilder.group({
-          question1: new FormControl('Ja'),
-        }),
-      }) as any;
-      component.model = {
-        tabDiseaseCondition: { symptom1: 'Husten' },
-        tabDiseaseCommon: { allergy1: 'Pollen' },
-        tabQuestionnaire: { question1: 'Ja' },
-      };
-
-      // Execution
-      component.resetDiseaseChoiceDependentInput();
-
-      // Assertions
-      // --> Model should be empty
-      expect(component.model.tabDiseaseCondition).toEqual({});
-      expect(component.model.tabDiseaseCommon).toEqual({});
-      expect(component.model.tabQuestionnaire).toEqual({});
-
-      // --> Controls should be empty
-      const tabDiseaseConditionGroup = component.form.get('tabDiseaseCondition') as unknown as FormGroup;
-      const tabDiseaseCommonGroup = component.form.get('tabDiseaseCommon') as unknown as FormGroup;
-      const tabQuestionnaireGroup = component.form.get('tabQuestionnaire') as unknown as FormGroup;
-      expect(tabDiseaseConditionGroup?.controls).toEqual({});
-      expect(tabDiseaseCommonGroup?.controls).toEqual({});
-      expect(tabQuestionnaireGroup?.controls).toEqual({});
-    });
-
-    it('should call createNotification and sendNotification on submitForm', async () => {
-      // Preparation
-      const processFormService = (component as any)['processFormService'];
-      const ifsg61Service = (component as any)['ifsg61Service'];
-      const notificationMock = { common: { item: [] }, disease: { item: [] } };
-      spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
-      spyOn(ifsg61Service, 'sendNotification');
-
-      (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
-      component.model = { foo: 'bar' };
-      component.notificationType = (component as any).NotificationType.NominalNotification6_1;
-
-      // Excecution
-      await component.submitForm();
-
-      // Assertion
-      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model);
-      expect(ifsg61Service.sendNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
-    });
-
-    it('should call createNotification and sendNotification on submitForm with 7.3 notification type', async () => {
-      // Preparation
-      const processFormService = (component as any)['processFormService'];
-      const ifsg61Service = (component as any)['ifsg61Service'];
-      const notificationMock = { common: { item: [] }, disease: { item: [] } };
-      spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
-      spyOn(ifsg61Service, 'sendNotification');
-
-      (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
-      component.model = { foo: 'bar' };
-      component.notificationType = (component as any).NotificationType.NonNominalNotification7_3;
-
-      // Excecution
-      await component.submitForm();
-
-      // Assertion
-      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, jasmine.any(Map));
-      expect(ifsg61Service.sendNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
+    afterAll(() => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_SUBMIT = true;
     });
   });
 });

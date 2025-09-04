@@ -22,6 +22,9 @@ import { MatTableModule } from '@angular/material/table';
 import { ErrorResult } from '../../legacy/message';
 import { MatButton } from '@angular/material/button';
 
+/**
+ * @deprecated Not needed anymore, once FEATURE_FLAG_PORTAL_SUBMIT and FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT will be removed
+ */
 @Component({
   selector: 'app-notification-rejected',
   imports: [MatExpansionModule, MatIconModule, MatTableModule, MatDialogModule, MatButton],

@@ -25,6 +25,9 @@ import { Observable } from 'rxjs';
  * 1) has a title and
  * 2) display the percentage from progress$ stream in 'determinate' mode
  */
+/**
+ * @deprecated Not needed anymore, once FEATURE_FLAG_PORTAL_SUBMIT will be removed
+ */
 @Component({
   selector: 'app-super-spinner',
   imports: [MatProgressSpinnerModule, AsyncPipe],

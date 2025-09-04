@@ -14,13 +14,16 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, filter, from, lastValueFrom, Observable, of, tap } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { BehaviorSubject, filter, lastValueFrom, Observable, of, tap } from 'rxjs';
 import { HttpEvent, HttpEventType, HttpProgressEvent, HttpResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { SuperSpinnerComponent } from './super-spinner/super-spinner.component';
 import { map } from 'rxjs/operators';
 
+/**
+ * @deprecated Not needed anymore, once FEATURE_FLAG_PORTAL_SUBMIT will be removed
+ */
 @Injectable({
   providedIn: 'root',
 })

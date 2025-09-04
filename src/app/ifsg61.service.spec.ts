@@ -18,7 +18,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MockBuilder, MockRender } from 'ng-mocks';
 import { NGXLogger } from 'ngx-logger';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { DiseaseNotification } from '../api/notification';
 import { environment } from '../environments/environment';
@@ -27,6 +27,8 @@ import { Ifsg61Service } from './ifsg61.service';
 import { FileService } from './legacy/file.service';
 import { HelpersService } from './shared/helpers.service';
 import { ProgressService } from './shared/progress.service';
+import { EXAMPLE_MSVD, EXAMPLE_MSVD_FEATURE_FLAG_DISEASE_DATEPICKER } from 'src/test/shared/data/test-values';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
 
 export const mainConfig = {
   production: false,
@@ -47,6 +49,7 @@ export const mainConfig = {
   pathToFuts: '/fhir-ui-data-model-translation',
   featureFlags: {
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
+    FEATURE_FLAG_PORTAL_SUBMIT: true,
   },
   ngxLoggerConfig: {
     level: 1,
@@ -62,11 +65,37 @@ describe('Ifsg61Service', () => {
   let loggerSpy: jasmine.SpyObj<NGXLogger>;
   let fileServiceSpy: jasmine.SpyObj<FileService>;
   let helperSpy: jasmine.SpyObj<HelpersService>;
+  let messageDialogServiceSpy: jasmine.SpyObj<MessageDialogService>;
 
   describe('FEATURE_FLAG_NON_NOMINAL_NOTIFICATION == true', () => {
+    // Helper function to find fields with valueDate keys
+    const findValueDateFields = (configs: any[]): any[] => {
+      const fields: any[] = [];
+      const traverse = (fc: any) => {
+        if (typeof fc.key === 'string' && fc.key.endsWith('valueDate')) {
+          fields.push(fc);
+        }
+        if (fc.fieldGroup) {
+          fc.fieldGroup.forEach(traverse);
+        }
+        if (fc.fieldArray) {
+          traverse(fc.fieldArray);
+        }
+      };
+      configs.forEach(traverse);
+      return fields;
+    };
+
     beforeEach(() => {
       environment.diseaseConfig = mainConfig;
-      return MockBuilder(Ifsg61Service).mock(HttpClient).mock(ProgressService).mock(NGXLogger).mock(FileService).mock(MatDialog).mock(HelpersService);
+      return MockBuilder(Ifsg61Service)
+        .mock(HttpClient)
+        .mock(ProgressService)
+        .mock(NGXLogger)
+        .mock(FileService)
+        .mock(MatDialog)
+        .mock(HelpersService)
+        .mock(MessageDialogService);
     });
 
     beforeEach(() => {
@@ -78,6 +107,12 @@ describe('Ifsg61Service', () => {
       loggerSpy = fixture.point.injector.get(NGXLogger) as jasmine.SpyObj<NGXLogger>;
       fileServiceSpy = fixture.point.injector.get(FileService) as jasmine.SpyObj<FileService>;
       helperSpy = fixture.point.injector.get(HelpersService) as jasmine.SpyObj<HelpersService>;
+      messageDialogServiceSpy = fixture.point.injector.get(MessageDialogService) as jasmine.SpyObj<MessageDialogService>;
+      (messageDialogServiceSpy.showSpinnerDialog as any) = jasmine.createSpy('showSpinnerDialog');
+      (messageDialogServiceSpy.closeSpinnerDialog as any) = jasmine.createSpy('closeSpinnerDialog');
+      (messageDialogServiceSpy.showSubmitDialog as any) = jasmine.createSpy('showSubmitDialog');
+      (messageDialogServiceSpy.showErrorDialog as any) = jasmine.createSpy('showErrorDialog');
+      (messageDialogServiceSpy.extractMessageFromError as any) = jasmine.createSpy('extractMessageFromError').and.returnValue('Error');
     });
 
     it('should be created with correct ff', () => {
@@ -146,6 +181,63 @@ describe('Ifsg61Service', () => {
       });
 
       expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire6_1}/testName/formly`, { headers: environment.futsHeaders });
+    });
+
+    it('setFieldDefaults applies correct transformation when FEATURE_FLAG_DISEASE_DATEPICKER is false', () => {
+      // Import test data
+
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_DATEPICKER = false;
+
+      const mockResponse = EXAMPLE_MSVD;
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.getQuestionnaire('testName', NotificationType.NominalNotification6_1).subscribe(result => {
+        const valueDateFields = [
+          ...findValueDateFields(result.questionnaireConfigs),
+          ...findValueDateFields(result.conditionConfigs),
+          ...findValueDateFields(result.commonConfig),
+        ];
+
+        valueDateFields.forEach(field => {
+          expect(field.validators).toEqual({ validation: ['date123'] });
+          expect(field.modelOptions).toEqual({ updateOn: 'blur' });
+          // wrappers can be undefined or ['form-field'] - they are not changed by setFieldDefaults
+          // when FEATURE_FLAG_DISEASE_DATEPICKER is false
+          if (field.wrappers !== undefined) {
+            expect(field.wrappers).toEqual(['form-field']);
+          }
+          expect(field.props?.appearance).toBeUndefined();
+          expect(field.props?.allowedPrecisions).toBeUndefined();
+        });
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalled();
+    });
+
+    it('setFieldDefaults applies correct transformation when FEATURE_FLAG_DISEASE_DATEPICKER is true', () => {
+      // Import test data
+
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_DATEPICKER = true;
+
+      const mockResponse = EXAMPLE_MSVD_FEATURE_FLAG_DISEASE_DATEPICKER;
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.getQuestionnaire('testName', NotificationType.NominalNotification6_1).subscribe(result => {
+        const valueDateFields = [
+          ...findValueDateFields(result.questionnaireConfigs),
+          ...findValueDateFields(result.conditionConfigs),
+          ...findValueDateFields(result.commonConfig),
+        ];
+
+        valueDateFields.forEach(field => {
+          expect(field.wrappers).toEqual([]);
+          expect(field.props?.appearance).toBe('fill');
+          expect(field.props?.allowedPrecisions).toEqual(field.props?.allowedPrecisions || ['day', 'month', 'year']);
+          expect(field.validators).toBeUndefined();
+        });
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalled();
     });
 
     it('postMessage calls pathToGatewayDiseaseNonNominal when NotificationType === NonNominalNotification7_3', () => {
@@ -270,6 +362,134 @@ describe('Ifsg61Service', () => {
 
       expect(progressServiceSpy.showProgress).toHaveBeenCalled();
     });
+
+    it('submitNotification posts to non-nominal url and shows submit dialog on success', () => {
+      const mockNotification = {
+        notifiedPerson: { info: { firstName: 'John', lastName: 'Doe', birthDate: '1990-01-01' } },
+      } as unknown as DiseaseNotification;
+
+      fileServiceSpy.getFileNameByNotificationType = jasmine.createSpy('getFileNameByNotificationType').and.returnValue('test-file.pdf');
+
+      const response = new HttpResponse({
+        body: {
+          authorEmail: 'author@test.de',
+          content: 'base64content',
+          notificationId: 'notif-123',
+          timestamp: 1712345678901,
+        },
+      });
+      httpClientSpy.post = jasmine.createSpy('post').and.returnValue(of(response));
+
+      service.submitNotification(mockNotification, NotificationType.NonNominalNotification7_3);
+
+      expect(messageDialogServiceSpy.showSpinnerDialog).toHaveBeenCalledWith({ message: 'Erkrankungsmeldung wird gesendet' });
+      expect(httpClientSpy.post).toHaveBeenCalledWith(
+        environment.pathToGatewayDiseaseNonNominal,
+        JSON.stringify(mockNotification),
+        jasmine.objectContaining({ headers: environment.headers, observe: 'response' })
+      );
+      expect(fileServiceSpy.getFileNameByNotificationType).toHaveBeenCalledWith(
+        mockNotification.notifiedPerson!.info,
+        NotificationType.NonNominalNotification7_3,
+        'notif-123'
+      );
+
+      const submitArgs = (messageDialogServiceSpy.showSubmitDialog as jasmine.Spy).calls.mostRecent().args[0];
+      expect(submitArgs.authorEmail).toBe('author@test.de');
+      expect(submitArgs.fileName).toBe('test-file.pdf');
+      expect(submitArgs.href).toBe('data:application/actet-stream;base64,base64content');
+      expect(submitArgs.notificationId).toBe('notif-123');
+      expect(submitArgs.timestamp).toBe(1712345678901);
+      expect(messageDialogServiceSpy.closeSpinnerDialog).toHaveBeenCalled();
+    });
+
+    it('submitNotification posts to nominal url and shows submit dialog on success', () => {
+      const mockNotification = {
+        notifiedPerson: { info: { firstName: 'Jane', lastName: 'Doe', birthDate: '1980-02-02' } },
+      } as unknown as DiseaseNotification;
+
+      fileServiceSpy.getFileNameByNotificationType = jasmine.createSpy('getFileNameByNotificationType').and.returnValue('nominal-file.pdf');
+
+      const response = new HttpResponse({
+        body: {
+          authorEmail: 'nominal@test.de',
+          content: 'othercontent',
+          notificationId: 'notif-456',
+          timestamp: 1712345678000,
+        },
+      });
+      httpClientSpy.post = jasmine.createSpy('post').and.returnValue(of(response));
+
+      service.submitNotification(mockNotification, NotificationType.NominalNotification6_1);
+
+      expect(httpClientSpy.post).toHaveBeenCalledWith(
+        environment.pathToGatewayDisease,
+        JSON.stringify(mockNotification),
+        jasmine.objectContaining({ headers: environment.headers, observe: 'response' })
+      );
+
+      const submitArgs = (messageDialogServiceSpy.showSubmitDialog as jasmine.Spy).calls.mostRecent().args[0];
+      expect(submitArgs.fileName).toBe('nominal-file.pdf');
+      expect(submitArgs.href).toBe('data:application/actet-stream;base64,othercontent');
+      expect(messageDialogServiceSpy.closeSpinnerDialog).toHaveBeenCalled();
+    });
+
+    it('submitNotification shows error dialog on error and closes spinner', () => {
+      const mockNotification = { notifiedPerson: { info: {} } } as unknown as DiseaseNotification;
+      const httpError = {
+        error: {
+          message: 'Validation failed',
+          validationErrors: [{ field: 'fieldA', message: 'Field A invalid' }],
+        },
+      };
+
+      httpClientSpy.post = jasmine.createSpy('post').and.returnValue(throwError(() => httpError));
+      loggerSpy.error = jasmine.createSpy('error');
+
+      service.submitNotification(mockNotification, NotificationType.NominalNotification6_1);
+
+      expect(messageDialogServiceSpy.showSpinnerDialog).toHaveBeenCalled();
+      expect(loggerSpy.error).toHaveBeenCalled();
+      expect(messageDialogServiceSpy.showErrorDialog).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          errorTitle: 'Meldung konnte nicht zugestellt werden!',
+          errors: [{ text: 'Field A invalid', queryString: 'Field A invalid' }],
+        })
+      );
+      expect(messageDialogServiceSpy.closeSpinnerDialog).toHaveBeenCalled();
+    });
+
+    it('extractErrorDetails returns mapped validation errors when present', () => {
+      const err = {
+        error: {
+          message: 'Validation failed',
+          validationErrors: [
+            { field: 'fieldA', message: 'Field A invalid' },
+            { field: 'fieldB', message: 'Field B invalid' },
+          ],
+        },
+      };
+
+      const result = (service as any).extractErrorDetails(err);
+
+      expect(messageDialogServiceSpy.extractMessageFromError).toHaveBeenCalledWith(err.error);
+      expect(result).toEqual([
+        { text: 'Field A invalid', queryString: 'Field A invalid' },
+        { text: 'Field B invalid', queryString: 'Field B invalid' },
+      ]);
+    });
+
+    it('extractErrorDetails returns parsed message when no validationErrors are present', () => {
+      const err = { error: { message: 'Generic failure' } };
+      (messageDialogServiceSpy.extractMessageFromError as jasmine.Spy).and.returnValue('Parsed Error');
+
+      const result = (service as any).extractErrorDetails(err);
+
+      expect(messageDialogServiceSpy.extractMessageFromError).toHaveBeenCalledWith(err.error);
+      expect(result).toEqual([{ text: 'Parsed Error', queryString: 'Parsed Error' }]);
+    });
+
+    // ...existing code...
   });
 
   describe('FEATURE_FLAG_NON_NOMINAL_NOTIFICATION == false', () => {

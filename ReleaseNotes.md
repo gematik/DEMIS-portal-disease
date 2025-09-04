@@ -2,6 +2,15 @@
 
 # Release portal-disease
 
+## Release 1.4.1
+- Fix background block for submit dialog
+- Upgraded dependencies
+- Added test:coverage npm script to run a single test run with coverage report
+- Enable quantities for nested questionnaires
+- Used generic datepicker for all date fields (FEATURE_FLAG_DISEASE_DATEPICKER)
+- Remove feature flag FEATURE_FLAG_HOSP_COPY_CHECKBOXES
+- Use submit- and spinner-dialog from Portal-Core (FEATURE_FLAG_PORTAL_SUBMIT)
+
 ## Release 1.4.0
 - Switch to errorDialog from CoreLibrary for submit (FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT)
 - add new API endpoints activated by feature flag FEATURE_FLAG_NEW_API_ENDPOINTS
