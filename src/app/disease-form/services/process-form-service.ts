@@ -20,6 +20,7 @@ import { formatItems } from '../../format-items';
 import { trimStrings } from '@gematik/demis-portal-core-library';
 import { dateStringToIso } from '../../shared/utils';
 import { ExtendedSalutationEnum } from '../../legacy/common-utils';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root', // Makes it available app-wide
@@ -79,7 +80,11 @@ export class ProcessFormService {
     };
 
     const trimmedMessage: DiseaseNotification = trimStrings(message);
-    trimmedMessage.notifiedPerson.info.birthDate = dateStringToIso(trimmedMessage.notifiedPerson.info.birthDate);
+    // TODO: By business logic, we know that notified person is defined at this point. Because of requirements by pathogen in terms of follow up notifications
+    // the data structure is made optional. In order to avoid the conditional here, the data structures should be distinguished in the future.
+    if (trimmedMessage.notifiedPerson && !environment.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
+      trimmedMessage.notifiedPerson.info.birthDate = dateStringToIso(trimmedMessage.notifiedPerson.info.birthDate);
+    }
     return trimmedMessage;
   }
 

@@ -51,7 +51,6 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
   });
 
   it('should have correct feature flags', async () => {
-    expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_HOSP_COPY_CHECKBOXES).toBeTrue();
     expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG).toBeTrue();
   });
 

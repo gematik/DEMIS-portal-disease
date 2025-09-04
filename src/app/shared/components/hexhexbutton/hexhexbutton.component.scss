@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $fuchsia: #ff0081;
 $button-bg: $fuchsia;
 $button-text-color: #fff;
@@ -78,7 +80,7 @@ $baby-blue: #f8faff;
   }
 
   &:active {
-    background-color: darken($button-bg, 5%);
+    background-color: color.adjust($button-bg, $lightness: -5%);
     transform: scale(0.9);
   }
 

@@ -74,14 +74,18 @@ export class FileService {
     return `${time}-${notificationId ?? ''}${this.abbreviation}`;
   }
 
+  // TODO: This method uses little trick in the use with the person properties lastname and firstname.
+  // Because of business logic requirements by pathogen in terms of follow up notifications the persons lastname and firstname
+  // are made optional. In order to avoid tricking the compiler into correct behavior here, the data structures should be
+  // distinguished in the future.
   private convertFileNameForPerson(person: NotifiedPersonBasicInfo) {
     return (
       this.getCurrentTime() +
       ' ' +
-      this.transliterateNameFromUnicodeToAscii(person.lastname) +
+      this.transliterateNameFromUnicodeToAscii(`${person.lastname}`) +
       ', ' +
-      this.transliterateNameFromUnicodeToAscii(person.firstname) +
-      this.isoDateToDigits(person.birthDate) +
+      this.transliterateNameFromUnicodeToAscii(`${person.firstname}`) +
+      this.isoDateToDigits(person?.birthDate) +
       this.abbreviation
     );
   }

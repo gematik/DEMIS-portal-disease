@@ -23,6 +23,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { MessageType, SuccessResult } from '../../legacy/message';
 
+/**
+ * @deprecated Not needed anymore, once FEATURE_FLAG_PORTAL_SUBMIT will be removed
+ */
 @Component({
   selector: 'app-notification-acknowledged',
   imports: [CommonModule, MatIconModule, MatButtonModule, MatDialogActions, MatDialogClose],

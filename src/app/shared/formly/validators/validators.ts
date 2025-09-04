@@ -17,21 +17,33 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 // only the year must be given
+/**
+ * @deprecated Use the new generic datepicker from Portal-Core instead
+ */
 export function Date1Validator(control: AbstractControl): ValidationErrors {
   return !control.value || /^\d{4}$/.test(control.value) ? {} : { date1: true };
 }
 
 // exactly the two date parts (M,J) must be given.
+/**
+ * @deprecated Use the new generic datepicker from Portal-Core instead
+ */
 export function Date2Validator(control: AbstractControl): ValidationErrors {
   return !control.value || /^\d{1,2}\.\d{4}$/.test(control.value) ? {} : { date2: true };
 }
 
 // exactly all three date parts (T,M,J) must be given.
+/**
+ * @deprecated Use the new generic datepicker from Portal-Core instead
+ */
 export function Date3Validator(control: AbstractControl): ValidationErrors {
   return !control.value || /^\d{1,2}\.\d{1,2}\.\d{4}$/.test(control.value) ? {} : { date3: true };
 }
 
 // either of the three formats above can be given
+/**
+ * @deprecated Use the new generic datepicker from Portal-Core instead
+ */
 export function Date123Validator(control: AbstractControl): ValidationErrors {
   return !control.value || /^((\d{1,2}\.)?\d{1,2}\.)?\d{4}$/.test(control.value) ? {} : { date123: true };
 }

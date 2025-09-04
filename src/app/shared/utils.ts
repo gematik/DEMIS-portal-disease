@@ -45,6 +45,8 @@ export function isPromise(val: any | Promise<any>): val is Promise<any> {
  *   "4.2025"     → "2025-04-01"
  *   "2025"       → "2025-01-01"
  *
+ * @deprecated Use the generic Datepicker with its auto conversion from Portal-Core instead
+ *
  *@param s The input date string.
  *@returns An ISO-formatted date string or an empty string.
  */

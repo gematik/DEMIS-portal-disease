@@ -17,6 +17,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ProcessFormService } from './process-form-service';
 import { ExtendedSalutationEnum } from '../../legacy/common-utils';
+import { environment } from 'src/environments/environment';
 
 describe('ProcessFormService', () => {
   let service: ProcessFormService;
@@ -66,7 +67,7 @@ describe('ProcessFormService', () => {
     const result = service.createNotification(model);
     expect(result.status.category).toBe('COVID19');
     expect(result.common).toEqual(undefined);
-    expect(result.notifiedPerson.info.birthDate).toMatch(/^\d{4}-\d{2}-\d{2}/); // ISO-Format
+    expect(result.notifiedPerson?.info.birthDate).toMatch(/^\d{4}-\d{2}-\d{2}/); // ISO-Format
   });
 
   it('addAddressType should add type and institutionName', () => {
@@ -96,5 +97,199 @@ describe('ProcessFormService', () => {
     const result = (service as any).answer(condition, 'test', 'valueString');
     expect(result).toEqual(['a', 'b']);
     expect((service as any).answer(undefined, 'test', 'valueString')).toBeUndefined();
+  });
+
+  describe('birthDate handling with FEATURE_FLAG_DISEASE_DATEPICKER', () => {
+    it('should preserve ISO format birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is active', () => {
+      // Spy auf environment.featureFlags
+      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: true });
+
+      const model: any = {
+        tabDiseaseChoice: {
+          diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
+          clinicalStatus: { answer: { valueString: 'active' } },
+          statusNoteGroup: {
+            statusNote: { answer: { valueString: 'note' } },
+            initialNotificationId: { answer: { valueString: 'initId' } },
+          },
+        },
+        tabNotifier: {
+          address: { street: 'Teststr. 1' },
+          contact: { salutation: ExtendedSalutationEnum.Mr },
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+          facilityInfo: { organizationType: { answer: { valueCoding: { code: 'hospital' } } } },
+          oneTimeCode: '1234',
+        },
+        tabPatient: {
+          info: { birthDate: '2000-01-01' }, // Already in ISO format
+          currentAddressType: 'primaryAsCurrent',
+          residenceAddress: { city: 'Berlin' },
+          currentAddress: { city: 'Berlin' },
+          currentAddressInstitutionName: 'Klinik',
+          residenceAddressType: 'home',
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+        },
+        tabDiseaseCondition: {},
+        tabDiseaseCommon: undefined,
+        tabQuestionnaire: [],
+      };
+
+      const result = service.createNotification(model);
+      expect(result.notifiedPerson?.info.birthDate).toBe('2000-01-01');
+    });
+
+    it('should preserve year-only ISO format birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is active', () => {
+      // Spy auf environment.featureFlags
+      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: true });
+
+      const model: any = {
+        tabDiseaseChoice: {
+          diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
+          clinicalStatus: { answer: { valueString: 'active' } },
+          statusNoteGroup: {
+            statusNote: { answer: { valueString: 'note' } },
+            initialNotificationId: { answer: { valueString: 'initId' } },
+          },
+        },
+        tabNotifier: {
+          address: { street: 'Teststr. 1' },
+          contact: { salutation: ExtendedSalutationEnum.Mr },
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+          facilityInfo: { organizationType: { answer: { valueCoding: { code: 'hospital' } } } },
+          oneTimeCode: '1234',
+        },
+        tabPatient: {
+          info: { birthDate: '2000' }, // Year-only ISO format
+          currentAddressType: 'primaryAsCurrent',
+          residenceAddress: { city: 'Berlin' },
+          currentAddress: { city: 'Berlin' },
+          currentAddressInstitutionName: 'Klinik',
+          residenceAddressType: 'home',
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+        },
+        tabDiseaseCondition: {},
+        tabDiseaseCommon: undefined,
+        tabQuestionnaire: [],
+      };
+
+      const result = service.createNotification(model);
+      expect(result.notifiedPerson?.info.birthDate).toBe('2000');
+    });
+
+    it('should preserve year-month ISO format birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is active', () => {
+      // Spy auf environment.featureFlags
+      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: true });
+
+      const model: any = {
+        tabDiseaseChoice: {
+          diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
+          clinicalStatus: { answer: { valueString: 'active' } },
+          statusNoteGroup: {
+            statusNote: { answer: { valueString: 'note' } },
+            initialNotificationId: { answer: { valueString: 'initId' } },
+          },
+        },
+        tabNotifier: {
+          address: { street: 'Teststr. 1' },
+          contact: { salutation: ExtendedSalutationEnum.Mr },
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+          facilityInfo: { organizationType: { answer: { valueCoding: { code: 'hospital' } } } },
+          oneTimeCode: '1234',
+        },
+        tabPatient: {
+          info: { birthDate: '2000-01' }, // Year-month ISO format
+          currentAddressType: 'primaryAsCurrent',
+          residenceAddress: { city: 'Berlin' },
+          currentAddress: { city: 'Berlin' },
+          currentAddressInstitutionName: 'Klinik',
+          residenceAddressType: 'home',
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+        },
+        tabDiseaseCondition: {},
+        tabDiseaseCommon: undefined,
+        tabQuestionnaire: [],
+      };
+
+      const result = service.createNotification(model);
+      expect(result.notifiedPerson?.info.birthDate).toBe('2000-01');
+    });
+
+    it('should convert German format birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is inactive', () => {
+      // Spy auf environment.featureFlags
+      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: false });
+
+      const model: any = {
+        tabDiseaseChoice: {
+          diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
+          clinicalStatus: { answer: { valueString: 'active' } },
+          statusNoteGroup: {
+            statusNote: { answer: { valueString: 'note' } },
+            initialNotificationId: { answer: { valueString: 'initId' } },
+          },
+        },
+        tabNotifier: {
+          address: { street: 'Teststr. 1' },
+          contact: { salutation: ExtendedSalutationEnum.Mr },
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+          facilityInfo: { organizationType: { answer: { valueCoding: { code: 'hospital' } } } },
+          oneTimeCode: '1234',
+        },
+        tabPatient: {
+          info: { birthDate: '01.01.2000' }, // German format
+          currentAddressType: 'primaryAsCurrent',
+          residenceAddress: { city: 'Berlin' },
+          currentAddress: { city: 'Berlin' },
+          currentAddressInstitutionName: 'Klinik',
+          residenceAddressType: 'home',
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+        },
+        tabDiseaseCondition: {},
+        tabDiseaseCommon: undefined,
+        tabQuestionnaire: [],
+      };
+
+      const result = service.createNotification(model);
+      expect(result.notifiedPerson?.info.birthDate).toBe('2000-01-01');
+    });
+
+    it('should not process birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is inactive and birthDate is already in ISO format', () => {
+      // Spy auf environment.featureFlags
+      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: false });
+
+      const model: any = {
+        tabDiseaseChoice: {
+          diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
+          clinicalStatus: { answer: { valueString: 'active' } },
+          statusNoteGroup: {
+            statusNote: { answer: { valueString: 'note' } },
+            initialNotificationId: { answer: { valueString: 'initId' } },
+          },
+        },
+        tabNotifier: {
+          address: { street: 'Teststr. 1' },
+          contact: { salutation: ExtendedSalutationEnum.Mr },
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+          facilityInfo: { organizationType: { answer: { valueCoding: { code: 'hospital' } } } },
+          oneTimeCode: '1234',
+        },
+        tabPatient: {
+          info: { birthDate: '2000-01-01' }, // Already in ISO format
+          currentAddressType: 'primaryAsCurrent',
+          residenceAddress: { city: 'Berlin' },
+          currentAddress: { city: 'Berlin' },
+          currentAddressInstitutionName: 'Klinik',
+          residenceAddressType: 'home',
+          contacts: { emailAddresses: [], phoneNumbers: [] },
+        },
+        tabDiseaseCondition: {},
+        tabDiseaseCommon: undefined,
+        tabQuestionnaire: [],
+      };
+
+      const result = service.createNotification(model);
+      // Da dateStringToIso bei bereits ISO-formatierten Daten einen leeren String zurückgibt,
+      // erwarten wir hier einen leeren String (was das Problem ist, das behoben wurde)
+      expect(result.notifiedPerson?.info.birthDate).toBe('');
+    });
   });
 });

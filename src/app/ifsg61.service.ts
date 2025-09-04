@@ -16,7 +16,7 @@
 
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpEvent, HttpResponse } from '@angular/common/http';
-import { lastValueFrom, Observable, tap } from 'rxjs';
+import { finalize, lastValueFrom, Observable, tap } from 'rxjs';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { environment } from '../environments/environment';
 import { DemisCoding, NotificationType, QuestionnaireDescriptor } from './demis-types';
@@ -30,7 +30,7 @@ import { HelpersService } from './shared/helpers.service';
 import { DiseaseNotification, ValidationError } from '../api/notification';
 import { MessageType } from './legacy/message';
 import { infoOutline } from './disease-form/common/formlyConfigs/formly-base';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { MessageDialogService, SubmitDialogProps } from '@gematik/demis-portal-core-library';
 
 const PREFFERED_LANGUAGES = [/de-DE/, /de.*/];
 
@@ -38,12 +38,12 @@ const PREFFERED_LANGUAGES = [/de-DE/, /de.*/];
   providedIn: 'root',
 })
 export class Ifsg61Service {
-  private httpClient = inject(HttpClient);
-  private progressService = inject(ProgressService);
-  private logger = inject(NGXLogger);
-  private fileService = inject(FileService);
-  private matDialog = inject(MatDialog);
-  private helper = inject(HelpersService);
+  private readonly httpClient = inject(HttpClient);
+  private readonly progressService = inject(ProgressService);
+  private readonly logger = inject(NGXLogger);
+  private readonly fileService = inject(FileService);
+  private readonly matDialog = inject(MatDialog);
+  private readonly helper = inject(HelpersService);
   private readonly messageDialogService = inject(MessageDialogService);
 
   // TODO würde eigentlich in core-lib reingehören, die gibt es aber nicht mehr
@@ -78,7 +78,60 @@ export class Ifsg61Service {
       })
     );
   }
+  submitNotification(notification: DiseaseNotification, notificationType: NotificationType) {
+    this.messageDialogService.showSpinnerDialog({ message: 'Erkrankungsmeldung wird gesendet' });
+    let fullUrl = this.getFullUrl(notificationType);
 
+    this.httpClient
+      .post(fullUrl, JSON.stringify(notification), {
+        headers: environment.headers,
+        observe: 'response',
+      })
+      .pipe(
+        finalize(() => {
+          this.messageDialogService.closeSpinnerDialog();
+        })
+      )
+      .subscribe({
+        next: (response: HttpResponse<any>) => {
+          const submitDialogData = this.createSubmitDialogData(response, notification, notificationType);
+          this.messageDialogService.showSubmitDialog(submitDialogData);
+        },
+        error: err => {
+          this.logger.error('error', err);
+          const errors = this.extractErrorDetails(err);
+          this.messageDialogService.showErrorDialog({
+            errorTitle: 'Meldung konnte nicht zugestellt werden!',
+            errors,
+          });
+        },
+      });
+  }
+
+  private getFullUrl(notificationType: NotificationType): string {
+    let fullUrl =
+      notificationType === NotificationType.NonNominalNotification7_3 ? environment.pathToGatewayDiseaseNonNominal : environment.pathToGatewayDisease;
+    if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
+      fullUrl = environment.pathToGatewayDisease;
+    }
+    return fullUrl;
+  }
+
+  private createSubmitDialogData(response: HttpResponse<any>, notification: DiseaseNotification, notificationType: NotificationType): SubmitDialogProps {
+    const content = encodeURIComponent(response.body.content);
+    const href = 'data:application/actet-stream;base64,' + content;
+    return {
+      authorEmail: response.body.authorEmail,
+      fileName: this.fileService.getFileNameByNotificationType(notification.notifiedPerson!.info, notificationType, response.body?.notificationId),
+      href: href,
+      notificationId: response.body.notificationId,
+      timestamp: response.body.timestamp,
+    };
+  }
+
+  /**
+   * @deprecated Use {@link submitNotification} instead, once FEATURE_FLAG_PORTAL_SUBMIT will be removed
+   */
   sendNotification(ifgs61Message: DiseaseNotification, type: NotificationType) {
     const post$ = this.postMessage(ifgs61Message, type);
     this.progressService.showProgress(post$, 'Erkrankungsmeldung wird gesendet').then(
@@ -89,10 +142,18 @@ export class Ifsg61Service {
         if (response.body.status === 'All OK') {
           const data = {
             response,
-            fileName: this.fileService.getFileNameByNotificationType(ifgs61Message.notifiedPerson.info, type, response.body?.notificationId),
+            // TODO: We can safely use the bang operator here, because we know, that there always will be a notified person at this point.
+            // The data structure is optional though, because of special business logic requirements by pathogen in terms of follow up notifications.
+            // It is preferable to distinguish these data structures in the future, to avoid tricking the compiler into correct behavior here.
+            fileName: this.fileService.getFileNameByNotificationType(ifgs61Message.notifiedPerson!.info, type, response.body?.notificationId),
             href,
           };
-          const dialogRef = this.matDialog.open(AcknowledgedComponent, { height: '450px', width: '700px', data });
+          const dialogRef = this.matDialog.open(AcknowledgedComponent, {
+            disableClose: true,
+            height: '450px',
+            width: '700px',
+            data,
+          });
           lastValueFrom(dialogRef.afterClosed()).then(
             _ => this.helper.exitApplication(),
             _ => this.helper.exitApplication()
@@ -105,23 +166,7 @@ export class Ifsg61Service {
       err => {
         this.logger.error('error', err);
         if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT) {
-          const errorMessage = this.messageDialogService.extractMessageFromError(err.error);
-          const validationErrors = err.error.validationErrors || [];
-          let errors;
-          if (validationErrors.length > 0) {
-            errors = validationErrors.map((ve: ValidationError) => ({
-              text: ve.message,
-              queryString: ve.message || '',
-            }));
-          } else {
-            errors = [
-              {
-                text: errorMessage,
-                queryString: errorMessage || '',
-              },
-            ];
-          }
-
+          const errors = this.extractErrorDetails(err);
           this.messageDialogService.showErrorDialog({
             errorTitle: 'Meldung konnte nicht zugestellt werden!',
             errors,
@@ -146,6 +191,9 @@ export class Ifsg61Service {
     );
   }
 
+  /**
+   * @deprecated Use {@link submitNotification} instead, once FEATURE_FLAG_PORTAL_SUBMIT will be removed
+   */
   postMessage(ifgs61Message: DiseaseNotification, type: NotificationType): Observable<HttpEvent<Object>> {
     let fullUrl = type === NotificationType.NonNominalNotification7_3 ? environment.pathToGatewayDiseaseNonNominal : environment.pathToGatewayDisease;
     if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
@@ -156,6 +204,25 @@ export class Ifsg61Service {
       reportProgress: true,
       observe: 'events',
     });
+  }
+
+  private extractErrorDetails(err: any): { text: string; queryString: string }[] {
+    const response = err?.error ?? err;
+    const errorMessage = this.messageDialogService.extractMessageFromError(response);
+    const validationErrors = response?.validationErrors || [];
+    if (validationErrors.length > 0) {
+      return validationErrors.map((ve: ValidationError) => ({
+        text: ve.message,
+        queryString: ve.message || '',
+      }));
+    } else {
+      return [
+        {
+          text: errorMessage,
+          queryString: errorMessage || '',
+        },
+      ];
+    }
   }
 }
 
@@ -220,10 +287,26 @@ function setFieldDefaults(configs: FormlyFieldConfig[]) {
     // Whenever the BE delivers, remove the next three lines of code
     // For the backend, providing Regexps seems more appropriate
     if (typeof fc.key === 'string' && fc.key.endsWith('valueDate')) {
-      fc.validators = { validation: ['date123'] };
-      fc.modelOptions = {
-        updateOn: 'blur',
-      };
+      if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
+        fc.wrappers = [];
+        fc.props = {
+          ...fc.props,
+          appearance: 'fill', // TODO: Should not be necessary and be controlled by the form-field wrapper itself. Will be fixed with DEMIS-4007
+          allowedPrecisions: fc.props?.['allowedPrecisions'] ? fc.props['allowedPrecisions'] : ['day', 'month', 'year'],
+        };
+        // TODO: Remove this workaround in DEMIS-4098
+        if (fc.props['minDate']) {
+          delete fc.props['minDate'];
+        }
+        if (fc.props['maxDate']) {
+          delete fc.props['maxDate'];
+        }
+      } else {
+        fc.modelOptions = {
+          updateOn: 'blur',
+        };
+        fc.validators = { validation: ['date123'] };
+      }
     }
 
     if (fc.type === 'input' && fc.defaultValue === undefined) {

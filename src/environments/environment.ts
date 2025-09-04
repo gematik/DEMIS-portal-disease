@@ -126,6 +126,10 @@ export class Environment {
   public get futsHeaders(): HttpHeaders {
     return this.headers.set(this.config?.featureFlags?.FEATURE_FLAG_NEW_API_ENDPOINTS ? 'x-fhir-profile' : 'fhirProfile', 'fhir-profile-snapshots');
   }
+
+  public get featureFlags(): any {
+    return this.config?.featureFlags;
+  }
 }
 
 export const environment = new Environment();

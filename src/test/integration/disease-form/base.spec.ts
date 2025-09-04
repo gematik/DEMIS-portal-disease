@@ -67,12 +67,12 @@ export const mainConfig = {
   },
   pathToFuts: '/fhir-ui-data-model-translation',
   featureFlags: {
-    FEATURE_FLAG_HOSP_COPY_CHECKBOXES: true,
     FEATURE_FLAG_PORTAL_ERROR_DIALOG: true,
     FEATURE_FLAG_PORTAL_REPEAT: true,
     FEATURE_FLAG_PORTAL_PASTEBOX: true,
     FEATURE_FLAG_OUTLINE_DESIGN: true,
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
+    FEATURE_FLAG_DISEASE_DATEPICKER: false,
   },
   ngxLoggerConfig: {
     level: 1,

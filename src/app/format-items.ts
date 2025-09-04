@@ -72,63 +72,71 @@ function handleQuantityField(key: string, body: any, quantityFields?: Map<string
   return undefined;
 }
 
-export function formatItems(model: any, quantityFields?: Map<string, Quantity>): QuestionnaireResponseItem[] {
-  if (!model) throw new Error(model);
+function createItemFromEntry(entry: [string, any], quantityFields?: Map<string, Quantity>): QuestionnaireResponseItem {
+  const key: string = entry[0];
+  const body: any = entry[1];
 
-  const items: QuestionnaireResponseItem[] = Object.entries(model).map(entry => {
-    const key: string = entry[0];
-    const body: any = entry[1];
+  if (key.startsWith('value')) {
+    // @todo check why conversion to unknown is needed after using generated api
+    return Object.fromEntries([entry]) as unknown as QuestionnaireResponseItem;
+  }
 
-    if (key.startsWith('value')) {
-      //@todo check why conversion to unknown is needed after using generated api
-      return Object.fromEntries([entry]) as unknown as QuestionnaireResponseItem;
+  // Handle boolean directly
+  if (typeof body === 'boolean') {
+    return { linkId: key, answer: [{ valueBoolean: body }] };
+  }
+
+  // Handle quantity field
+  const quantityItem = handleQuantityField(key, body, quantityFields);
+  if (quantityItem) {
+    return quantityItem;
+  }
+
+  // Create standard item
+  const item: QuestionnaireResponseItem = { linkId: key };
+
+  // If body is an array with answer
+  if (Array.isArray(body.answer)) {
+    if (body.answer.length > 0) {
+      item.answer = body.answer.map((x: any) => transformAnswer(x, quantityFields));
     }
-
-    const item: QuestionnaireResponseItem = { linkId: key };
-
-    if (typeof body === 'boolean') {
-      item.answer = [{ valueBoolean: body }];
-      return item;
+    const children = transformChildren(body, quantityFields);
+    if (children.length > 0) {
+      item.item = children;
     }
-
-    const quantityItem = handleQuantityField(key, body, quantityFields);
-    if (quantityItem) {
-      return quantityItem;
-    }
-
-    if (Array.isArray(body.answer)) {
-      if (body.answer.length > 0) {
-        item.answer = body.answer.map((x: any) => transformAnswer(x));
-      }
-      const items = transformChildren(body);
-      if (items.length > 0) {
-        item.item = items;
-      }
-    } else {
-      if (body.answer) {
-        let answer = transformAnswer(body.answer);
-        item.answer = Array.isArray(answer) ? answer : [answer];
-      }
-      if (Array.isArray(body)) {
-        const items = body.flatMap(x => transformChildren(x));
-        if (items.length > 0) {
-          item.item = items;
-        }
-      } else {
-        const items = transformChildren(body);
-        if (items.length > 0) {
-          item.item = items;
-        }
-      }
-    }
-
     return item;
-  });
+  }
 
-  return items;
+  // If body is an object with answer
+  if (body.answer) {
+    let answer = transformAnswer(body.answer, quantityFields);
+    item.answer = Array.isArray(answer) ? answer : [answer];
+  }
+
+  // If body is an array (but not an answer array)
+  if (Array.isArray(body)) {
+    const children = body.flatMap(x => transformChildren(x, quantityFields));
+    if (children.length > 0) {
+      item.item = children;
+    }
+    return item;
+  }
+
+  // Process other children
+  const children = transformChildren(body, quantityFields);
+  if (children.length > 0) {
+    item.item = children;
+  }
+
+  return item;
 }
 
-function transformAnswer(answer: any): QuestionnaireResponseAnswer {
+export function formatItems(model: any, quantityFields?: Map<string, Quantity>): QuestionnaireResponseItem[] {
+  if (!model) throw new Error(model);
+  return Object.entries(model).map(entry => createItemFromEntry(entry, quantityFields));
+}
+
+function transformAnswer(answer: any, quantityFields?: Map<string, Quantity>): QuestionnaireResponseAnswer {
   //handle multi-select answers
   if (answer && answer.hasOwnProperty('valueCoding') && Array.isArray(answer.valueCoding)) {
     answer = answer.valueCoding.map((v: any) => {
@@ -146,7 +154,7 @@ function transformAnswer(answer: any): QuestionnaireResponseAnswer {
   entries.filter(([k, v]) => k.startsWith('value')).forEach(([k, v]) => (answer1[k] = v));
   const itemEntries = entries.filter(([k, v]) => !k.startsWith('value'));
   if (itemEntries.length > 0) {
-    const items = formatItems(Object.fromEntries(itemEntries)); //.filter(item => item.item || item.answer)
+    const items = formatItems(Object.fromEntries(itemEntries), quantityFields); //.filter(item => item.item || item.answer)
     if (items.length > 0) {
       answer1.item = items;
     }
@@ -158,10 +166,10 @@ function transformAnswer(answer: any): QuestionnaireResponseAnswer {
   return answer1;
 }
 
-function transformChildren(body: any): QuestionnaireResponseItem[] {
+function transformChildren(body: any, quantityFields?: Map<string, Quantity>): QuestionnaireResponseItem[] {
   const itemEntries = Object.entries(body).filter(([k, v]) => !k.startsWith('answer'));
   if (itemEntries.length > 0) {
-    return formatItems(Object.fromEntries(itemEntries));
+    return formatItems(Object.fromEntries(itemEntries), quantityFields);
   } else {
     return [];
   }
