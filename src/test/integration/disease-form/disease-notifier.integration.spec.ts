@@ -44,10 +44,6 @@ describe('DiseaseFormComponent integration tests for Notifier Tab', () => {
     expect(component).withContext('DiseaseFormComponent could be created').toBeTruthy();
   });
 
-  it('should have correct feature flag', async () => {
-    expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_REPEAT).toBeTrue();
-  });
-
   describe('contacts works as expected', async () => {
     let getPhoneFieldsCount: () => Promise<number>;
     let getEmailFieldsCount: () => Promise<number>;

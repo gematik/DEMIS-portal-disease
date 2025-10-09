@@ -315,6 +315,10 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     if (notification.disease?.item) {
       sortItems(notification.disease.item, this.fieldSequence.tabQuestionnaire);
     }
+
+    //DEMIS-4242, fixes issue where change detection didn't work for 7.3 notifications
+    this.changeDetector.detectChanges();
+
     if (environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_SUBMIT) {
       this.ifsg61Service.submitNotification(notification, this.notificationType);
     } else {

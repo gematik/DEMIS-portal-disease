@@ -14,7 +14,7 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { getCheckBox, getInput, getRadioButton, getRadioGroup, selectRadioOption, getAutocomplete, getTabGroup } from '../../shared/material-harness-utils';
+import { getAutocomplete, getCheckBox, getInput, getRadioButton, getRadioGroup, getTabGroup, selectRadioOption } from '../../shared/material-harness-utils';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { FIELD_CURRENT_ADDRESS_TYPE } from '../../shared/test-constants';
 import { AddressType } from '../../../api/notification';
@@ -200,29 +200,29 @@ export async function fillNotifierContact(loader: HarnessLoader, contact = NOTIF
   await setInputFieldValues(loader, contact);
 }
 
-function getPageByStepNumber(pageNumber: number) {
-  switch (pageNumber) {
-    case 1:
-      return 'Meldende Person';
-    case 2:
-      return 'Betroffene Person';
-    case 3:
-      return 'Meldetatbestand';
-    case 4:
-      return 'Angaben zu Symptomen';
-    case 5:
-      return 'Klinische und epidemiologische Angaben';
-    case 6:
-      return 'Spezifische Angaben';
-    default:
-      return 'Meldetatbestand';
-  }
+function getPageByStepNumber(pageNumber: number, nonNominal = false): string {
+  const pagesNominal = [
+    'Meldende Person',
+    'Betroffene Person',
+    'Meldetatbestand',
+    'Angaben zu Symptomen',
+    'Klinische und epidemiologische Angaben',
+    'Spezifische Angaben',
+  ];
+
+  const pagesNonNominal = ['Meldende Person', 'Betroffene Person', 'Meldetatbestand', 'Angaben zu Symptomen', 'Spezifische Angaben'];
+
+  const pages = nonNominal ? pagesNonNominal : pagesNominal;
+
+  // Steps sind 1-basiert → Index = step - 1
+  const index = pageNumber - 1;
+  return pages[index] ?? 'Meldetatbestand';
 }
 
-export async function selectTab(fixture: MockedComponentFixture, loader: HarnessLoader, pageNumber: number) {
+export async function selectTab(fixture: MockedComponentFixture, loader: HarnessLoader, pageNumber: number, isNonNominal = false) {
   const tabGroup = await loader.getHarness(MatTabGroupHarness);
-  await tabGroup.selectTab({ label: getPageByStepNumber(pageNumber) });
-  expect(await (await tabGroup.getSelectedTab()).getLabel()).toBe(getPageByStepNumber(pageNumber));
+  await tabGroup.selectTab({ label: getPageByStepNumber(pageNumber, isNonNominal) });
+  expect(await (await tabGroup.getSelectedTab()).getLabel()).toBe(getPageByStepNumber(pageNumber, isNonNominal));
   fixture.detectChanges();
   await fixture.whenStable();
 }

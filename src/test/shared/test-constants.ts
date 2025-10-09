@@ -116,6 +116,8 @@ export const VALUE_INVALID_PHONE_4 = '(0049)1741236589';
 export const VALUE_INVALID_PHONE_5 = 'a';
 export const VALUE_INVALD_BSNR = '12345678';
 
+export const VALUE_INVALID_QUANTITY = 'Der eingegebene Wert muss zwischen 1 und 42 liegen.';
+
 //validation error messages
 export const ERROR_INVALID_DATE = 'Kein gültiges Datum (Beispiele: 05.11.1998)';
 export const ERROR_INVALID_SPECIAL_CHAR = 'Ihre Eingabe enthält unzulässige Sonderzeichen';
