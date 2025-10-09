@@ -132,8 +132,8 @@ export class Ifsg61Service {
   /**
    * @deprecated Use {@link submitNotification} instead, once FEATURE_FLAG_PORTAL_SUBMIT will be removed
    */
-  sendNotification(ifgs61Message: DiseaseNotification, type: NotificationType) {
-    const post$ = this.postMessage(ifgs61Message, type);
+  sendNotification(ifsg61Message: DiseaseNotification, type: NotificationType) {
+    const post$ = this.postMessage(ifsg61Message, type);
     this.progressService.showProgress(post$, 'Erkrankungsmeldung wird gesendet').then(
       (response: HttpResponse<any>) => {
         const content = encodeURIComponent(response.body.content);
@@ -142,10 +142,10 @@ export class Ifsg61Service {
         if (response.body.status === 'All OK') {
           const data = {
             response,
-            // TODO: We can safely use the bang operator here, because we know, that there always will be a notified person at this point.
+            // NOSONAR TODO: We can safely use the bang operator here, because we know, that there always will be a notified person at this point.
             // The data structure is optional though, because of special business logic requirements by pathogen in terms of follow up notifications.
             // It is preferable to distinguish these data structures in the future, to avoid tricking the compiler into correct behavior here.
-            fileName: this.fileService.getFileNameByNotificationType(ifgs61Message.notifiedPerson!.info, type, response.body?.notificationId),
+            fileName: this.fileService.getFileNameByNotificationType(ifsg61Message.notifiedPerson!.info, type, response.body?.notificationId),
             href,
           };
           const dialogRef = this.matDialog.open(AcknowledgedComponent, {

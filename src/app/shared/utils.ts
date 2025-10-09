@@ -24,10 +24,6 @@ export async function sleep(durationInMillies: number): Promise<void> {
   });
 }
 
-export function now1() {
-  return (Math.floor(Date.now() / 100) % 600) / 10;
-}
-
 export function isPromise(val: any | Promise<any>): val is Promise<any> {
   return val && (<Promise<any>>val).then !== undefined;
 }
@@ -232,6 +228,14 @@ export function findQuantityFieldsByProp(rootFields: FormlyFieldConfig[]): Map<s
     }
     // TODO can be removed when FUTS is ready for all quantities
     else if (field.validators?.validation.includes('numberValidator')) {
+      quantityFields.set(field.key!.toString(), {
+        value: 0,
+        unit: 'placeholder-unit',
+        system: 'https://unitsofmeasure.org',
+      });
+    }
+    // TODO can be removed when profiles are ready for all quantities
+    else if (field.props?.type === 'number') {
       quantityFields.set(field.key!.toString(), {
         value: 0,
         unit: 'placeholder-unit',

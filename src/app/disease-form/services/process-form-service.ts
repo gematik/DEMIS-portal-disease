@@ -80,10 +80,10 @@ export class ProcessFormService {
     };
 
     const trimmedMessage: DiseaseNotification = trimStrings(message);
-    // TODO: By business logic, we know that notified person is defined at this point. Because of requirements by pathogen in terms of follow up notifications
+    // NOSONAR TODO: By business logic, we know that notified person is defined at this point. Because of requirements by pathogen in terms of follow up notifications
     // the data structure is made optional. In order to avoid the conditional here, the data structures should be distinguished in the future.
     if (trimmedMessage.notifiedPerson && !environment.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
-      trimmedMessage.notifiedPerson.info.birthDate = dateStringToIso(trimmedMessage.notifiedPerson.info.birthDate);
+      trimmedMessage.notifiedPerson.info.birthDate = dateStringToIso(trimmedMessage.notifiedPerson.info.birthDate); //NOSONAR Its OK, to use this here, as this code will be removed together with the feature flag
     }
     return trimmedMessage;
   }
@@ -93,9 +93,18 @@ export class ProcessFormService {
   }
 
   private makeCondition(condition: Record<string, any> | undefined) {
+    // TODO: Tidy up this block, once FEATURE_FLAG_DISEASE_DATEPICKER will be removed
+    let recordedDateAnswer = this.answer(condition, 'recordedDate', 'valueDate');
+    if (recordedDateAnswer && !environment.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
+      recordedDateAnswer = dateStringToIso(recordedDateAnswer); //NOSONAR Its OK, to use this here, as this code will be removed together with the feature flag
+    }
+    let onsetAnswer = this.answer(condition, 'onset', 'valueDate');
+    if (onsetAnswer && !environment.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
+      onsetAnswer = dateStringToIso(onsetAnswer); //NOSONAR Its OK, to use this here, as this code will be removed together with the feature flag
+    }
     return {
-      recordedDate: dateStringToIso(this.answer(condition, 'recordedDate', 'valueDate')),
-      onset: dateStringToIso(this.answer(condition, 'onset', 'valueDate')),
+      recordedDate: recordedDateAnswer,
+      onset: onsetAnswer,
       note: this.answer(condition, 'note', 'valueString'),
       evidence: this.answer(condition, 'evidence', 'valueCoding'),
       verificationStatus: this.answer(condition, 'verificationStatus', 'valueCoding')?.code,

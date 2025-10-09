@@ -29,11 +29,12 @@ import { ValueSetService } from '../../../app/legacy/value-set.service';
 import { environment } from '../../../environments/environment';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { of } from 'rxjs';
-import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
+import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_DISEASE_OPTIONS_NONNOMINAL, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { PasteBoxComponent } from '@gematik/demis-portal-core-library';
+import { EXAMPLE_TOXP_SHORT } from '../../shared/data/test-values-nonnominal';
 
 const overrides = {
   get Ifsg61Service() {
@@ -41,6 +42,16 @@ const overrides = {
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_MSVD_SHORT)),
+    } as Partial<Ifsg61Service>;
+  },
+};
+
+const overridesNonNominal = {
+  get Ifsg61Service() {
+    return {
+      getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
+      getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS_NONNOMINAL)),
+      getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_TOXP_SHORT)),
     } as Partial<Ifsg61Service>;
   },
 };
@@ -68,7 +79,6 @@ export const mainConfig = {
   pathToFuts: '/fhir-ui-data-model-translation',
   featureFlags: {
     FEATURE_FLAG_PORTAL_ERROR_DIALOG: true,
-    FEATURE_FLAG_PORTAL_REPEAT: true,
     FEATURE_FLAG_PORTAL_PASTEBOX: true,
     FEATURE_FLAG_OUTLINE_DESIGN: true,
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
@@ -80,13 +90,19 @@ export const mainConfig = {
   },
 };
 
-export function buildMock() {
+export function buildMock(nonNominal = false) {
+  let ifsg61Service;
+  if (nonNominal) {
+    ifsg61Service = overridesNonNominal.Ifsg61Service;
+  } else {
+    ifsg61Service = overrides.Ifsg61Service;
+  }
   return MockBuilder(DiseaseFormComponent)
     .keep(AppModule)
     .keep(NoopAnimationsModule)
     .keep(MatIconTestingModule)
     .keep(PasteBoxComponent)
-    .provide(MockProvider(Ifsg61Service, overrides.Ifsg61Service))
+    .provide(MockProvider(Ifsg61Service, ifsg61Service))
     .provide(MockProvider(ChangeDetectorRef))
     .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
     .provide(MockProvider(HelpersService))

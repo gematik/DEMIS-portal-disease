@@ -2,6 +2,15 @@
 
 # Release portal-disease
 
+## Release 1.4.2
+- Removed FEATURE_FLAG_PORTAL_REPEAT
+- Add quantity validation for number type input fields
+- add configmap checksum as annotation to force pod restart on configmap change
+- Updated openapi-generator-cli to 2.23.3
+- Update @angular-devkit/build-angular to 19.2.17
+- Fix change detection issue for 7.3 notification 
+- Update @gematik/demis-portal-core-library to 2.2.3
+
 ## Release 1.4.1
 - Fix background block for submit dialog
 - Upgraded dependencies

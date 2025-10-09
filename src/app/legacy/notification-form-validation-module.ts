@@ -30,21 +30,19 @@ import {
   DATE_NOT_EXIST,
   EMAIL_ERROR_MSG,
   EMAIL_REG_EXP,
-  END_DATE_LATER_THAN_START_DATE_ERROR_MSG,
   HOUSE_NBR_ERROR_MSG,
   HOUSE_NBR_REG_EXP,
   MINIMUM_LENGTH_NOT_REACHED,
   NAME_REG_EXP,
-  POSITIVE_NUMBER,
   NUMBER_ERROR_MSG,
   OPTION_INCOMPLETE,
   OPTION_MISMATCH,
   PARTIAL_DATE_FORMAT_ERROR_MSG,
   PHONE_ERROR_MSG,
   PHONE_REG_EXP,
+  POSITIVE_NUMBER,
   REQUIRED_FIELD,
   STREET_REG_EXP,
-  stringToDateFromLuxon,
   TEXT_ERROR_MSG,
   TEXT_REG_EXP,
   UI_LUXON_DATE_FORMAT,
@@ -56,6 +54,7 @@ import {
 import { map } from 'rxjs/operators';
 import { ValidationWrapperComponent } from './validation-wrapper/validation-wrapper.component';
 import { lastValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export const NotificationFormValidationModule = FormlyModule.forRoot({
   validators: [
@@ -79,10 +78,12 @@ export const NotificationFormValidationModule = FormlyModule.forRoot({
   ],
   validationMessages: [
     { name: 'minLength', message: MINIMUM_LENGTH_NOT_REACHED },
-    { name: 'required', message: REQUIRED_FIELD },
+    { name: 'required', message: requiredValidationMessage },
     { name: 'optionMismatch', message: OPTION_MISMATCH },
     { name: 'optionIncomplete', message: OPTION_INCOMPLETE },
     { name: 'codeChoosen', message: CODING_ERROR_MGS },
+    { name: 'min', message: quantityValidationMessage },
+    { name: 'max', message: quantityValidationMessage },
   ],
   wrappers: [{ name: 'validation', component: ValidationWrapperComponent }],
 });
@@ -345,5 +346,17 @@ export function validOptionHasBeenSelectedFromDropdownMenu(control: AbstractCont
     return control.value?.code ? null : { codeChoosen: true };
   } else {
     return control.value?.code || control.value === '' ? null : { codeChoosen: true };
+  }
+}
+
+export function quantityValidationMessage(error: any, field: FormlyFieldConfig) {
+  return `Der eingegebene Wert muss zwischen ${field.props?.min} und ${field.props?.max} liegen.`;
+}
+
+export function requiredValidationMessage(error: any, field: FormlyFieldConfig) {
+  if (environment.diseaseConfig?.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION && field.props?.min && field.props?.max) {
+    return `Der eingegebene Wert muss zwischen ${field.props?.min} und ${field.props?.max} liegen.`;
+  } else {
+    return REQUIRED_FIELD;
   }
 }
