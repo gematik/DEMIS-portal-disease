@@ -32,7 +32,6 @@ import { ErrorMessage } from '../shared/error-message';
 import { ErrorMessageDialogComponent } from '../shared/error-message-dialog/error-message-dialog.component';
 import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
 import { HelpersService } from '../shared/helpers.service';
-import { ProgressService } from '../shared/progress.service';
 import { createExpressions, findQuantityFieldsByProp } from '../shared/utils';
 import { getDiseaseChoiceFields } from './common/formlyConfigs/disease-choice';
 import { HexHexDummy } from './common/hexHexDummy';
@@ -102,7 +101,6 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   private readonly tabsNavigationService = inject(TabsNavigationService);
   private readonly helpers = inject(HelpersService);
   private readonly importFieldValuesService = inject(ImportFieldValuesService);
-  private readonly progressService = inject(ProgressService);
   private readonly copyAndKeepInSyncService = inject(CopyAndKeepInSyncService);
   private readonly processFormService = inject(ProcessFormService);
   private readonly messageDialogService = inject(MessageDialogService);
@@ -137,7 +135,10 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   ngOnInit() {
     const notifierJson = localStorage.getItem(IFSG61_NOTIFIER);
     this.model.tabNotifier = notifierJson ? JSON.parse(notifierJson) : {};
-    if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
+    if (
+      environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION ||
+      environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE
+    ) {
       this.notificationType = getNotificationTypeByRouterUrl(this.router.url);
     }
     //set default country for all addresses to germany.
@@ -303,12 +304,8 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
 
   async submitForm() {
     let notification;
-    if (this.notificationType === NotificationType.NonNominalNotification7_3) {
-      const quantityFields = findQuantityFieldsByProp(this.questionnaireFields);
-      notification = this.processFormService.createNotification(this.model, quantityFields);
-    } else {
-      notification = this.processFormService.createNotification(this.model);
-    }
+    const quantityFields = findQuantityFieldsByProp(this.questionnaireFields);
+    notification = this.processFormService.createNotification(this.model, quantityFields);
     if (notification.common?.item) {
       sortItems(notification.common.item, this.fieldSequence.tabDiseaseCommon);
     }
@@ -316,14 +313,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
       sortItems(notification.disease.item, this.fieldSequence.tabQuestionnaire);
     }
 
-    //DEMIS-4242, fixes issue where change detection didn't work for 7.3 notifications
-    this.changeDetector.detectChanges();
-
-    if (environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_SUBMIT) {
-      this.ifsg61Service.submitNotification(notification, this.notificationType);
-    } else {
-      this.ifsg61Service.sendNotification(notification, this.notificationType);
-    }
+    this.ifsg61Service.submitNotification(notification, this.notificationType);
   }
 
   private storeFacilityOnUpdate(e: FormlyValueChangeEvent) {
@@ -474,9 +464,11 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
 
   async hexHex() {
     const dummy = new HexHexDummy();
-    const j = JSON.stringify(dummy.getDummy(this.notificationType));
+    const dummyData = dummy.getDummy(this.notificationType);
+    const diseaseCode = dummyData.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code;
+    const j = JSON.stringify(dummyData);
     this.model = JSON.parse(j);
-    await this.loadQuestionnaire(dummy.getDummy(this.notificationType).tabDiseaseChoice.diseaseChoice.answer.valueCoding.code);
+    await this.loadQuestionnaire(diseaseCode);
     setTimeout(() => {
       this.model = JSON.parse(j);
     }, 10);
@@ -516,7 +508,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
    * @param keyValuePairs - Map of key-value pairs to be imported from clipboard
    */
   async paste(keyValuePairsFromClipboard?: Map<string, string>) {
-    const dialogRef = this.progressService.startSpinner('Zwischenablage wird übernommen');
+    this.messageDialogService.showSpinnerDialog({ message: 'Zwischenablage wird übernommen' });
     try {
       window.focus();
       const keyValuePairs: string[][] = this.FEATURE_FLAG_PORTAL_PASTEBOX
@@ -558,7 +550,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
         );
       }
     } finally {
-      dialogRef?.close();
+      this.messageDialogService.closeSpinnerDialog();
     }
   }
 

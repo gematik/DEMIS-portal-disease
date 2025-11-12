@@ -31,6 +31,7 @@ import { FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
 import { FieldType } from '@ngx-formly/material';
 import { Subject, takeUntil } from 'rxjs';
 import { TabsNavigationService } from './tabs-navigation.service';
+import { environment } from '../../../../../environments/environment';
 
 /*
  * If we ever need more than one TabsNavigationComponent on a page, we could give em names
@@ -88,6 +89,11 @@ export class TabsNavigationComponent extends FieldType<FieldTypeConfig> implemen
   //     firstInputOrSelect?.focus()
   //   }, 600)
   // }
+
+  // TODO: Remove once FEATURE_FLAG_PORTAL_PAGE_STRUCTURE will be removed
+  public get FEATURE_FLAG_PORTAL_PAGE_STRUCTURE(): boolean {
+    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_PAGE_STRUCTURE;
+  }
 
   override ngOnDestroy() {
     this.tabsNavigationService.unregister(this);

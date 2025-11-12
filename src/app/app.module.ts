@@ -15,7 +15,7 @@
  */
 
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { NgModule, inject, provideAppInitializer } from '@angular/core';
+import { inject, NgModule, provideAppInitializer } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
@@ -26,8 +26,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTabHeader, MatTabsModule } from '@angular/material/tabs';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FORMLY_CONFIG, FormlyModule } from '@ngx-formly/core';
-import { FormlyMaterialModule } from '@ngx-formly/material';
+import { FORMLY_CONFIG, provideFormlyCore } from '@ngx-formly/core';
 import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
 import { AppComponent } from './app.component';
 import { DiseaseFormComponent } from './disease-form/disease-form.component';
@@ -62,10 +61,16 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AutocompleteMultiCodingComponent } from './shared/formly/components/autocomplete-multi-coding/autocomplete-multi-coding.component';
 import { AutocompleteComponent } from './shared/components/autocomplete/autocomplete.component';
 import { environment } from '../environments/environment';
-import { FormlyDatepickerComponent, FormlyRepeaterComponent, MaxHeightContentContainerComponent, PasteBoxComponent } from '@gematik/demis-portal-core-library';
+import {
+  FormlyDatepickerComponent,
+  FormlyRepeaterComponent,
+  MaxHeightContentContainerComponent,
+  PasteBoxComponent,
+  SectionHeaderComponent,
+} from '@gematik/demis-portal-core-library';
 import { defaultAppearanceExtension, defaultPlaceholderExtension } from './shared/formly-extensions';
 import { CheckLabelLengthDirective } from './shared/directives/check-label-length.directive';
-import { AcknowledgedComponent } from './shared/acknowledged/acknowledged.component';
+import { withFormlyMaterial } from '@ngx-formly/material';
 
 export function initIconLoaderService(iconLoaderService: IconLoaderService) {
   return (): Promise<void> => {
@@ -101,61 +106,7 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     LoggerModule.forRoot(environment.ngxLoggerConfig),
     MatInputModule,
     NotificationFormValidationModule,
-    FormlyModule.forRoot({
-      types: [
-        { name: 'datepicker', component: FormlyDatepickerComponent, wrappers: [] },
-        { name: 'repeater', component: FormlyRepeaterComponent },
-        { name: 'repeat', component: RepeatComponent },
-        { name: 'repeat-section', component: RepeatSectionComponent },
-        {
-          name: 'autocomplete-coding',
-          component: AutocompleteCodingComponent,
-          wrappers: ['form-field'],
-        },
-        {
-          name: 'autocomplete-multi-coding',
-          component: AutocompleteMultiCodingComponent,
-          wrappers: ['form-field'],
-        },
-        { name: 'tabs-navigation', component: TabsNavigationComponent },
-        { name: 'drop-down-coding', component: SelectCodingComponent },
-        { name: 'radio-button-coding', component: RadioButtonCodingComponent },
-      ],
-      wrappers: [
-        { name: 'panel', component: PanelWrapperComponent },
-        { name: 'expansion-panel', component: ExpansionPanelWrapperComponent },
-      ],
-      validators: [
-        { name: 'date123', validation: Date123Validator },
-        { name: 'date1', validation: Date1Validator },
-        { name: 'date2', validation: Date2Validator },
-        { name: 'date3', validation: Date3Validator },
-      ],
-      validationMessages: [
-        { name: 'date1', message: 'Bitte geben Sie nur das Jahr an (JJJJ)' },
-        {
-          name: 'date2',
-          message: 'Bitte geben Sie Monat und Jahr an (MM.JJJJ)',
-        },
-        {
-          name: 'date3',
-          message: 'Bitte geben Sie Tag, Monat und Jahr an (TT.MM.JJJJ)',
-        },
-        { name: 'date123', message: 'TT.MM.JJJJ  oder MM.JJJJ oder JJJJ' },
-      ],
-      extensions: [
-        {
-          name: 'default-placeholder',
-          extension: defaultPlaceholderExtension,
-        },
-        {
-          name: 'default-appearance',
-          extension: defaultAppearanceExtension,
-        },
-      ],
-    }),
     ReactiveFormsModule,
-    FormlyMaterialModule,
     MatNativeDateModule,
     MatInputModule,
     MatAutocompleteModule,
@@ -175,7 +126,7 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     MatTabHeader,
     PasteBoxComponent,
     MaxHeightContentContainerComponent,
-    AcknowledgedComponent,
+    SectionHeaderComponent,
   ],
   providers: [
     provideAppInitializer(() => {
@@ -202,6 +153,62 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
       deps: [ValueSetService],
     },
     provideHttpClient(withInterceptorsFromDi()),
+    provideFormlyCore([
+      {
+        types: [
+          { name: 'datepicker', component: FormlyDatepickerComponent, wrappers: [] },
+          { name: 'repeater', component: FormlyRepeaterComponent },
+          { name: 'repeat', component: RepeatComponent },
+          { name: 'repeat-section', component: RepeatSectionComponent },
+          {
+            name: 'autocomplete-coding',
+            component: AutocompleteCodingComponent,
+            wrappers: ['form-field'],
+          },
+          {
+            name: 'autocomplete-multi-coding',
+            component: AutocompleteMultiCodingComponent,
+            wrappers: ['form-field'],
+          },
+          { name: 'tabs-navigation', component: TabsNavigationComponent },
+          { name: 'drop-down-coding', component: SelectCodingComponent },
+          { name: 'radio-button-coding', component: RadioButtonCodingComponent },
+        ],
+        wrappers: [
+          { name: 'panel', component: PanelWrapperComponent },
+          { name: 'expansion-panel', component: ExpansionPanelWrapperComponent },
+        ],
+        validators: [
+          { name: 'date123', validation: Date123Validator },
+          { name: 'date1', validation: Date1Validator },
+          { name: 'date2', validation: Date2Validator },
+          { name: 'date3', validation: Date3Validator },
+        ],
+        validationMessages: [
+          { name: 'date1', message: 'Bitte geben Sie nur das Jahr an (JJJJ)' },
+          {
+            name: 'date2',
+            message: 'Bitte geben Sie Monat und Jahr an (MM.JJJJ)',
+          },
+          {
+            name: 'date3',
+            message: 'Bitte geben Sie Tag, Monat und Jahr an (TT.MM.JJJJ)',
+          },
+          { name: 'date123', message: 'TT.MM.JJJJ  oder MM.JJJJ oder JJJJ' },
+        ],
+        extensions: [
+          {
+            name: 'default-placeholder',
+            extension: defaultPlaceholderExtension,
+          },
+          {
+            name: 'default-appearance',
+            extension: defaultAppearanceExtension,
+          },
+        ],
+      },
+      ...withFormlyMaterial(),
+    ]),
   ],
 })
 export class AppModule {}

@@ -2,6 +2,17 @@
 
 # Release portal-disease
 
+## Release 1.4.3
+- Added FEATURE_FLAG_DISEASE_STRICT for strict §6.1 coming with FHIR profile 7.x
+- Removed FEATURE_FLAG_PORTAL_SUBMIT and FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT
+- Switch to SectionHeader from Portal-Core (FEATURE_FLAG_PORTAL_PAGE_STRUCTURE)
+- Added route for follow-up notification (FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE)
+- add code field to quantities
+- Update ngx-formly to 7.0.0
+- Update @gematik/demis-portal-core-library to 2.3.0
+- Fixed a bug were the information about the pregnancy week was not sent to the backend
+- Update NGINX-Base-Image to 1.29.3
+
 ## Release 1.4.2
 - Removed FEATURE_FLAG_PORTAL_REPEAT
 - Add quantity validation for number type input fields

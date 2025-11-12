@@ -39,7 +39,10 @@ const lifecycles = singleSpaAngular({
   bootstrapFunction: async singleSpaProps => {
     singleSpaPropsSubject.next(singleSpaProps);
     const appRef = await platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule);
-    if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
+    if (
+      environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION ||
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE
+    ) {
       router = appRef.injector.get(Router);
       syncUrlWithRouter();
     }
@@ -84,6 +87,8 @@ function syncUrlWithRouter() {
     router.navigateByUrl('').then(_ => {
       if (redirectUrl.includes('non-nominal')) {
         router.navigateByUrl(allowedRoutes['nonNominal']);
+      } else if (redirectUrl.includes('follow-up')) {
+        router.navigateByUrl(allowedRoutes['followUp']);
       } else {
         router.navigateByUrl(allowedRoutes['main']);
       }

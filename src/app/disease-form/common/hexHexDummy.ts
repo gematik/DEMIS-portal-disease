@@ -17,12 +17,17 @@
 import { AddressType, DiseaseStatus } from '../../../api/notification';
 import { GERMANY_COUNTRY_CODE, ZIP_CODE_DEFAULT } from '../../legacy/common-utils';
 import { NotificationType } from '../../demis-types';
+import { environment } from '../../../environments/environment';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
 export class HexHexDummy {
   getDummy(type: NotificationType) {
     if (type === NotificationType.NonNominalNotification7_3) {
+      // §7.3 is a strict-only feature
       return this.maxHivDummy;
+    }
+    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT) {
+      return this.strictMaxMasernDummy;
     }
     return this.maxMasernDummy;
   }
@@ -877,6 +882,542 @@ export class HexHexDummy {
                 selected: true,
               },
             ],
+          },
+        },
+      },
+    };
+  }
+
+  get strictMaxMasernDummy() {
+    return {
+      tabNotifier: this.maxMasernDummy.tabNotifier,
+      tabPatient: this.maxMasernDummy.tabPatient,
+      tabDiseaseChoice: this.maxMasernDummy.tabDiseaseChoice,
+      tabDiseaseCondition: this.maxMasernDummy.tabDiseaseCondition,
+      tabDiseaseCommon: {
+        additionalInformation: {
+          answer: {
+            valueString: 'Strikt sein und ein bisschen verrückt sein! Sagt die Frau zu dem Mann: "Hey Schatzi, was wollen wir mehr?"',
+          },
+        },
+        isDead: {
+          answer: {
+            valueCoding: {
+              code: '373066001',
+              display: 'Ja',
+              designations: [],
+              system: 'http://snomed.info/sct',
+            },
+            deathDate: {
+              answer: {
+                valueDate: '03.01.2000',
+              },
+            },
+          },
+        },
+        militaryAffiliation: {
+          answer: {
+            valueCoding: {
+              code: 'civilPersonActiveInBundeswehr',
+              display: 'Zivilperson tätig/untergebracht in Einrichtung der BW',
+              designations: [],
+              system: 'https://demis.rki.de/fhir/CodeSystem/militaryAffiliation',
+            },
+          },
+        },
+        labSpecimenTaken: {
+          answer: {
+            valueCoding: {
+              code: '373066001',
+              display: 'Ja',
+              designations: [],
+              system: 'http://snomed.info/sct',
+            },
+            labSpecimenLab: {
+              answer: {
+                Organization: {
+                  name: {
+                    answer: {
+                      valueString: 'QuickTest Labor 42',
+                    },
+                  },
+                  address: {
+                    line: {
+                      answer: {
+                        valueString: 'Labstrasse 42',
+                      },
+                    },
+                    postalCode: {
+                      answer: {
+                        valueString: '03348',
+                      },
+                    },
+                    city: {
+                      answer: {
+                        valueString: 'Laborstadt',
+                      },
+                    },
+                  },
+                  contact: {
+                    name: {
+                      prefix: {
+                        answer: {
+                          valueString: 'Herr',
+                        },
+                      },
+                      given: {
+                        answer: {
+                          valueString: 'Laslo',
+                        },
+                      },
+                      family: {
+                        answer: {
+                          valueString: 'Labora',
+                        },
+                      },
+                    },
+                  },
+                  telecom: {
+                    phone: {
+                      answer: {
+                        valueString: '+123456789',
+                      },
+                    },
+                    email: {
+                      answer: {
+                        valueString: 'labor42@quicktest.com',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        hospitalized: {
+          answer: {
+            valueCoding: {
+              code: '373066001',
+              display: 'Ja',
+              designations: [],
+              system: 'http://snomed.info/sct',
+            },
+            'repeat-section-1': [
+              {
+                hospitalizedGroup: {
+                  hospitalizedEncounter: {
+                    answer: {
+                      Hospitalization: {
+                        serviceType: {
+                          answer: {
+                            valueCoding: {
+                              code: '0100',
+                              display: 'Innere Medizin',
+                              designations: [],
+                              system: 'http://fhir.de/CodeSystem/dkgev/Fachabteilungsschluessel-erweitert',
+                            },
+                          },
+                        },
+                        period: {
+                          start: {
+                            answer: {
+                              valueDate: '10.01.2023',
+                            },
+                          },
+                          end: {
+                            answer: {
+                              valueDate: '12.01.2023',
+                            },
+                          },
+                        },
+                        serviceProvider: {
+                          answer: {
+                            Organization: {
+                              name: {
+                                answer: {
+                                  valueString: 'Krankenhaus Riedlingen-Süd',
+                                },
+                              },
+                              address: {
+                                line: {
+                                  answer: {
+                                    valueString: 'Südhospizstraße 23',
+                                  },
+                                },
+                                postalCode: {
+                                  answer: {
+                                    valueString: '21482',
+                                  },
+                                },
+                                city: {
+                                  answer: {
+                                    valueString: 'Riedlingen',
+                                  },
+                                },
+                              },
+                              contact: {
+                                name: {
+                                  prefix: {
+                                    answer: {
+                                      valueString: 'Dr. Prof.',
+                                    },
+                                  },
+                                  given: {
+                                    answer: {
+                                      valueString: 'Michael',
+                                    },
+                                  },
+                                  family: {
+                                    answer: {
+                                      valueString: 'Überseer',
+                                    },
+                                  },
+                                },
+                              },
+                              telecom: {
+                                phone: {
+                                  answer: {
+                                    valueString: '+123458888',
+                                  },
+                                },
+                                email: {
+                                  answer: {
+                                    valueString: 'business@kh-ried-sued.com',
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                hospitalizedGroup: {
+                  hospitalizedEncounter: {
+                    answer: {
+                      Hospitalization: {
+                        serviceType: {
+                          answer: {
+                            valueCoding: {
+                              code: '0108',
+                              display: 'Schwerpunkt Pneumologie',
+                              designations: [],
+                              system: 'http://fhir.de/CodeSystem/dkgev/Fachabteilungsschluessel-erweitert',
+                            },
+                          },
+                        },
+                        period: {
+                          start: {
+                            answer: {
+                              valueDate: '05.01.2023',
+                            },
+                          },
+                          end: {
+                            answer: {
+                              valueDate: '06.01.2023',
+                            },
+                          },
+                        },
+                        serviceProvider: {
+                          answer: {
+                            Organization: {
+                              name: {
+                                answer: {
+                                  valueString: 'Krankenhaus Riedlingen-Süd',
+                                },
+                              },
+                              address: {
+                                line: {
+                                  answer: {
+                                    valueString: 'Südhospizstraße 23',
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+        infectProtectFacility: {
+          answer: {
+            valueCoding: {
+              code: '373066001',
+              display: 'Ja',
+              designations: [],
+              system: 'http://snomed.info/sct',
+            },
+            'repeat-section-2': [
+              {
+                infectProtectFacilityGroup: {
+                  infectProtectFacilityBegin: {
+                    answer: {
+                      valueDate: '17.07.2021',
+                    },
+                  },
+                  infectProtectFacilityOrganization: {
+                    answer: {
+                      Organization: {
+                        name: {
+                          answer: {
+                            valueString: 'Kita Riedlinger Zwerge',
+                          },
+                        },
+                        address: {
+                          line: {
+                            answer: {
+                              valueString: 'Fleischerstrasse 5',
+                            },
+                          },
+                          postalCode: {
+                            answer: {
+                              valueString: '21483',
+                            },
+                          },
+                          city: {
+                            answer: {
+                              valueString: 'Riedlingen-Nord',
+                            },
+                          },
+                        },
+                        contact: {
+                          name: {
+                            prefix: {
+                              answer: {
+                                valueString: '',
+                              },
+                            },
+                            given: {
+                              answer: {
+                                valueString: 'Margot',
+                              },
+                            },
+                            family: {
+                              answer: {
+                                valueString: 'Markus',
+                              },
+                            },
+                          },
+                        },
+                        telecom: {
+                          phone: {
+                            answer: {
+                              valueString: '+999999999999',
+                            },
+                          },
+                          email: {
+                            answer: {
+                              valueString: 'mmarkus@reid-zwerge.de',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  infectProtectFacilityType: {
+                    answer: {
+                      valueCoding: {
+                        code: 'childDayNursery',
+                        display: 'Kindertagespflege',
+                        designations: [
+                          {
+                            language: 'en-US',
+                            value: 'Child day nursery',
+                          },
+                          {
+                            language: 'de-DE',
+                            value: 'Kindertagespflege',
+                          },
+                        ],
+                        system: 'https://demis.rki.de/fhir/CodeSystem/organizationType',
+                      },
+                    },
+                  },
+                  infectProtectFacilityRole: {
+                    answer: {
+                      valueCoding: {
+                        code: 'care',
+                        display: 'Betreuung',
+                        designations: [],
+                        system: 'https://demis.rki.de/fhir/CodeSystem/organizationAssociation',
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+        placeExposure: {
+          answer: {
+            valueCoding: {
+              code: '373066001',
+              display: 'Ja',
+              designations: [],
+              system: 'http://snomed.info/sct',
+            },
+            'repeat-section-3': [
+              {
+                placeExposureGroup: {
+                  placeExposureBegin: {
+                    answer: {
+                      valueDate: '08.12.2022',
+                    },
+                  },
+                  placeExposureEnd: {
+                    answer: {
+                      valueDate: '23.12.2022',
+                    },
+                  },
+                  placeExposureHint: {
+                    answer: {
+                      valueString: 'Kurztrip nach Kabul vor Weihnachten',
+                    },
+                  },
+                  placeExposureRegion: {
+                    answer: {
+                      valueCoding: {
+                        code: '41423013',
+                        display: 'Kabul',
+                        designations: [],
+                        system: 'https://demis.rki.de/fhir/CodeSystem/geographicRegion',
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                placeExposureGroup: {
+                  placeExposureBegin: {
+                    answer: {
+                      valueDate: '26.12.2022',
+                    },
+                  },
+                  placeExposureEnd: {
+                    answer: {
+                      valueDate: '30.12.2022',
+                    },
+                  },
+                  placeExposureHint: {
+                    answer: {
+                      valueString: 'Rückkehr nach Kabul, weil etwas vergessen worden ist.',
+                    },
+                  },
+                  placeExposureRegion: {
+                    answer: {
+                      valueCoding: {
+                        code: '41423013',
+                        display: 'Kabul',
+                        designations: [],
+                        system: 'https://demis.rki.de/fhir/CodeSystem/geographicRegion',
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+        organDonation: {
+          answer: {
+            valueCoding: {
+              code: '373066001',
+              display: 'Ja',
+              designations: [],
+              system: 'http://snomed.info/sct',
+            },
+          },
+        },
+      },
+      tabQuestionnaire: {
+        onsetOfExanthem: {
+          answer: {
+            valueDate: '01.01.2023',
+          },
+        },
+        immunization: {
+          answer: {
+            valueCoding: {
+              code: '373066001',
+              display: 'Ja',
+              designations: [],
+              system: 'http://snomed.info/sct',
+            },
+            'repeat-section-1': [
+              {
+                immunizationRef: {
+                  answer: {
+                    Immunization: {
+                      vaccineCode: {
+                        answer: {
+                          valueCoding: {
+                            code: '2251000221101',
+                            display: 'Masern- Mumps-Röteln- Varizellen Lebendvirusimpfstoff (Priorix-Tetra, ProQuad)',
+                            designations: [
+                              {
+                                language: 'en-US',
+                                value:
+                                  'Vaccine product containing only live attenuated Measles morbillivirus and Mumps orthorubulavirus and Rubella virus and Human alphaherpesvirus 3 antigens (medicinal product)',
+                              },
+                            ],
+                            system: 'http://snomed.info/sct',
+                          },
+                        },
+                      },
+                      occurrence: {
+                        answer: {
+                          valueDate: '12.2011',
+                        },
+                      },
+                      note: {
+                        answer: {
+                          valueString: 'Die letzte Masernimpfung war schon etwas her.',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+        pregnancy: {
+          answer: {
+            valueCoding: {
+              code: '373066001',
+              display: 'Ja',
+              designations: [],
+              system: 'http://snomed.info/sct',
+            },
+            pregnancyWeek: {
+              answer: {
+                valueString: '15',
+                pregnancyWeek: 15,
+              },
+            },
+          },
+        },
+        outbreak: {
+          answer: {
+            valueCoding: {
+              code: '373066001',
+              display: 'Ja',
+              designations: [],
+              system: 'http://snomed.info/sct',
+            },
+            outbreakNote: {
+              answer: {
+                valueString: 'Es gab einen Ausbruch der zugeordnet werden konnte. Wir finden leider dessen Meldungs-ID gerade nicht.',
+              },
+            },
           },
         },
       },

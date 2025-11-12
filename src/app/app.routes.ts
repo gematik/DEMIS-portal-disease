@@ -32,6 +32,10 @@ export const routes: Routes = [
     component: DiseaseFormComponent,
   },
   {
+    path: allowedRoutes['followUp'],
+    component: DiseaseFormComponent,
+  },
+  {
     path: '**',
     component: DiseaseFormComponent,
   },

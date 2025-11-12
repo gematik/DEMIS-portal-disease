@@ -25,7 +25,7 @@
       </div>
     </div>
   </form>
-  <div class="stepper-heading">
+<div class="stepper-heading">
   @if (notificationType === NotificationType.NominalNotification6_1) {
     <h1>Krankheitsmeldung (§6.1)</h1>
   }
@@ -33,6 +33,10 @@
     <h1>Krankheit</h1>
     <h4>Meldung einer Krankheit gemäß § 7 Abs. 3 IfSG</h4>
   }
+    @if (notificationType === NotificationType.FollowUpNotification6_1) {
+      <h1>Folgemeldung</h1>
+      <h4 class="follow-up-header">Meldung eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG ohne Angaben von Personendaten</h4>
+    }
 </div>
 <app-hexhexbutton (paste)="hexHex()"></app-hexhexbutton>
   @if (FEATURE_FLAG_PORTAL_PASTEBOX) {

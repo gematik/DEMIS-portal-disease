@@ -22,7 +22,6 @@ import { Ifsg61Service } from '../../../app/ifsg61.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
 import { HelpersService } from '../../../app/shared/helpers.service';
-import { ProgressService } from '../../../app/shared/progress.service';
 import { FORMLY_CONFIG } from '@ngx-formly/core';
 import { registerValueSetExtension } from '../../../app/legacy/value-set.extension';
 import { ValueSetService } from '../../../app/legacy/value-set.service';
@@ -83,6 +82,7 @@ export const mainConfig = {
     FEATURE_FLAG_OUTLINE_DESIGN: true,
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_DATEPICKER: false,
+    FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
   },
   ngxLoggerConfig: {
     level: 1,
@@ -106,7 +106,6 @@ export function buildMock(nonNominal = false) {
     .provide(MockProvider(ChangeDetectorRef))
     .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
     .provide(MockProvider(HelpersService))
-    .provide(MockProvider(ProgressService))
     .provide({
       provide: FORMLY_CONFIG,
       multi: true,
