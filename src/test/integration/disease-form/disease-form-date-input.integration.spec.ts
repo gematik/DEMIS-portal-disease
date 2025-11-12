@@ -15,14 +15,12 @@
  */
 
 import { HarnessLoader } from '@angular/cdk/testing';
-import { MockedComponentFixture } from 'ng-mocks';
+import { MockedComponentFixture, MockProvider } from 'ng-mocks';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { buildMock, setupIntegrationTests } from './base.spec';
-import { MockProvider } from 'ng-mocks';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { MatRadioButtonHarness } from '@angular/material/radio/testing';
 import { Ifsg61Service } from '../../../app/ifsg61.service';
-import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
 import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
@@ -101,7 +99,6 @@ describe('Date input without dots integration test', () => {
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(getModifiedMockQuestionnaire())),
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
-      sendNotification: jasmine.createSpy('sendNotification'),
     } as jasmine.SpyObj<Ifsg61Service>;
 
     return buildMock().provide(MockProvider(Ifsg61Service, specificIfsg61ServiceMock, 'useValue'));

@@ -14,21 +14,15 @@
     For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpEvent, HttpResponse } from '@angular/common/http';
-import { finalize, lastValueFrom, Observable, tap } from 'rxjs';
+import { inject, Injectable, NgZone } from '@angular/core';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { finalize, Observable, tap } from 'rxjs';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { environment } from '../environments/environment';
 import { DemisCoding, NotificationType, QuestionnaireDescriptor } from './demis-types';
-import { ProgressService } from './shared/progress.service';
-import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
 import { FileService } from './legacy/file.service';
-import { AcknowledgedComponent } from './shared/acknowledged/acknowledged.component';
-import { RejectedComponent } from './shared/rejected/rejected.component';
-import { HelpersService } from './shared/helpers.service';
 import { DiseaseNotification, ValidationError } from '../api/notification';
-import { MessageType } from './legacy/message';
 import { infoOutline } from './disease-form/common/formlyConfigs/formly-base';
 import { MessageDialogService, SubmitDialogProps } from '@gematik/demis-portal-core-library';
 
@@ -39,12 +33,10 @@ const PREFFERED_LANGUAGES = [/de-DE/, /de.*/];
 })
 export class Ifsg61Service {
   private readonly httpClient = inject(HttpClient);
-  private readonly progressService = inject(ProgressService);
   private readonly logger = inject(NGXLogger);
   private readonly fileService = inject(FileService);
-  private readonly matDialog = inject(MatDialog);
-  private readonly helper = inject(HelpersService);
   private readonly messageDialogService = inject(MessageDialogService);
+  private readonly ngZone = inject(NgZone); // ensure we can force change detection
 
   // TODO würde eigentlich in core-lib reingehören, die gibt es aber nicht mehr
   getCodeValueSet(system: string): Observable<DemisCoding[]> {
@@ -78,6 +70,7 @@ export class Ifsg61Service {
       })
     );
   }
+
   submitNotification(notification: DiseaseNotification, notificationType: NotificationType) {
     this.messageDialogService.showSpinnerDialog({ message: 'Erkrankungsmeldung wird gesendet' });
     let fullUrl = this.getFullUrl(notificationType);
@@ -89,20 +82,24 @@ export class Ifsg61Service {
       })
       .pipe(
         finalize(() => {
-          this.messageDialogService.closeSpinnerDialog();
+          this.ngZone.run(() => this.messageDialogService.closeSpinnerDialog());
         })
       )
       .subscribe({
         next: (response: HttpResponse<any>) => {
-          const submitDialogData = this.createSubmitDialogData(response, notification, notificationType);
-          this.messageDialogService.showSubmitDialog(submitDialogData);
+          this.ngZone.run(() => {
+            const submitDialogData = this.createSubmitDialogData(response, notification, notificationType);
+            this.messageDialogService.showSubmitDialog(submitDialogData);
+          });
         },
         error: err => {
-          this.logger.error('error', err);
-          const errors = this.extractErrorDetails(err);
-          this.messageDialogService.showErrorDialog({
-            errorTitle: 'Meldung konnte nicht zugestellt werden!',
-            errors,
+          this.ngZone.run(() => {
+            this.logger.error('error', err);
+            const errors = this.extractErrorDetails(err);
+            this.messageDialogService.showErrorDialog({
+              errorTitle: 'Meldung konnte nicht zugestellt werden!',
+              errors,
+            });
           });
         },
       });
@@ -129,83 +126,6 @@ export class Ifsg61Service {
     };
   }
 
-  /**
-   * @deprecated Use {@link submitNotification} instead, once FEATURE_FLAG_PORTAL_SUBMIT will be removed
-   */
-  sendNotification(ifsg61Message: DiseaseNotification, type: NotificationType) {
-    const post$ = this.postMessage(ifsg61Message, type);
-    this.progressService.showProgress(post$, 'Erkrankungsmeldung wird gesendet').then(
-      (response: HttpResponse<any>) => {
-        const content = encodeURIComponent(response.body.content);
-        const href = 'data:application/actet-stream;base64,' + content;
-
-        if (response.body.status === 'All OK') {
-          const data = {
-            response,
-            // NOSONAR TODO: We can safely use the bang operator here, because we know, that there always will be a notified person at this point.
-            // The data structure is optional though, because of special business logic requirements by pathogen in terms of follow up notifications.
-            // It is preferable to distinguish these data structures in the future, to avoid tricking the compiler into correct behavior here.
-            fileName: this.fileService.getFileNameByNotificationType(ifsg61Message.notifiedPerson!.info, type, response.body?.notificationId),
-            href,
-          };
-          const dialogRef = this.matDialog.open(AcknowledgedComponent, {
-            disableClose: true,
-            height: '450px',
-            width: '700px',
-            data,
-          });
-          lastValueFrom(dialogRef.afterClosed()).then(
-            _ => this.helper.exitApplication(),
-            _ => this.helper.exitApplication()
-          );
-        } else {
-          const data = { response };
-          this.matDialog.open(RejectedComponent, { height: '500px', width: '600px', data });
-        }
-      },
-      err => {
-        this.logger.error('error', err);
-        if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT) {
-          const errors = this.extractErrorDetails(err);
-          this.messageDialogService.showErrorDialog({
-            errorTitle: 'Meldung konnte nicht zugestellt werden!',
-            errors,
-          });
-        } else {
-          const data = {
-            ...err.error,
-            ...{
-              type: MessageType.ERROR,
-              message: 'Es ist ein Fehler aufgetreten.',
-              messageDetails: err.error?.message,
-              locations: [],
-              problems: (err.error.validationErrors || []).map((ve: ValidationError) => ({
-                code: ve.field,
-                message: ve.message,
-              })),
-            },
-          };
-          this.matDialog.open(RejectedComponent, { height: '400px', width: '600px', data });
-        }
-      }
-    );
-  }
-
-  /**
-   * @deprecated Use {@link submitNotification} instead, once FEATURE_FLAG_PORTAL_SUBMIT will be removed
-   */
-  postMessage(ifgs61Message: DiseaseNotification, type: NotificationType): Observable<HttpEvent<Object>> {
-    let fullUrl = type === NotificationType.NonNominalNotification7_3 ? environment.pathToGatewayDiseaseNonNominal : environment.pathToGatewayDisease;
-    if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
-      fullUrl = environment.pathToGatewayDisease;
-    }
-    return this.httpClient.post(fullUrl, JSON.stringify(ifgs61Message), {
-      headers: environment.headers,
-      reportProgress: true,
-      observe: 'events',
-    });
-  }
-
   private extractErrorDetails(err: any): { text: string; queryString: string }[] {
     const response = err?.error ?? err;
     const errorMessage = this.messageDialogService.extractMessageFromError(response);
@@ -227,7 +147,7 @@ export class Ifsg61Service {
 }
 
 // The display of options can be overwritten by designations.
-// This is needed to compensate for a bit inconsistent usage of display/designations in current profiles
+// This is needed to compensate for a bit of inconsistent usage of display/designations in current profiles
 function updateOptions(options: DemisCoding[], preferredLanguages: RegExp[]) {
   options.forEach((option: DemisCoding) => {
     if (option.designations) {

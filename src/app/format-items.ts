@@ -59,17 +59,22 @@ export function sortItems(items: QuestionnaireResponseItem[] | undefined, subSeq
  * depending on the key
  */
 function handleQuantityField(key: string, body: any, quantityFields?: Map<string, Quantity>): QuestionnaireResponseItem | undefined {
-  if (quantityFields && quantityFields.size > 0) {
-    const qKey = quantityFields.get(key);
-    if (qKey) {
-      qKey.value = body.answer[key];
-      return {
-        linkId: key,
-        answer: [{ valueQuantity: qKey }],
-      };
-    }
-  }
-  return undefined;
+  if (!quantityFields?.size) return undefined;
+  const q = quantityFields.get(key);
+  if (!q || !body?.answer?.[key]) return undefined;
+  return {
+    linkId: key,
+    answer: [
+      {
+        valueQuantity: {
+          value: body.answer[key],
+          unit: q.unit,
+          system: q.system,
+          code: q.code,
+        },
+      },
+    ],
+  };
 }
 
 function createItemFromEntry(entry: [string, any], quantityFields?: Map<string, Quantity>): QuestionnaireResponseItem {

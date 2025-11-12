@@ -1,7 +1,7 @@
 $max-side-container-width: 437px; //17.5vw;
 $content-width: 345px; //15
 $stepper-top: 44px;
-$tab-top:calc($stepper-top + 90px);
+$tab-top: calc($stepper-top + 90px);
 $hexhex-top: calc($tab-top + 280px);
 $paste-top: calc($hexhex-top + 50px);
 
@@ -10,7 +10,6 @@ $paste-top: calc($hexhex-top + 50px);
 }
 
 ::ng-deep .mat-mdc-tab-label-container {
-  padding-top: 15px;
   padding-bottom: 15px;
   --mdc-text-button-label-text-color: var(--color-primary);
 }
@@ -105,6 +104,12 @@ $paste-top: calc($hexhex-top + 50px);
     width: $content-width;
     z-index: 999;
     color: var(--color-primary);
+    padding-bottom: 15px;
+  }
+
+  //temporary fix to prevent overlapping bug, should be fixed with new side navigation component
+  .follow-up-header {
+    font-size: 12px;
   }
 
   app-hexhexbutton {

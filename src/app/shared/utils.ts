@@ -224,22 +224,7 @@ export function findQuantityFieldsByProp(rootFields: FormlyFieldConfig[]): Map<s
         value: 0,
         unit: field.props['quantity'].unit,
         system: field!.props['quantity'].system,
-      });
-    }
-    // TODO can be removed when FUTS is ready for all quantities
-    else if (field.validators?.validation.includes('numberValidator')) {
-      quantityFields.set(field.key!.toString(), {
-        value: 0,
-        unit: 'placeholder-unit',
-        system: 'https://unitsofmeasure.org',
-      });
-    }
-    // TODO can be removed when profiles are ready for all quantities
-    else if (field.props?.type === 'number') {
-      quantityFields.set(field.key!.toString(), {
-        value: 0,
-        unit: 'placeholder-unit',
-        system: 'https://unitsofmeasure.org',
+        code: field!.props['quantity'].code,
       });
     }
     if (field.fieldGroup) {

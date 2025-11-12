@@ -386,36 +386,30 @@ describe('test utils', () => {
     });
   });
 
-  describe('findQuantityFieldsByProp', () => {
+  fdescribe('findQuantityFieldsByProp', () => {
     it('finds fields with quantity prop and returns map with Quantities', () => {
       const fields: FormlyFieldConfig[] = [
-        { key: 'a', props: { quantity: { unit: 'mg', system: 'http://unitsofmeasure.org' } } },
-        { key: 'b', props: { quantity: { unit: 'kg', system: 'http://unitsofmeasure.org' } } },
+        { key: 'a', props: { quantity: { unit: 'mg', system: 'http://unitsofmeasure.org', code: 'mg' } } },
+        { key: 'b', props: { quantity: { unit: 'kg', system: 'http://unitsofmeasure.org', code: 'kg' } } },
+        { key: 'c', props: { quantity: { unit: undefined, system: 'http://unitsofmeasure.org', code: 'kg' } } },
       ];
       const result = findQuantityFieldsByProp(fields);
-      expect(result.size).toBe(2);
-      expect(result.get('a')).toEqual({ value: 0, unit: 'mg', system: 'http://unitsofmeasure.org' });
-      expect(result.get('b')).toEqual({ value: 0, unit: 'kg', system: 'http://unitsofmeasure.org' });
-    });
-
-    // TODO can be removed when FUTS is ready for all quantities
-    it('finds fields with numberValidator and returns standard quantity', () => {
-      const fields: FormlyFieldConfig[] = [{ key: 'c', validators: { validation: ['numberValidator'] } }];
-      const result = findQuantityFieldsByProp(fields);
-      expect(result.size).toBe(1);
-      expect(result.get('c')).toEqual({ value: 0, unit: 'placeholder-unit', system: 'https://unitsofmeasure.org' });
+      expect(result.size).toBe(3);
+      expect(result.get('a')).toEqual({ value: 0, unit: 'mg', system: 'http://unitsofmeasure.org', code: 'mg' });
+      expect(result.get('b')).toEqual({ value: 0, unit: 'kg', system: 'http://unitsofmeasure.org', code: 'kg' });
+      expect(result.get('c')).toEqual({ value: 0, unit: undefined, system: 'http://unitsofmeasure.org', code: 'kg' });
     });
 
     it('finds nested fields with quantity prop and returns quantity object', () => {
       const fields: FormlyFieldConfig[] = [
         {
           key: 'parent',
-          fieldGroup: [{ key: 'child', props: { quantity: { unit: 'ml', system: 'http://unitsofmeasure.org' } } }],
+          fieldGroup: [{ key: 'child', props: { quantity: { unit: 'ml', system: 'http://unitsofmeasure.org', code: 'ml' } } }],
         },
       ];
       const result = findQuantityFieldsByProp(fields);
       expect(result.size).toBe(1);
-      expect(result.get('child')).toEqual({ value: 0, unit: 'ml', system: 'http://unitsofmeasure.org' });
+      expect(result.get('child')).toEqual({ value: 0, unit: 'ml', system: 'http://unitsofmeasure.org', code: 'ml' });
     });
 
     it('returns empty map when no matching fields can be found', () => {

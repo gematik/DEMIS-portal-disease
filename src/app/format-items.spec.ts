@@ -28,20 +28,20 @@ describe('utils', () => {
 describe('formatItems', () => {
   it('formats quantities correctly', () => {
     const quantityFields = new Map<string, Quantity>();
-    quantityFields.set('q1', { value: 0, unit: 'mg', system: 'http://unitsofmeasure.org' });
+    quantityFields.set('q1', { value: 0, unit: 'mg', system: 'http://unitsofmeasure.org', code: 'mg' });
     const model = { q1: { answer: { q1: 42 } } };
     const result = formatItems(model, quantityFields);
     expect(result).toEqual([
       {
         linkId: 'q1',
-        answer: [{ valueQuantity: { value: 42, unit: 'mg', system: 'http://unitsofmeasure.org' } }],
+        answer: [{ valueQuantity: { value: 42, unit: 'mg', system: 'http://unitsofmeasure.org', code: 'mg' } }],
       },
     ]);
   });
 
   it('formats nested question with quantity correctly', () => {
     const quantityFields = new Map<string, Quantity>();
-    quantityFields.set('therapyPeriodOther', { value: 0, unit: 'days', system: 'http://unitsofmeasure.org' });
+    quantityFields.set('therapyPeriodOther', { value: 0, unit: 'days', system: 'http://unitsofmeasure.org', code: 'days' });
     const model = {
       therapy: {
         answer: {
@@ -98,6 +98,7 @@ describe('formatItems', () => {
                       value: '66',
                       unit: 'days',
                       system: 'http://unitsofmeasure.org',
+                      code: 'days',
                     },
                   },
                 ],

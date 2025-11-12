@@ -9,15 +9,22 @@
         {{ tab.props?.label }}
       </div>
     </ng-template>
-    <div id="disease-form-section-header" class="section-header">
-      <h1 class="section-title">{{ tab.props?.label }}</h1>
-      <div class="oval-label"> Schritt {{ navtabs.selectedIndex !== null ? navtabs.selectedIndex + 1 : '?' }}
-        von {{ tabCount() }}
+    @if (FEATURE_FLAG_PORTAL_PAGE_STRUCTURE) {
+      <div id="disease-form-section-header" class="section-header">
+        @let titleText = tab.props?.label || '';
+        <gem-demis-section-header id="disease-form-section-headline" [level]="1" [titleText]="titleText"></gem-demis-section-header>
       </div>
-    </div>
+    } @else {
+      <div id="disease-form-section-header_deprecated" class="section-header_deprecated">
+        <h1 class="section-title">{{ tab.props?.label }}</h1>
+        <div class="oval-label"> Schritt {{ navtabs.selectedIndex !== null ? navtabs.selectedIndex + 1 : '?' }}
+          von {{ tabCount() }}
+        </div>
+      </div>
+    }
     <div class="section-body">
       <gem-demis-max-height-content-container
-        [elementSelectorsToSubtract]="['app-navbar', '#disease-form-section-header', '#disease-form-action-bar-wrapper']">
+        [elementSelectorsToSubtract]="['app-navbar', '#disease-form-section-header_deprecated', '#disease-form-section-header', '#disease-form-action-bar-wrapper']">
         <formly-field [field]="tab"></formly-field>
       </gem-demis-max-height-content-container>
     </div>
