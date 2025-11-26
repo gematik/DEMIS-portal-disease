@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { Injectable } from '@angular/core';
@@ -21,12 +22,13 @@ import { trimStrings } from '@gematik/demis-portal-core-library';
 import { dateStringToIso } from '../../shared/utils';
 import { ExtendedSalutationEnum } from '../../legacy/common-utils';
 import { environment } from 'src/environments/environment';
+import { NotificationType } from '../../demis-types';
 
 @Injectable({
   providedIn: 'root', // Makes it available app-wide
 })
 export class ProcessFormService {
-  createNotification(model: any, quantityFields?: Map<string, Quantity>): DiseaseNotification {
+  createNotification(model: any, notificationType: NotificationType, quantityFields?: Map<string, Quantity>): DiseaseNotification {
     const message: DiseaseNotification = {
       status: {
         category: model.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code,
@@ -50,16 +52,7 @@ export class ProcessFormService {
         },
         oneTimeCode: model.tabNotifier.oneTimeCode,
       },
-      notifiedPerson: {
-        info: model.tabPatient.info,
-        currentAddress: this.addAddressType(
-          model.tabPatient.currentAddressType === 'primaryAsCurrent' ? model.tabPatient.residenceAddress : model.tabPatient.currentAddress,
-          model.tabPatient.currentAddressType,
-          model.tabPatient.currentAddressInstitutionName
-        ),
-        residenceAddress: this.addAddressType(model.tabPatient.residenceAddress, model.tabPatient.residenceAddressType),
-        contacts: [...model.tabPatient.contacts.emailAddresses, ...model.tabPatient.contacts.phoneNumbers],
-      },
+      ...this.transformNotifiedPerson(model, notificationType),
       condition: this.makeCondition(model.tabDiseaseCondition),
       ...(model.tabDiseaseCommon
         ? {
@@ -86,6 +79,57 @@ export class ProcessFormService {
       trimmedMessage.notifiedPerson.info.birthDate = dateStringToIso(trimmedMessage.notifiedPerson.info.birthDate); //NOSONAR Its OK, to use this here, as this code will be removed together with the feature flag
     }
     return trimmedMessage;
+  }
+
+  private transformNotifiedPerson(model: any, notificationType: NotificationType): Partial<DiseaseNotification> {
+    switch (notificationType) {
+      case NotificationType.FollowUpNotification6_1:
+        return this.transformAnonymousPerson(model);
+      case NotificationType.NonNominalNotification7_3:
+        return this.transformNotifiedPersonNotByName(model);
+      default:
+        return this.transformNominalPerson(model);
+    }
+  }
+
+  private transformNotifiedPersonNotByName(model: any) {
+    return {
+      notifiedPerson: {
+        info: model.tabPatient.info,
+        residenceAddress: this.addAddressType(model.tabPatient.residenceAddress, model.tabPatient.residenceAddressType),
+      },
+    };
+  }
+
+  private transformNominalPerson(model: any): Partial<DiseaseNotification> {
+    const currentAddress = this.addAddressType(
+      model.tabPatient.currentAddressType === 'primaryAsCurrent' ? model.tabPatient.residenceAddress : model.tabPatient.currentAddress,
+      model.tabPatient.currentAddressType,
+      model.tabPatient.currentAddressInstitutionName
+    );
+
+    return {
+      notifiedPerson: {
+        info: model.tabPatient.info,
+        currentAddress,
+        residenceAddress: this.addAddressType(model.tabPatient.residenceAddress, model.tabPatient.residenceAddressType),
+        contacts: [...model.tabPatient.contacts.emailAddresses, ...model.tabPatient.contacts.phoneNumbers],
+      },
+    };
+  }
+
+  private transformAnonymousPerson(model: any): Partial<DiseaseNotification> {
+    return {
+      notifiedPersonAnonymous: {
+        gender: model.tabPatient.info.gender,
+        birthDate: model.tabPatient.info.birthDate || undefined,
+        residenceAddress: {
+          country: model.tabPatient.residenceAddress.country,
+          zip: model.tabPatient.residenceAddress.zip || undefined,
+          addressType: AddressType.Primary,
+        },
+      },
+    };
   }
 
   private addAddressType(address: NotifiedPersonAddressInfo, type: AddressType, institutionName?: string): NotifiedPersonAddressInfo {

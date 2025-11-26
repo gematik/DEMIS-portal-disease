@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { HttpHeaders } from '@angular/common/http';
@@ -39,6 +40,7 @@ interface Configuration {
   featureFlags: any;
   ngxLoggerConfig: NgxLoggerConfig;
   pathToFuts: string;
+  pathToDestinationLookup: string;
 }
 
 export class Environment {
@@ -81,6 +83,10 @@ export class Environment {
 
   public get pathToGatewayDiseaseNonNominal(): string {
     return this.config?.gatewayPaths?.['main'] + this.config?.gatewayPaths?.['disease_7_3_non_nominal'];
+  }
+
+  public get pathToDestinationLookup(): string {
+    return this.config?.pathToDestinationLookup;
   }
 
   /**

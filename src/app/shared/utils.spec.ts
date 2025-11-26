@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { FormlyFieldConfig } from '@ngx-formly/core';
@@ -386,7 +387,7 @@ describe('test utils', () => {
     });
   });
 
-  fdescribe('findQuantityFieldsByProp', () => {
+  describe('findQuantityFieldsByProp', () => {
     it('finds fields with quantity prop and returns map with Quantities', () => {
       const fields: FormlyFieldConfig[] = [
         { key: 'a', props: { quantity: { unit: 'mg', system: 'http://unitsofmeasure.org', code: 'mg' } } },

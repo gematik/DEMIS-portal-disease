@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { Component, OnInit } from '@angular/core';
@@ -32,6 +33,9 @@ export class AutocompleteCodingComponent extends FieldType<FieldTypeConfig> impl
     this.codings = this.props['options'] as DemisCoding[];
     if (this.props['defaultCode']) {
       this.formControl.setValue(this.codings.find(coding => coding.code === this.props['defaultCode']));
+    }
+    if (this.props['disabled']) {
+      this.formControl.disable({ emitEvent: false });
     }
   }
 }

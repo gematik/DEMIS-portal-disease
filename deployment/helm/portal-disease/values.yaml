@@ -34,6 +34,7 @@ config:
     questionnaire_6_1: /6.1/questionnaire
     questionnaire_7_3: /7.3/questionnaire
   pathToFuts: ../fhir-ui-data-model-translation
+  pathToDestinationLookup: ../destination-lookup/v1
   files: { }
   featureFlags: #Always set this to false here; feature flags will then be activated as needed via the stage configurations.
     FEATURE_FLAG_PORTAL_ERROR_DIALOG: false
@@ -49,6 +50,7 @@ config:
     disableConsoleLogging: true
   newApiEndpoints:
     pathToFuts: ../../translation/ui-data-model/v6/fhir
+    pathToDestinationLookup: ../../destination-lookup/v1
     futsPaths:
       main: ../../translation/ui-data-model/v6/fhir/disease
     gatewayPaths:

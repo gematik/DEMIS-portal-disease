@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
@@ -22,7 +23,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { selectTab } from '../utils/disease-common-utils';
 import { getAllButtonsWithSameSelector, getButton, getMultipleInputFieldsWithSameSelector } from '../../shared/material-harness-utils';
 import { MatButtonHarness } from '@angular/material/button/testing';
-import { buildMock, mainConfig } from './base.spec';
+import { buildMock, mainConfig, setupIntegrationTests } from './base.spec';
 
 describe('DiseaseFormComponent integration tests for Notifier Tab', () => {
   let component: DiseaseFormComponent;
@@ -33,11 +34,10 @@ describe('DiseaseFormComponent integration tests for Notifier Tab', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    environment.diseaseConfig = mainConfig;
-    fixture = MockRender(DiseaseFormComponent);
-    component = fixture.point.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
-    fixture.detectChanges();
+    const result = setupIntegrationTests();
+    fixture = result.fixture;
+    component = result.component;
+    loader = result.loader;
   });
 
   it('should create', () => {

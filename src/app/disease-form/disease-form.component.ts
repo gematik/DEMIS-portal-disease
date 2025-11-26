@@ -11,23 +11,24 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, HostListener, inject, OnInit, Signal } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, OnInit, Signal } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
 import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
-import { lastValueFrom, take, tap } from 'rxjs';
+import { distinctUntilChanged, filter, lastValueFrom, Subject, take, takeUntil, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FACILITY_RULES, PERSON_ADDRESS_RULES, PERSON_RULES } from '../data-transfer/functionRules';
-import { DemisCoding, getNotificationTypeByRouterUrl, NotificationType, QuestionnaireDescriptor } from '../demis-types';
+import { allowedRoutes, DemisCoding, getNotificationTypeByRouterUrl, NotificationType, QuestionnaireDescriptor } from '../demis-types';
 import { makeFieldSequence, sortItems } from '../format-items';
 import { Ifsg61Service } from '../ifsg61.service';
 import { ErrorResult, MessageType } from '../legacy/message';
-import { DiseaseStatus } from '../../api/notification';
+import { CodeDisplay, DiseaseStatus, TerminologyVersion } from '../../api/notification';
 import { ErrorMessage } from '../shared/error-message';
 import { ErrorMessageDialogComponent } from '../shared/error-message-dialog/error-message-dialog.component';
 import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
@@ -35,7 +36,6 @@ import { HelpersService } from '../shared/helpers.service';
 import { createExpressions, findQuantityFieldsByProp } from '../shared/utils';
 import { getDiseaseChoiceFields } from './common/formlyConfigs/disease-choice';
 import { HexHexDummy } from './common/hexHexDummy';
-import { notifiedPersonFormConfigFields } from './common/formlyConfigs/notified-person';
 import { notifierFacilityFormConfigFields } from './common/formlyConfigs/notifier';
 import {
   CLIPBOARD_ERROR_DIALOG_MESSAGE,
@@ -47,8 +47,18 @@ import {
 import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-service';
 import { ProcessFormService } from './services/process-form-service';
 import { NGXLogger } from 'ngx-logger';
-import { cloneObject, MessageDialogService } from '@gematik/demis-portal-core-library';
+import {
+  cloneObject,
+  FollowUpNotificationIdService,
+  MessageDialogService,
+  notifiedPersonAnonymousConfigFields,
+  notifiedPersonNotByNameConfigFields,
+} from '@gematik/demis-portal-core-library';
 import { Router } from '@angular/router';
+import { ValueSetOption, ValueSetService } from '../legacy/value-set.service';
+import { FormlyConstants } from '../legacy/formly-constants';
+import { GENDER_OPTION_LIST } from '../legacy/formly-options-lists';
+import { notifiedPersonFormConfigFields } from './common/formlyConfigs/notified-person';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
 const IFSG61_NOTIFIER = 'IFSG61_NOTIFIER'; // key into local storage
@@ -77,7 +87,7 @@ const NO_DISEASE_CHOOSEN: FormlyFieldConfig[] = [
   styleUrls: ['./disease-form.component.scss'],
   standalone: false,
 })
-export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
+export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDestroy {
   get formlyConfigFields(): FormlyFieldConfig[] {
     return this.fields;
   }
@@ -91,7 +101,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   form = new FormGroup({});
   fields: FormlyFieldConfig[] = [
     {
-      template: '<div class="loading-message"><h1><br></h1><p>Erkrankungsmeldung wird geladen...</p></div>',
+      template: '',
     },
   ];
 
@@ -106,6 +116,9 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly logger = inject(NGXLogger);
   private readonly router = inject(Router);
+  private readonly valueSetService = inject(ValueSetService);
+  private readonly followUpNotificationIdService = inject(FollowUpNotificationIdService);
+  private readonly unsubscriber = new Subject<void>();
 
   notificationType = NotificationType.NominalNotification6_1;
 
@@ -119,9 +132,13 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   conditionFields: FormlyFieldConfig[] = NO_DISEASE_CHOOSEN;
   diseaseCommonFields: FormlyFieldConfig[] = NO_DISEASE_CHOOSEN;
   questionnaireFields: FormlyFieldConfig[] = NO_DISEASE_CHOOSEN;
+  countryCodeList: ValueSetOption[] = [];
+  diseaseCodeDisplays: CodeDisplay[] = [];
 
   prevDiseaseCode?: string;
   formOptions: FormlyFormOptions = {};
+
+  terminologyVersions: TerminologyVersion[] = [];
 
   initHook = (field: FormlyFieldConfig) => {
     return field.options!.fieldChanges!.pipe(
@@ -133,6 +150,9 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   };
 
   ngOnInit() {
+    const nav = this.router.getCurrentNavigation();
+    const data = nav?.extras.state ?? window.history.state;
+
     const notifierJson = localStorage.getItem(IFSG61_NOTIFIER);
     this.model.tabNotifier = notifierJson ? JSON.parse(notifierJson) : {};
     if (
@@ -146,6 +166,10 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
       ...this.model.tabNotifier.address,
       country: 'DE',
     };
+
+    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT) {
+      this.fetchCodesystemVersions();
+    }
 
     this.model.tabPatient = {
       currentAddress: {
@@ -163,10 +187,20 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
       diseaseChoice: { answer: { valueCoding: null } },
       clinicalStatus: { answer: { valueString: StatusEnum.Final } },
       statusNoteGroup: {
-        statusNote: '',
-        initialNotificationId: '',
+        statusNote: { answer: { valueString: '' } },
+        initialNotificationId: { answer: { valueString: '' } },
       },
     };
+
+    this.valueSetService
+      .get(FormlyConstants.COUNTRY_CODES)
+      .pipe(take(1))
+      .subscribe({
+        next: countryCodes => {
+          this.countryCodeList = countryCodes;
+        },
+      });
+    this.getDiseaseCodeDisplaysAndOpenDialogIfFollowUp(data?.redirect);
 
     this.ifsg61Service
       .getCodeValueSet(VALUE_SET_ORGANIZATION_TYPE)
@@ -182,23 +216,41 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
             ...notifierFacilityFormConfigFields(typeOptions),
           ];
 
-          this.notifiedPersonFields = notifiedPersonFormConfigFields(true);
+          this.notifiedPersonFields = this.getNotifiedPersonFields(this.notificationType);
 
-          this.ifsg61Service
-            .getDiseaseOptions(this.notificationType)
-            .pipe(take(1))
-            .subscribe({
-              next: (diseaseOptions: DemisCoding[]) => {
-                this.diseaseChoiceFields = getDiseaseChoiceFields(diseaseOptions, this.notificationType === NotificationType.NonNominalNotification7_3);
-                this.combineFields();
-              },
-              error: (err: any) => {
-                this.handleError(err, 'Meldetatbestände nicht verfügbar');
-              },
-            });
+          this.diseaseChoiceFields = getDiseaseChoiceFields(this.diseaseCodeDisplays, this.notificationType);
+          this.combineFields();
         },
         error: (err: any) => {
           this.handleError(err, 'Typen nicht abrufbar');
+        },
+      });
+    if (this.isFollowUpNotification6_1()) {
+      this.handleFollowUpNotification6_1();
+    }
+  }
+
+  private getNotifiedPersonFields(notificationType: NotificationType): FormlyFieldConfig[] {
+    switch (notificationType) {
+      case NotificationType.FollowUpNotification6_1:
+        return notifiedPersonAnonymousConfigFields(this.countryCodeList, GENDER_OPTION_LIST);
+      case NotificationType.NonNominalNotification7_3:
+        return notifiedPersonNotByNameConfigFields(this.countryCodeList, GENDER_OPTION_LIST);
+      default:
+        return notifiedPersonFormConfigFields(true);
+    }
+  }
+
+  private fetchCodesystemVersions() {
+    this.ifsg61Service
+      .getCodeSystemVersions()
+      .pipe(take(1))
+      .subscribe({
+        next: versions => {
+          this.terminologyVersions = versions;
+        },
+        error: err => {
+          this.logger.warn('Failed to fetch codesystem versions', err);
         },
       });
   }
@@ -206,6 +258,70 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   // TODO: Remove this getter, once FEATURE_FLAG_PORTAL_PASTEBOX will be removed
   public get FEATURE_FLAG_PORTAL_PASTEBOX(): boolean {
     return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_PASTEBOX;
+  }
+
+  public isFollowUpNotification6_1(): boolean {
+    return this.notificationType === NotificationType.FollowUpNotification6_1;
+  }
+
+  public getDiseaseCodeDisplaysAndOpenDialogIfFollowUp(isRedirect: boolean = false): void {
+    this.ifsg61Service
+      .getDiseaseOptions(this.notificationType)
+      .pipe(take(1))
+      .subscribe({
+        next: (diseaseOptions: CodeDisplay[]) => {
+          this.diseaseCodeDisplays = diseaseOptions;
+          if (this.isFollowUpNotification6_1() && !isRedirect) {
+            this.followUpNotificationIdService.openDialog({
+              dialogData: {
+                routerLink: '/' + allowedRoutes['nominal'],
+                linkTextContent: 'eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG',
+                pathToDestinationLookup: environment.pathToDestinationLookup,
+                errorUnsupportedNotificationCategory:
+                  'Aktuell sind Nichtnamentliche Folgemeldungen einer Infektionskrankheit gemäß § 6 Abs. 1 IfSG nur für eine § 6 Abs. 1 IfSG Initialmeldung möglich.',
+              },
+              notificationCategoryCodes: this.diseaseCodeDisplays.map(codeDisplay => codeDisplay.code),
+            });
+          }
+        },
+        error: (err: any) => {
+          this.handleError(err, 'Meldetatbestände nicht verfügbar');
+        },
+      });
+  }
+
+  private handleFollowUpNotification6_1() {
+    this.followUpNotificationIdService.hasValidNotificationId$
+      .pipe(
+        takeUntil(this.unsubscriber),
+        distinctUntilChanged(),
+        filter(hasValid => hasValid === true)
+      )
+      .subscribe(() => {
+        const diseaseCode = this.followUpNotificationIdService.followUpNotificationCategory();
+        const diseaseCodeDisplay = this.diseaseCodeDisplays.find(dc => dc.code === diseaseCode);
+
+        if (diseaseCode) {
+          this.handleDiseaseSelectionChange(diseaseCode);
+          this.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding = diseaseCodeDisplay;
+          this.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer.valueString = this.followUpNotificationIdService.validatedNotificationId();
+        } else {
+          this.messageDialogService.showErrorDialog({
+            errorTitle: 'Fehler',
+            errors: [
+              {
+                text:
+                  'Der gespeicherte Erreger ' +
+                  this.followUpNotificationIdService.followUpNotificationCategory() +
+                  ' für die ID ' +
+                  this.followUpNotificationIdService.validatedNotificationId +
+                  ' wird für die §6.1er Meldungen nicht unterstützt.',
+              },
+            ],
+            redirectToHome: true,
+          });
+        }
+      });
   }
 
   private handleError(error: any, message: string) {
@@ -271,7 +387,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
             props: { label: 'Angaben zu Symptomen' },
             fieldGroup: cloneObject(this.conditionFields),
           },
-          ...(this.notificationType === NotificationType.NominalNotification6_1
+          ...(this.isFullQuestionnaire()
             ? [
                 {
                   key: 'tabDiseaseCommon',
@@ -298,6 +414,10 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     this.fieldSequence = makeFieldSequence(this.fields);
   }
 
+  isFullQuestionnaire() {
+    return this.notificationType === NotificationType.NominalNotification6_1 || this.isFollowUpNotification6_1();
+  }
+
   chooseTabAfterChoosing() {
     this.navigateToTab(2);
   }
@@ -305,14 +425,14 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   async submitForm() {
     let notification;
     const quantityFields = findQuantityFieldsByProp(this.questionnaireFields);
-    notification = this.processFormService.createNotification(this.model, quantityFields);
+    notification = this.processFormService.createNotification(this.model, this.notificationType, quantityFields);
     if (notification.common?.item) {
       sortItems(notification.common.item, this.fieldSequence.tabDiseaseCommon);
     }
     if (notification.disease?.item) {
       sortItems(notification.disease.item, this.fieldSequence.tabQuestionnaire);
     }
-
+    notification.terminologyVersions = this.terminologyVersions;
     this.ifsg61Service.submitNotification(notification, this.notificationType);
   }
 
@@ -397,23 +517,27 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     }
 
     if (e.field.id === 'disease-choice' && e.type === 'valueChanges') {
-      if (e.value.code !== this.prevDiseaseCode) {
-        if (e.value.code) {
-          this.loadQuestionnaire(e.value.code).then(problems => {
-            if (problems.length > 0) {
-              if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
-                this.messageDialogService.showErrorDialog({
-                  errorTitle: 'Systemfehler',
-                  errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
-                });
-              } else {
-                this.showErrorDialog('Systemfehler', problems);
-              }
+      this.handleDiseaseSelectionChange(e.value.code);
+    }
+  }
+
+  handleDiseaseSelectionChange(diseaseCode: string) {
+    if (diseaseCode !== this.prevDiseaseCode) {
+      if (diseaseCode) {
+        this.loadQuestionnaire(diseaseCode).then(problems => {
+          if (problems.length > 0) {
+            if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
+              this.messageDialogService.showErrorDialog({
+                errorTitle: 'Systemfehler',
+                errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
+              });
+            } else {
+              this.showErrorDialog('Systemfehler', problems);
             }
-          });
-        } else if (this.prevDiseaseCode) {
-          this.prevDiseaseCode = e.value.code;
-        }
+          }
+        });
+      } else if (this.prevDiseaseCode) {
+        this.prevDiseaseCode = diseaseCode;
       }
     }
   }
@@ -428,10 +552,12 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
           this.resetDiseaseChoiceDependentInput();
           this.questionnaireFields = descriptor.questionnaireConfigs;
           this.conditionFields = descriptor.conditionConfigs || [];
-          this.diseaseCommonFields = this.notificationType ? [] : descriptor.commonConfig;
+          this.diseaseCommonFields = !this.isFullQuestionnaire() ? [] : descriptor.commonConfig;
           this.combineFields();
           this.changeDetector.detectChanges();
-          this.chooseTabAfterChoosing();
+          if (!this.isFollowUpNotification6_1()) {
+            this.chooseTabAfterChoosing();
+          }
         })
       )
     ).then(
@@ -465,6 +591,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   async hexHex() {
     const dummy = new HexHexDummy();
     const dummyData = dummy.getDummy(this.notificationType);
+
     const diseaseCode = dummyData.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code;
     const j = JSON.stringify(dummyData);
     this.model = JSON.parse(j);
@@ -472,6 +599,9 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
     setTimeout(() => {
       this.model = JSON.parse(j);
     }, 10);
+    if (this.isFollowUpNotification6_1()) {
+      this.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer.valueString = this.followUpNotificationIdService.validatedNotificationId();
+    }
   }
 
   private navigateToTab(i: number) {
@@ -587,4 +717,10 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent {
   }
 
   protected readonly NotificationType = NotificationType;
+
+  ngOnDestroy(): void {
+    this.followUpNotificationIdService.resetState();
+    this.unsubscriber.next();
+    this.unsubscriber.complete();
+  }
 }

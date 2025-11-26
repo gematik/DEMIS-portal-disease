@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
@@ -27,21 +28,31 @@ import { registerValueSetExtension } from '../../../app/legacy/value-set.extensi
 import { ValueSetService } from '../../../app/legacy/value-set.service';
 import { environment } from '../../../environments/environment';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { of } from 'rxjs';
-import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_DISEASE_OPTIONS_NONNOMINAL, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
+import { BehaviorSubject, of } from 'rxjs';
+import { EXAMPLE_COUNTRY_CODES, EXAMPLE_DISEASE_OPTIONS, EXAMPLE_DISEASE_OPTIONS_NONNOMINAL, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { PasteBoxComponent } from '@gematik/demis-portal-core-library';
+import { FollowUpNotificationIdService, PasteBoxComponent } from '@gematik/demis-portal-core-library';
 import { EXAMPLE_TOXP_SHORT } from '../../shared/data/test-values-nonnominal';
+import { Router } from '@angular/router';
+import { allowedRoutes, NotificationType } from '../../../app/demis-types';
+import { EXAMPLE_CODESYSTEM_VERSIONS } from '../../shared/data/test-codesystem-versions';
 
 const overrides = {
   get Ifsg61Service() {
     return {
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
+      getCodeSystemVersions: jasmine.createSpy('getCodeSystemVersions').and.returnValue(of(EXAMPLE_CODESYSTEM_VERSIONS)),
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_MSVD_SHORT)),
     } as Partial<Ifsg61Service>;
+  },
+
+  get ValueSetService() {
+    return {
+      get: jasmine.createSpy('get').and.returnValue(of(EXAMPLE_COUNTRY_CODES)),
+    };
   },
 };
 
@@ -49,6 +60,7 @@ const overridesNonNominal = {
   get Ifsg61Service() {
     return {
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
+      getCodeSystemVersions: jasmine.createSpy('getCodeSystemVersions').and.returnValue(of(EXAMPLE_CODESYSTEM_VERSIONS)),
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS_NONNOMINAL)),
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_TOXP_SHORT)),
     } as Partial<Ifsg61Service>;
@@ -76,6 +88,7 @@ export const mainConfig = {
     questionnaire_7_3: '/7.3/questionnaire',
   },
   pathToFuts: '/fhir-ui-data-model-translation',
+  pathToDestinationLookup: '/destination-lookup/v1',
   featureFlags: {
     FEATURE_FLAG_PORTAL_ERROR_DIALOG: true,
     FEATURE_FLAG_PORTAL_PASTEBOX: true,
@@ -83,6 +96,7 @@ export const mainConfig = {
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_DATEPICKER: false,
     FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
+    FEATURE_FLAG_DISEASE_STRICT: true,
   },
   ngxLoggerConfig: {
     level: 1,
@@ -90,27 +104,56 @@ export const mainConfig = {
   },
 };
 
-export function buildMock(nonNominal = false) {
+export function buildMock(notificationType = NotificationType.NominalNotification6_1) {
   let ifsg61Service;
-  if (nonNominal) {
+  let valueSetService;
+  let allowedRoutesMock;
+  valueSetService = overrides.ValueSetService;
+  if (notificationType === NotificationType.NonNominalNotification7_3) {
     ifsg61Service = overridesNonNominal.Ifsg61Service;
+    allowedRoutesMock = allowedRoutes['nonNominal'];
+  } else if (notificationType === NotificationType.FollowUpNotification6_1) {
+    ifsg61Service = overrides.Ifsg61Service;
+    allowedRoutesMock = allowedRoutes['followUp'];
   } else {
     ifsg61Service = overrides.Ifsg61Service;
+    allowedRoutesMock = allowedRoutes['nominal'];
   }
+
+  const followUpNotificationIdServiceMock = {
+    hasValidNotificationId$: new BehaviorSubject<boolean>(false),
+    openDialog: jasmine.createSpy('openDialog'),
+    resetState: jasmine.createSpy('resetState'),
+    followUpNotificationCategory: jasmine.createSpy('followUpNotificationCategory').and.returnValue(''),
+    validatedNotificationId: jasmine.createSpy('validatedNotificationId').and.returnValue(''),
+  } as any;
+
   return MockBuilder(DiseaseFormComponent)
     .keep(AppModule)
     .keep(NoopAnimationsModule)
     .keep(MatIconTestingModule)
     .keep(PasteBoxComponent)
     .provide(MockProvider(Ifsg61Service, ifsg61Service))
+    .provide(MockProvider(ValueSetService, valueSetService))
     .provide(MockProvider(ChangeDetectorRef))
     .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
     .provide(MockProvider(HelpersService))
+    .provide({
+      provide: FollowUpNotificationIdService,
+      useValue: followUpNotificationIdServiceMock,
+    })
     .provide({
       provide: FORMLY_CONFIG,
       multi: true,
       useFactory: registerValueSetExtension,
       deps: [ValueSetService],
+    })
+    .provide({
+      provide: Router,
+      useValue: jasmine.createSpyObj('Router', ['navigate', 'getCurrentNavigation'], {
+        url: allowedRoutesMock,
+        routerState: { root: {} },
+      }),
     });
 }
 

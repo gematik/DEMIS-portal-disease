@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import {
@@ -69,6 +70,7 @@ import {
   ERROR_MIN_LENGTH,
   ERROR_MIN_ONE_CHAR,
   ERROR_REQUIRED,
+  ERROR_SHORT_ZIP,
   FIELD_BIRTH_DATE,
   FIELD_BSNR,
   FIELD_CURRENT_ADDRESS_CITY,
@@ -438,6 +440,18 @@ export const TEST_PARAMETER_VALIDATION = {
     { value: VALUE_INVALID_EMAIL_6, expectedResult: ERROR_INVALID_EMAIL },
     { value: VALUE_INVALID_EMAIL_7, expectedResult: ERROR_INVALID_EMAIL },
     { value: VALUE_INVALID_EMAIL_8, expectedResult: ERROR_INVALID_EMAIL },
+  ],
+  notifiedPersonAnonymous: [
+    {
+      field: FIELD_RESIDENCE_ADDRESS_ZIP,
+      value: VALUE_SHORT_ZIP,
+      expectedResult: ERROR_SHORT_ZIP,
+    },
+    {
+      field: FIELD_RESIDENCE_ADDRESS_ZIP,
+      value: VALUE_SPACE,
+      expectedResult: ERROR_SHORT_ZIP,
+    },
   ],
 };
 

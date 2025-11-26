@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { registerLocaleData } from '@angular/common';
@@ -54,6 +55,7 @@ export const STREET_REG_EXP: RegExp = /^[^@\\*?$|=´"\[\]{}<>]{0,100}$/;
 export const ADDITIONAL_INFO_REG_EXP: RegExp = /^[^\\=´'<>]{0,5000}$/; // No dangerous signs allowed
 export const ZIP_GERMANY_REG_EXP: RegExp = /^\d{5}$/; // 5 Ziffern allowed
 export const ZIP_INTERNATIONAL_REG_EXP: RegExp = /(?=^[\w\- ]{3,50}$)(?=.*\d)/;
+export const ZIP_GERMANY_SHORT_REG_EXP: RegExp = /^\d{3}$/; // 3-stellige Nummer
 export const NAME_REG_EXP: RegExp = /^[^@\\*?$|=´'"\[\]{}<>0-9]{0,100}$/; // from https://wiki.gematik.de/x/JRlpGw
 export const POSITIVE_NUMBER: RegExp = /^\d{0,10}$/;
 
@@ -75,6 +77,7 @@ export const PHONE_ERROR_MSG: string = 'Die Telefonnummer muss mit 0 oder + begi
 export const TEXT_ERROR_MSG: string = 'Ihre Eingabe enthält unzulässige Sonderzeichen';
 export const ZIP_GERMANY_ERROR_MSG: string = 'Die Postleitzahl muss aus 5 Ziffern bestehen';
 export const ZIP_INTERNATIONAL_ERROR_MSG: string = 'Die Postleitzahl muss aus mindestens 3 Zeichen und einer Ziffer bestehen';
+export const ZIP_GERMANY_SHORT_ERROR_MSG: string = 'Die Postleitzahl muss aus 3 Ziffern bestehen';
 export const NUMBER_ERROR_MSG: string = 'Bitte geben Sie eine positive Zahl ein.';
 export const VALUE_DEFAULT_PLACEHOLDER: string = 'Bitte eingeben';
 export const VALUE_DEFUALT_SELECT_PLACEHOLDER = 'Bitte auswählen';

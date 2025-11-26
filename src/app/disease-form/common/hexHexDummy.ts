@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { AddressType, DiseaseStatus } from '../../../api/notification';
@@ -26,7 +27,23 @@ export class HexHexDummy {
       // §7.3 is a strict-only feature
       return this.maxHivDummy;
     }
-    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT) {
+    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT && type === NotificationType.FollowUpNotification6_1) {
+      return {
+        ...this.strictMaxMasernDummy,
+        tabPatient: {
+          residenceAddress: {
+            zip: '123',
+            country: GERMANY_COUNTRY_CODE,
+            addressType: AddressType.Primary,
+          },
+          info: {
+            gender: 'MALE',
+            birthDate: '01.1970',
+          },
+        },
+      };
+    }
+    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT && type === NotificationType.NominalNotification6_1) {
       return this.strictMaxMasernDummy;
     }
     return this.maxMasernDummy;
@@ -742,7 +759,19 @@ export class HexHexDummy {
   get maxHivDummy() {
     return {
       tabNotifier: this.maxMasernDummy.tabNotifier,
-      tabPatient: this.maxMasernDummy.tabPatient,
+      tabPatient: {
+        residenceAddress: {
+          zip: '123',
+          country: GERMANY_COUNTRY_CODE,
+          addressType: AddressType.Primary,
+        },
+        info: {
+          gender: 'MALE',
+          firstname: ' Max',
+          lastname: 'Melderson',
+          birthDate: '01.01.1970',
+        },
+      },
       tabDiseaseChoice: {
         diseaseChoice: {
           answer: {

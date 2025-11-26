@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
@@ -21,22 +22,17 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { environment } from '../../../environments/environment';
 import { selectDisease, selectTab } from '../utils/disease-common-utils';
 import { buildMock, mainConfig } from './base.spec';
-import { Router } from '@angular/router';
 import { getInput } from '../../shared/material-harness-utils';
 import { checkDescribingError } from '../../shared/assertion-utils';
 import { VALUE_INVALID_QUANTITY } from '../../shared/test-constants';
+import { NotificationType } from '../../../app/demis-types';
 
 describe('DiseaseFormComponent integration tests for Questionnaire Tab with §7.3 nonnominal notifications', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
   let loader: HarnessLoader;
 
-  beforeEach(() =>
-    buildMock(true).provide({
-      provide: Router,
-      useValue: { url: '/disease-notification/7.3/non-nominal' },
-    })
-  );
+  beforeEach(() => buildMock(NotificationType.NonNominalNotification7_3));
 
   beforeEach(() => {
     environment.diseaseConfig = mainConfig;

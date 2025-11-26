@@ -11,15 +11,16 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { buildMock, setupIntegrationTests } from './base.spec';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { Router } from '@angular/router';
 import { getTabList } from '../../shared/material-harness-utils';
+import { NotificationType } from '../../../app/demis-types';
 
 describe('DiseaseFormComponent nonnominal integration tests', () => {
   let component: DiseaseFormComponent;
@@ -27,12 +28,7 @@ describe('DiseaseFormComponent nonnominal integration tests', () => {
   let loader: HarnessLoader;
 
   // we need to have two beforeEach() steps, since a MockingComponent needs to be returned before working with it
-  beforeEach(() =>
-    buildMock().provide({
-      provide: Router,
-      useValue: { url: '/disease-notification/7.3/non-nominal' },
-    })
-  );
+  beforeEach(() => buildMock(NotificationType.NonNominalNotification7_3));
 
   beforeEach(() => {
     const result = setupIntegrationTests();

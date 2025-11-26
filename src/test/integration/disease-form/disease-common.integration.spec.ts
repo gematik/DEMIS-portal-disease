@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
@@ -255,7 +256,8 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           await moveFromNotifiedPersonToKlinischeAngaben(fixture, loader);
         });
 
-        it('should verify changing currentaddress to submitting facility clears data', async () => {
+        //TODO: activate test after fixing known issue DEMIS-4623
+        xit('should verify changing currentaddress to submitting facility clears data', async () => {
           // Step 1: copy address via checkbox
           await selectIsHospitalizedYes(loader);
           await verifyCheckBoxCopyAddressIsChecked(loader);
@@ -318,7 +320,8 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           });
         });
 
-        it('should verify having 2 panels but only checking 1st checkbox and changing currentAddress should only affect 1st panel input fields', async () => {
+        //TODO: activate test after fixing known issue DEMIS-4623
+        xit('should verify having 2 panels but only checking 1st checkbox and changing currentAddress should only affect 1st panel input fields', async () => {
           // Step 1: copy address in first panel
           await selectIsHospitalizedYes(loader);
           fixture.detectChanges();

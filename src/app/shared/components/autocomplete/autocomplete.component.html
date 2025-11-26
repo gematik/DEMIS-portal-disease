@@ -20,8 +20,10 @@
       matInput
       [id]="createIdForAutocompleteInput(formlyField)"
       [matAutocomplete]="auto"
+      [matAutocompleteDisabled]="autocompleteDisabled"
       [matChipInputFor]="chipList"
       [formControl]="selectControl"
+      [readonly]="autocompleteDisabled"
       [formlyAttributes]="formlyField"
       [placeholder]="placeholder || ''"
       [errorStateMatcher]="errorStateMatcher()"
@@ -29,7 +31,7 @@
       (click)="onClick()"
       (blur)="onBlur()" />
   } @else {
-    <input matInput [matAutocomplete]="auto" [formControl]="selectControl" [placeholder]="placeholder || ''" [errorStateMatcher]="errorStateMatcher()" />
+    <input matInput [matAutocomplete]="auto" [matAutocompleteDisabled]="autocompleteDisabled" [readonly]="autocompleteDisabled" [formControl]="selectControl" [placeholder]="placeholder || ''" [errorStateMatcher]="errorStateMatcher()" />
   }
   @if (clearable() && selectControl.value) {
     <span style="position: absolute; left: calc(100% - 30px); top: +5px">

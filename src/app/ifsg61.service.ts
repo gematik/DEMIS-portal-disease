@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { inject, Injectable, NgZone } from '@angular/core';
@@ -22,9 +23,10 @@ import { environment } from '../environments/environment';
 import { DemisCoding, NotificationType, QuestionnaireDescriptor } from './demis-types';
 import { NGXLogger } from 'ngx-logger';
 import { FileService } from './legacy/file.service';
-import { DiseaseNotification, ValidationError } from '../api/notification';
+import { DiseaseNotification, TerminologyVersion, ValidationError } from '../api/notification';
 import { infoOutline } from './disease-form/common/formlyConfigs/formly-base';
 import { MessageDialogService, SubmitDialogProps } from '@gematik/demis-portal-core-library';
+import { map } from 'rxjs/operators';
 
 const PREFFERED_LANGUAGES = [/de-DE/, /de.*/];
 
@@ -45,6 +47,24 @@ export class Ifsg61Service {
     return this.httpClient.get<DemisCoding[]>(url, {
       headers: environment.futsHeaders,
     });
+  }
+
+  getCodeSystemVersions(): Observable<TerminologyVersion[]> {
+    const url = `${environment.pathToFuts}/CodeSystem`;
+    return this.httpClient
+      .get<string[]>(url, {
+        headers: environment.futsHeaders,
+      })
+      .pipe(
+        map((values: string[]) =>
+          values
+            .filter(item => item.includes('|'))
+            .map(item => {
+              const [system, version] = item.split('|');
+              return { system, version };
+            })
+        )
+      );
   }
 
   getDiseaseOptions(type: NotificationType): Observable<DemisCoding[]> {
@@ -88,7 +108,7 @@ export class Ifsg61Service {
       .subscribe({
         next: (response: HttpResponse<any>) => {
           this.ngZone.run(() => {
-            const submitDialogData = this.createSubmitDialogData(response, notification, notificationType);
+            const submitDialogData = this.createSubmitDialogData(response, notificationType, notification);
             this.messageDialogService.showSubmitDialog(submitDialogData);
           });
         },
@@ -114,12 +134,12 @@ export class Ifsg61Service {
     return fullUrl;
   }
 
-  private createSubmitDialogData(response: HttpResponse<any>, notification: DiseaseNotification, notificationType: NotificationType): SubmitDialogProps {
+  private createSubmitDialogData(response: HttpResponse<any>, notificationType: NotificationType, notification: DiseaseNotification): SubmitDialogProps {
     const content = encodeURIComponent(response.body.content);
     const href = 'data:application/actet-stream;base64,' + content;
     return {
       authorEmail: response.body.authorEmail,
-      fileName: this.fileService.getFileNameByNotificationType(notification.notifiedPerson!.info, notificationType, response.body?.notificationId),
+      fileName: this.fileService.getFileNameByNotificationType(response.body?.notificationId, notificationType, notification),
       href: href,
       notificationId: response.body.notificationId,
       timestamp: response.body.timestamp,

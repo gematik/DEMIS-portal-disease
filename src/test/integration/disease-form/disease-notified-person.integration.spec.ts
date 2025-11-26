@@ -11,13 +11,14 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { MockedComponentFixture, MockRender } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { buildMock, mainConfig } from './base.spec';
+import { buildMock, mainConfig, setupIntegrationTests } from './base.spec';
 import { environment } from '../../../environments/environment';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { selectTab } from '../utils/disease-common-utils';
@@ -39,11 +40,10 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
   beforeEach(() => buildMock());
 
   beforeEach(() => {
-    environment.diseaseConfig = mainConfig;
-    fixture = MockRender(DiseaseFormComponent);
-    component = fixture.point.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
-    fixture.detectChanges();
+    const result = setupIntegrationTests();
+    fixture = result.fixture;
+    component = result.component;
+    loader = result.loader;
   });
 
   it('should create', () => {

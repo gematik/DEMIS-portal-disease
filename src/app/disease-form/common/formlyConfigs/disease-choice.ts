@@ -11,16 +11,20 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { infoOutline } from './formly-base';
-import { DemisCoding } from '../../../demis-types';
-import { DiseaseStatus } from '../../../../api/notification';
+import { NotificationType } from '../../../demis-types';
+import { CodeDisplay, DiseaseStatus } from '../../../../api/notification';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
-export function getDiseaseChoiceFields(diseaseOptions: DemisCoding[], isNonNominal: boolean): FormlyFieldConfig[] {
+export function getDiseaseChoiceFields(diseaseOptions: CodeDisplay[], notificationType: NotificationType): FormlyFieldConfig[] {
+  const isNonNominal = notificationType === NotificationType.NonNominalNotification7_3;
+  const isFollowUp = notificationType === NotificationType.FollowUpNotification6_1;
+
   return [
     infoOutline,
     {
@@ -42,7 +46,8 @@ export function getDiseaseChoiceFields(diseaseOptions: DemisCoding[], isNonNomin
       props: {
         options: diseaseOptions,
         required: true,
-        clearable: true,
+        clearable: !isFollowUp,
+        disabled: isFollowUp,
         importSpec: {
           importKey: 'D.code',
         },
@@ -94,6 +99,7 @@ export function getDiseaseChoiceFields(diseaseOptions: DemisCoding[], isNonNomin
           className: 'col-md-6 LinkId_initialNotificationId',
           props: {
             label: 'Initiale Meldungs-ID bei Folgemeldungen',
+            disabled: isFollowUp,
             importSpec: {
               importKey: 'D.notificationId',
               multi: false,

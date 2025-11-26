@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 //field ids
@@ -123,6 +124,7 @@ export const ERROR_INVALID_DATE = 'Kein gültiges Datum (Beispiele: 05.11.1998)'
 export const ERROR_INVALID_SPECIAL_CHAR = 'Ihre Eingabe enthält unzulässige Sonderzeichen';
 export const ERROR_REQUIRED = 'Diese Angabe wird benötigt';
 export const ERROR_MIN_LENGTH = 'Minimallänge nicht erreicht';
+export const ERROR_SHORT_ZIP = 'Die Postleitzahl muss aus 3 Ziffern bestehen';
 export const ERROR_MIN_ONE_CHAR = 'Es muss mindestens ein Zeichen eingegeben werden';
 export const ERROR_INVALID_HOUSE_NUMBER = 'Keine gültige Hausnummer';
 export const ERROR_INVALID_EMAIL = 'Keine gültige E-Mail (Beispiel: meine.Email@email.de)';
