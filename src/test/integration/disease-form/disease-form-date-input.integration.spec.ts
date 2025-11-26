@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { HarnessLoader } from '@angular/cdk/testing';
@@ -29,6 +30,7 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { By } from '@angular/platform-browser';
 import { CLINICAL_TAB_INDEX, DATE_FORMAT_TEST_CASES, MELDESTATBESTAND_TAB_INDEX } from '../../shared/data/date-format-test-cases';
 import { dispatchChangeEvents, navigateToTabIndex, selectDisease, simulateTypingWithDOM } from '../utils/disease-common-utils';
+import { EXAMPLE_CODESYSTEM_VERSIONS } from '../../shared/data/test-codesystem-versions';
 
 type FormlyFieldConfigWithPotentialValidators = FormlyFieldConfig & {
   validators?: {
@@ -43,6 +45,7 @@ describe('Date input without dots integration test', () => {
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
   let component: DiseaseFormComponent;
   let loader: HarnessLoader;
+
   function getModifiedMockQuestionnaire(): typeof EXAMPLE_MSVD_SHORT {
     const modifiedMock = cloneDeep(EXAMPLE_MSVD_SHORT);
     const autoDotValidator = 'date3';
@@ -98,6 +101,7 @@ describe('Date input without dots integration test', () => {
     const specificIfsg61ServiceMock = {
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(getModifiedMockQuestionnaire())),
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
+      getCodeSystemVersions: jasmine.createSpy('getCodeSystemVersions').and.returnValue(of(EXAMPLE_CODESYSTEM_VERSIONS)),
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
     } as jasmine.SpyObj<Ifsg61Service>;
 

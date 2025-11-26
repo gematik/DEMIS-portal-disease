@@ -11,11 +11,12 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { Injectable } from '@angular/core';
-import { NotifiedPersonBasicInfo } from '../../api/notification';
+import { DiseaseNotification, NotifiedPersonBasicInfo } from '../../api/notification';
 import { transliterator } from './transliterator';
 import { NotificationType } from '../demis-types';
 
@@ -27,11 +28,11 @@ export class FileService {
 
   constructor() {}
 
-  public getFileNameByNotificationType(person: NotifiedPersonBasicInfo, notificationType: NotificationType, notificationId: string): string {
-    if (notificationType === NotificationType.NonNominalNotification7_3) {
+  public getFileNameByNotificationType(notificationId: string, notificationType: NotificationType, notification: DiseaseNotification): string {
+    if (notificationType === NotificationType.NonNominalNotification7_3 || notificationType === NotificationType.FollowUpNotification6_1) {
       return this.convertFileNameForNonNominal(notificationId);
     }
-    return this.convertFileNameForPerson(person);
+    return this.convertFileNameForPerson(notification.notifiedPerson?.info!);
   }
 
   /**

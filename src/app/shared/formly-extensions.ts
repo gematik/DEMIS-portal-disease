@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { FormlyExtension } from '@ngx-formly/core';
@@ -39,6 +40,19 @@ export const defaultPlaceholderExtension: FormlyExtension = {
 
 export const defaultAppearanceExtension: FormlyExtension = {
   prePopulate(field): void {
+    //TODO can be removed after FEATURE_FLAG_OUTLINE_DESIGN is removed
+    //overwrites appearance for datepicker in notifiedPersonAnonymous from core
+    if (
+      !environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN &&
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE &&
+      field.key === 'info.birthDate' &&
+      field.type === 'datepicker'
+    ) {
+      field.props = {
+        ...field.props,
+        appearance: 'fill',
+      };
+    }
     if (field.props?.['appearance'] || !environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN) {
       return;
     }

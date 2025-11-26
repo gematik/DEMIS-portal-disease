@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
@@ -48,6 +49,8 @@ import {
   UI_LUXON_DATE_FORMAT,
   ZIP_GERMANY_ERROR_MSG,
   ZIP_GERMANY_REG_EXP,
+  ZIP_GERMANY_SHORT_ERROR_MSG,
+  ZIP_GERMANY_SHORT_REG_EXP,
   ZIP_INTERNATIONAL_ERROR_MSG,
   ZIP_INTERNATIONAL_REG_EXP,
 } from './common-utils';
@@ -63,6 +66,7 @@ export const NotificationFormValidationModule = FormlyModule.forRoot({
     { name: 'dateInputValidator', validation: dateInputValidation },
     { name: 'partialDateInputValidation', validation: partialDateInputValidation },
     { name: 'germanZipValidator', validation: germanZipValidation },
+    { name: 'germanShortZipValidator', validation: germanShortZipValidation },
     { name: 'houseNumberValidator', validation: houseNumberValidation },
     { name: 'internationalZipValidator', validation: internationalZipValidation },
     { name: 'textValidator', validation: textValidation },
@@ -149,6 +153,10 @@ export function validateGermanZip(zip: string): any {
   return matchesRegExp(ZIP_GERMANY_REG_EXP, zip) ? null : setValidationMessage(ZIP_GERMANY_ERROR_MSG);
 }
 
+export function validateGermanShortZip(zip: string): any {
+  return zip ? (matchesRegExp(ZIP_GERMANY_SHORT_REG_EXP, zip) ? null : setValidationMessage(ZIP_GERMANY_SHORT_ERROR_MSG)) : null;
+}
+
 export function termValidation(term: string): any {
   // following signs not accepted: @ \ * ? $ | = ´ ' " [ ] { } < >
   if (!term) return null;
@@ -187,6 +195,10 @@ export function validateInternationalZip(zip: string): any {
     return null;
   }
   return matchesRegExp(ZIP_INTERNATIONAL_REG_EXP, zip) ? null : setValidationMessage(ZIP_INTERNATIONAL_ERROR_MSG);
+}
+
+function germanShortZipValidation(control: AbstractControl): any {
+  return validateGermanShortZip(control.value);
 }
 
 export function validatePhoneNo(phoneNumber: string, required: boolean = true): boolean | null {

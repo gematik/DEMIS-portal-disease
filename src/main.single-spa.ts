@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { enableProdMode, NgZone } from '@angular/core';
@@ -84,13 +85,14 @@ function bootstrapFn(props: AppProps) {
 function syncUrlWithRouter() {
   if (router) {
     const redirectUrl = window.location.hash.replace(/^#\//, '').split('?')[0];
+    const redirectExtra = { state: { redirect: true } };
     router.navigateByUrl('').then(_ => {
       if (redirectUrl.includes('non-nominal')) {
-        router.navigateByUrl(allowedRoutes['nonNominal']);
+        router.navigate([allowedRoutes['nonNominal']], redirectExtra);
       } else if (redirectUrl.includes('follow-up')) {
-        router.navigateByUrl(allowedRoutes['followUp']);
+        router.navigate([allowedRoutes['followUp']], redirectExtra);
       } else {
-        router.navigateByUrl(allowedRoutes['main']);
+        router.navigate([allowedRoutes['main']], redirectExtra);
       }
     });
   }

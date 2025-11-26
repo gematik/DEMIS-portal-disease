@@ -3,6 +3,14 @@
   background-color: var(--color-white);
 }
 
+.mat-mdc-form-field-error-wrapper,
+.mat-mdc-form-field-error-wrapper > *,
+.mat-mdc-form-field-subscript-wrapper,
+mat-error {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
 .compile-error {
   color: red;
   font-weight: bold;

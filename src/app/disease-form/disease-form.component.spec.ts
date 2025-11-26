@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { DiseaseFormComponent } from './disease-form.component';
@@ -29,11 +30,11 @@ import { FORMLY_CONFIG } from '@ngx-formly/core';
 import { registerValueSetExtension } from '../legacy/value-set.extension';
 import { environment } from '../../environments/environment';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_MSVD, EXAMPLE_VALUE_SET } from '../../test/shared/data/test-values';
+import { EXAMPLE_COUNTRY_CODES, EXAMPLE_DISEASE_OPTIONS, EXAMPLE_MSVD, EXAMPLE_VALUE_SET } from '../../test/shared/data/test-values';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 import { allowedRoutes, NotificationType } from '../demis-types';
 
 const overrides = {
@@ -43,6 +44,11 @@ const overrides = {
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_MSVD)),
     } as Partial<Ifsg61Service>;
+  },
+  get ValueSetService() {
+    return {
+      get: jasmine.createSpy('get').and.returnValue(of(EXAMPLE_COUNTRY_CODES)),
+    };
   },
 };
 
@@ -65,6 +71,7 @@ describe('DiseaseFormComponent unit tests', () => {
       .provide(MockProvider(ChangeDetectorRef))
       .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
       .provide(MockProvider(HelpersService, helpersServiceSpy))
+      .provide(MockProvider(ValueSetService, overrides.ValueSetService))
       .provide(MockProvider(ImportFieldValuesService))
       .provide(MockProvider(MatIconModule))
       .mock(MatIcon)
@@ -76,7 +83,11 @@ describe('DiseaseFormComponent unit tests', () => {
       })
       .provide({
         provide: Router,
-        useValue: jasmine.createSpyObj('Router', ['navigate'], { url: allowedRoutes['nominal'] }),
+        useValue: jasmine.createSpyObj('Router', ['navigate', 'getCurrentNavigation'], {
+          url: allowedRoutes['nominal'],
+          events: of(new NavigationStart(0, allowedRoutes['nominal'])),
+          routerState: { root: {} },
+        }),
       })
   );
 
@@ -134,7 +145,7 @@ describe('DiseaseFormComponent unit tests', () => {
       await component.submitForm();
 
       // Assertion
-      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, new Map());
+      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, NotificationType.NominalNotification6_1, new Map());
       expect(ifsg61Service.submitNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
     });
 
@@ -154,7 +165,7 @@ describe('DiseaseFormComponent unit tests', () => {
       await component.submitForm();
 
       // Assertion
-      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, jasmine.any(Map));
+      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, NotificationType.NonNominalNotification7_3, jasmine.any(Map));
       expect(ifsg61Service.submitNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
     });
   });

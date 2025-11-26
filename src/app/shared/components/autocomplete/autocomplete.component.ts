@@ -11,16 +11,17 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
-import { Component, forwardRef, Input, OnInit, ViewChild, input } from '@angular/core';
+import { Component, forwardRef, Input, OnInit, ViewChild, input, OnDestroy } from '@angular/core';
 import { DemisCoding } from '../../../demis-types';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { FieldTypeConfig } from '@ngx-formly/core';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { startWith } from 'rxjs/operators';
-import { map, Observable } from 'rxjs';
+import { startWith, distinctUntilChanged } from 'rxjs/operators';
+import { map, Observable, Subscription } from 'rxjs';
 import { MatAutocompleteActivatedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 
 @Component({
@@ -36,7 +37,7 @@ import { MatAutocompleteActivatedEvent, MatAutocompleteTrigger } from '@angular/
   ],
   standalone: false,
 })
-export class AutocompleteComponent implements OnInit, ControlValueAccessor {
+export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAccessor {
   readonly formControl = input<FormControl>(new FormControl());
   readonly clearable = input<boolean>(true);
   readonly errorStateMatcher = input<ErrorStateMatcher>(new ErrorStateMatcher());
@@ -58,9 +59,29 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   // TODO: Skipped for migration because:
   //  Your application code writes to the input. This prevents migration.
   @Input() placeholder: string = '';
+  private statusSubscription?: Subscription;
+  autocompleteDisabled = false;
 
   ngOnInit() {
     this.initialPlaceholder = this.placeholder;
+    const parentControl = this.formControl();
+
+    if (parentControl.disabled) {
+      this.selectControl.disable({ emitEvent: false });
+      this.autocompleteDisabled = true;
+    }
+
+    this.statusSubscription = parentControl.statusChanges?.pipe(startWith(parentControl.status), distinctUntilChanged()).subscribe(() => {
+      if (parentControl.disabled && this.selectControl.enabled) {
+        this.selectControl.disable({ emitEvent: false });
+        this.autocompleteDisabled = true;
+        this.autocomplete?.closePanel();
+      } else if (parentControl.enabled && this.selectControl.disabled) {
+        this.selectControl.enable({ emitEvent: false });
+        this.autocompleteDisabled = false;
+      }
+    });
+
     this.filteredCodings = this.selectControl.valueChanges.pipe(
       startWith((this.selectControl.value as string) || ''),
       map((value: string | DemisCoding) => {
@@ -95,7 +116,12 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
       : [];
   }
 
+  private isDisabled(): boolean {
+    return this.formControl().disabled || this.selectControl.disabled;
+  }
+
   toggleSelection = (data: DemisCoding): void => {
+    if (this.isDisabled()) return;
     data.selected = !data.selected;
 
     if (data.selected) {
@@ -116,10 +142,12 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   };
 
   removeChip = (data: DemisCoding): void => {
+    if (this.isDisabled()) return;
     this.toggleSelection(data);
   };
 
   handleSpace(evt: Event): boolean {
+    if (this.isDisabled()) return true;
     evt.preventDefault();
     if (!this.multi() || !this.activeOption) {
       return true;
@@ -131,6 +159,7 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   }
 
   activateOption(evt: MatAutocompleteActivatedEvent) {
+    if (this.isDisabled()) return;
     this.activeOption = evt.option?.value;
   }
 
@@ -185,11 +214,17 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
 
   setDisabledState?(isDisabled: boolean): void {
     if (isDisabled) {
-      this.selectControl.disable();
+      this.selectControl.disable({ emitEvent: false });
+      this.autocompleteDisabled = true;
+      this.autocomplete?.closePanel();
+    } else {
+      this.selectControl.enable({ emitEvent: false });
+      this.autocompleteDisabled = false;
     }
   }
 
   onClick() {
+    if (this.isDisabled()) return;
     this.selectControl.setValue('');
   }
 
@@ -217,6 +252,7 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   }
 
   onRemoveSelection(event: MouseEvent) {
+    if (this.isDisabled()) return;
     event.stopPropagation(); //required otherwise the field is still focused
     this.selectControl.setValue('');
     this.latestValidSelection = undefined;
@@ -224,5 +260,9 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
 
   createIdForAutocompleteInput(formlyField: FieldTypeConfig) {
     return formlyField.id ? `${formlyField.id}-input` : 'autocomplete-input-field';
+  }
+
+  ngOnDestroy() {
+    this.statusSubscription?.unsubscribe();
   }
 }

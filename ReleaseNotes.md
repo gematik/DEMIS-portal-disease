@@ -2,16 +2,23 @@
 
 # Release portal-disease
 
+## Release 1.5.0
+- fix form and pdf issues with §6.1 follow-up notifications
+- Disease-Notification now entails versions of code systems
+- Use notifiedPersonNotByName config from Portal-Core
+- Update @gematik/demis-portal-core-library to 2.3.3
+- Fix pdf naming issue for 7.3 notification
+
 ## Release 1.4.3
 - Added FEATURE_FLAG_DISEASE_STRICT for strict §6.1 coming with FHIR profile 7.x
 - Removed FEATURE_FLAG_PORTAL_SUBMIT and FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT
 - Switch to SectionHeader from Portal-Core (FEATURE_FLAG_PORTAL_PAGE_STRUCTURE)
-- Added route for follow-up notification (FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE)
 - add code field to quantities
 - Update ngx-formly to 7.0.0
-- Update @gematik/demis-portal-core-library to 2.3.0
+- Update @gematik/demis-portal-core-library to 2.3.2
 - Fixed a bug were the information about the pregnancy week was not sent to the backend
 - Update NGINX-Base-Image to 1.29.3
+- Implement §6.1 follow-up notification (FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE)
 
 ## Release 1.4.2
 - Removed FEATURE_FLAG_PORTAL_REPEAT
