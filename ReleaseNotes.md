@@ -2,6 +2,14 @@
 
 # Release portal-disease
 
+## Release 1.5.1
+- Removed FEATURE_FLAG_PORTAL_ERROR_DIALOG
+- Update @gematik/demis-portal-core-library to 2.3.6
+- Update Angular dependencies to version 19.2.17
+- Improve clipboard logic for follow-up notification
+- Refined follow-up pop-up dialog text
+- fix hospitalisation checkbox sync in questionnaires with current address change
+
 ## Release 1.5.0
 - fix form and pdf issues with §6.1 follow-up notifications
 - Disease-Notification now entails versions of code systems

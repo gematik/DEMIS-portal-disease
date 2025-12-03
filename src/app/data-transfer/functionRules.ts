@@ -28,7 +28,24 @@ function addContact(contactType: ContactPointInfo.ContactTypeEnum, value: string
   return [...contacts, { contactType, value }].filter(c => c.contactType !== contactType || c.value);
 }
 
-export const PERSON_RULES: ClipboardRules = {
+const getNotifiedPersonAnonymousBirthDate = (value: string) => {
+  // Convert dd.mm.yyyy format to mm.yyyy
+  const parts = value.split('.');
+  const formattedDate = parts.length === 3 ? `${parts[1]}.${parts[2]}` : value;
+
+  return {
+    tabPatient: { info: { birthDate: formattedDate } },
+  };
+};
+
+const getNotifiedPersonAnonymousZip = (value: string) => {
+  // If zip is over 3 digits, shorten it to the first three digits
+  const shortenedZip = value.length > 3 ? value.substring(0, 3) : value;
+
+  return { tabPatient: { residenceAddress: { zip: shortenedZip } } };
+};
+
+export const NOMINAL_PERSON_RULES: ClipboardRules = {
   'P.gender': async value => {
     const fromClipboard = parseGender(value);
     return { tabPatient: { info: { gender: fromClipboard } } };
@@ -50,7 +67,7 @@ export const PERSON_RULES: ClipboardRules = {
   }),
 };
 
-export const PERSON_ADDRESS_RULES: ClipboardRules = {
+export const NOMINAL_PERSON_ADDRESS_RULES: ClipboardRules = {
   'P.r.type': value => ({ tabPatient: { residenceAddressType: value } }),
   'P.r.street': value => ({ tabPatient: { residenceAddress: { street: value } } }),
   'P.r.houseNumber': value => ({ tabPatient: { residenceAddress: { houseNumber: value } } }),
@@ -64,6 +81,16 @@ export const PERSON_ADDRESS_RULES: ClipboardRules = {
   'P.c.zip': value => ({ tabPatient: { currentAddress: { zip: value } } }),
   'P.c.city': value => ({ tabPatient: { currentAddress: { city: value } } }),
   'P.c.country': value => ({ tabPatient: { currentAddress: { country: value } } }),
+};
+
+export const ANONYMOUS_PERSON_RULES: ClipboardRules = {
+  'P.gender': async value => {
+    const fromClipboard = parseGender(value);
+    return { tabPatient: { info: { gender: fromClipboard } } };
+  },
+  'P.birthDate': value => getNotifiedPersonAnonymousBirthDate(value),
+  'P.r.zip': value => getNotifiedPersonAnonymousZip(value),
+  'P.r.country': value => ({ tabPatient: { residenceAddress: { country: value } } }),
 };
 
 export const FACILITY_RULES: ClipboardRules = {

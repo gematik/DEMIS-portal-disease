@@ -32,7 +32,7 @@ import { environment } from '../../environments/environment';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { EXAMPLE_COUNTRY_CODES, EXAMPLE_DISEASE_OPTIONS, EXAMPLE_MSVD, EXAMPLE_VALUE_SET } from '../../test/shared/data/test-values';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { fakeAsync, TestBed } from '@angular/core/testing';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { NavigationStart, Router } from '@angular/router';
 import { allowedRoutes, NotificationType } from '../demis-types';
@@ -61,7 +61,6 @@ describe('DiseaseFormComponent unit tests', () => {
   let routerSpy: jasmine.SpyObj<Router>;
 
   const helpersServiceSpy = {
-    displayError: jasmine.createSpy('displayError') as jasmine.Spy,
     exitApplication: jasmine.createSpy('exitApplication') as jasmine.Spy,
   };
 
@@ -110,7 +109,6 @@ describe('DiseaseFormComponent unit tests', () => {
       },
       pathToFuts: '/fhir-ui-data-model-translation',
       featureFlags: {
-        FEATURE_FLAG_PORTAL_ERROR_DIALOG: true,
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
         FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
       },
@@ -172,7 +170,6 @@ describe('DiseaseFormComponent unit tests', () => {
 
   describe('should display error dialog if error on init', () => {
     beforeEach(() => {
-      helpersServiceSpy.displayError?.calls.reset();
       helpersServiceSpy.exitApplication?.calls.reset();
       showErrorDialogSpy.calls.reset();
     });
@@ -191,15 +188,6 @@ describe('DiseaseFormComponent unit tests', () => {
           },
         ],
       });
-
-      // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
-      component.ngOnInit();
-      expect(helpersServiceSpy.displayError).toHaveBeenCalledOnceWith(error, 'Systemfehler: Typen nicht abrufbar');
-      tick(2500);
-      expect(helpersServiceSpy.exitApplication).toHaveBeenCalled();
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
-      //////////////////////////////////////////////////////////////////////////////
     }));
 
     it('error while getDiseaseOptions()', fakeAsync(() => {
@@ -215,15 +203,6 @@ describe('DiseaseFormComponent unit tests', () => {
           },
         ],
       });
-
-      // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
-      component.ngOnInit();
-      expect(helpersServiceSpy.displayError).toHaveBeenCalledOnceWith(error, 'Systemfehler: Meldetatbestände nicht verfügbar');
-      tick(2500);
-      expect(helpersServiceSpy.exitApplication).toHaveBeenCalled();
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
-      //////////////////////////////////////////////////////////////////////////////
     }));
   });
 

@@ -37,7 +37,6 @@ config:
   pathToDestinationLookup: ../destination-lookup/v1
   files: { }
   featureFlags: #Always set this to false here; feature flags will then be activated as needed via the stage configurations.
-    FEATURE_FLAG_PORTAL_ERROR_DIALOG: false
     FEATURE_FLAG_PORTAL_PASTEBOX: false
     FEATURE_FLAG_OUTLINE_DESIGN: false
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: false

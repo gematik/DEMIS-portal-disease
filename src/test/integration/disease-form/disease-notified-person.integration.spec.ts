@@ -16,17 +16,14 @@
  */
 
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture, MockRender } from 'ng-mocks';
+import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { buildMock, mainConfig, setupIntegrationTests } from './base.spec';
-import { environment } from '../../../environments/environment';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { buildMock, setupIntegrationTests } from './base.spec';
 import { selectTab } from '../utils/disease-common-utils';
 import { getRadioGroup } from '../../shared/material-harness-utils';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { TestBed } from '@angular/core/testing';
 import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';
-import { HelpersService } from '../../../app/shared/helpers.service';
 
 describe('DiseaseFormComponent integration tests for Notified Person Tab', () => {
   let component: DiseaseFormComponent;
@@ -50,15 +47,10 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
     expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
   });
 
-  it('should have correct feature flags', async () => {
-    expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG).toBeTrue();
-  });
-
   it('error if current address set to notifier-address but this is not available', async () => {
     // steps to take
     await selectTab(fixture, loader, 2);
     const showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
-    const legacyDisplayErrorSpy = spyOn(TestBed.inject(HelpersService), 'displayError');
 
     const radioGroup = await getRadioGroup(loader, '#currentAddressType');
     await radioGroup.checkRadioButton({ label: 'anderer Wohnsitz' });
@@ -74,18 +66,5 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
         },
       ],
     });
-
-    // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
-    environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
-    await radioGroup.checkRadioButton({ label: 'anderer Wohnsitz' });
-    await radioGroup.checkRadioButton({ label: 'Adresse der meldenden Einrichtung' });
-    fixture.detectChanges();
-    expect(legacyDisplayErrorSpy).toHaveBeenCalledOnceWith(
-      CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
-      CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_NOTIFIER,
-      ''
-    );
-    environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
-    //////////////////////////////////////////////////////////////////////////////
   });
 });
