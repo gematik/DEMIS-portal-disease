@@ -45,7 +45,6 @@ import { buildMock, mainConfig } from './base.spec';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { TestBed } from '@angular/core/testing';
 import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';
-import { HelpersService } from '../../../app/shared/helpers.service';
 
 describe('DiseaseFormComponent integration tests for Common Tab', () => {
   let component: DiseaseFormComponent;
@@ -69,10 +68,6 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
 
   it('should create', () => {
     expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
-  });
-
-  it('should have correct feature flags', async () => {
-    expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG).toBeTrue();
   });
 
   describe('Klinische und epidemiologische Angaben', () => {
@@ -101,7 +96,6 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           await selectTab(fixture, loader, 5);
           await selectIsHospitalizedYes(loader);
           const showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
-          const legacyDisplayErrorSpy = spyOn(TestBed.inject(HelpersService), 'displayError');
 
           const checkBox = await checkCopyContactCheckbox(loader);
           fixture.detectChanges();
@@ -117,18 +111,6 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           });
           expect(await checkBox.isChecked()).toBe(false);
           await verifyHospitalizationContactInputFields(loader);
-
-          // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
-          environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
-          await checkCopyContactCheckbox(loader);
-          fixture.detectChanges();
-          expect(legacyDisplayErrorSpy).toHaveBeenCalledOnceWith(
-            CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
-            CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_CONTACT,
-            ''
-          );
-          environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
-          //////////////////////////////////////////////////////////////////////////////
         });
 
         it('should verify that copy address is not working when required field is missing', async () => {
@@ -139,7 +121,6 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           await selectTab(fixture, loader, 5);
           await selectIsHospitalizedYes(loader);
           const showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
-          const legacyDisplayErrorSpy = spyOn(TestBed.inject(HelpersService), 'displayError');
 
           const checkBox = await checkCopyAddressCheckbox(loader);
           fixture.detectChanges();
@@ -155,18 +136,6 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           });
           expect(await checkBox.isChecked()).toBe(false);
           await verifyHospitalizationAddressInputFields(loader);
-
-          // can be deleted when FEATURE_FLAG_PORTAL_ERROR_DIALOG is active everywhere:
-          environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = false;
-          await checkCopyAddressCheckbox(loader);
-          fixture.detectChanges();
-          expect(legacyDisplayErrorSpy).toHaveBeenCalledOnceWith(
-            CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
-            CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_ADDRESS,
-            ''
-          );
-          environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG = true;
-          //////////////////////////////////////////////////////////////////////////////
         });
       });
 
@@ -256,8 +225,7 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           await moveFromNotifiedPersonToKlinischeAngaben(fixture, loader);
         });
 
-        //TODO: activate test after fixing known issue DEMIS-4623
-        xit('should verify changing currentaddress to submitting facility clears data', async () => {
+        it('should verify changing currentaddress to submitting facility clears data', async () => {
           // Step 1: copy address via checkbox
           await selectIsHospitalizedYes(loader);
           await verifyCheckBoxCopyAddressIsChecked(loader);
@@ -320,8 +288,7 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           });
         });
 
-        //TODO: activate test after fixing known issue DEMIS-4623
-        xit('should verify having 2 panels but only checking 1st checkbox and changing currentAddress should only affect 1st panel input fields', async () => {
+        it('should verify having 2 panels but only checking 1st checkbox and changing currentAddress should only affect 1st panel input fields', async () => {
           // Step 1: copy address in first panel
           await selectIsHospitalizedYes(loader);
           fixture.detectChanges();

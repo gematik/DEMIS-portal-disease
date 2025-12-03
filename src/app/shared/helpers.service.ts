@@ -15,12 +15,10 @@
     find details in the "Readme" file.
  */
 
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { lastValueFrom } from 'rxjs';
 import { NGXLogger } from 'ngx-logger';
-import { ErrorMessageDialogComponent } from './error-message-dialog/error-message-dialog.component';
 
 @Injectable({
   providedIn: 'root',
@@ -32,14 +30,5 @@ export class HelpersService {
 
   exitApplication() {
     this.router.navigate(['/welcome']);
-  }
-
-  /**
-   * Can be removed as soon as feature flag "FEATURE_FLAG_PORTAL_ERROR_DIALOG" is active on all stages
-   */
-  displayError(error: unknown, title: string = 'Systemfehler', message: string = 'Es ist ein Fehler aufgetreten') {
-    this.logger.error(error);
-    const dialogRef = this.matDialog.open(ErrorMessageDialogComponent, ErrorMessageDialogComponent.getErrorDialogCommonData(error, title, message));
-    return lastValueFrom(dialogRef.afterClosed());
   }
 }

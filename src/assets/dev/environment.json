@@ -17,7 +17,6 @@
   "pathToFuts": "/fhir-ui-data-model-translation",
   "pathToDestinationLookup": "/destination-lookup/v1",
   "featureFlags": {
-    "FEATURE_FLAG_PORTAL_ERROR_DIALOG": true,
     "FEATURE_FLAG_NON_NOMINAL_NOTIFICATION": true,
     "FEATURE_FLAG_PORTAL_PASTEBOX": true,
     "FEATURE_FLAG_OUTLINE_DESIGN": false,

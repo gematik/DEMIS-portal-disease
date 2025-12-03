@@ -15,25 +15,22 @@
     find details in the "Readme" file.
  */
 
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Subscription, take } from 'rxjs';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { AbstractControl, FormGroup } from '@angular/forms';
 import { AddressType } from '../../../api/notification';
-import { HelpersService } from '../../shared/helpers.service';
 import { findFormlyFieldIterativeByKey } from '../../shared/utils';
 import { AddressAsModel, ContactsAsModel } from '../common/formlyConfigs/formly-base';
 import { PractitionerInfoAsModel } from '../common/formlyConfigs/notifier';
 import { DemisCoding } from '../../demis-types';
 import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
-import { environment } from '../../../environments/environment';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 
 @Injectable({
   providedIn: 'root', // Makes it available app-wide
 })
 export class CopyAndKeepInSyncService {
-  private helpers = inject(HelpersService);
   private messageDialogService = inject(MessageDialogService);
 
   static readonly MESSAGE_COPY_IMPOSSIBLE: string = 'Datenübernahme nicht möglich';
@@ -77,45 +74,39 @@ export class CopyAndKeepInSyncService {
       field.parent?.fieldGroup?.find(field => field.key === 'address') as FormlyFieldConfig
     );
 
-    let keyForInstitutionNameSubscription = field.id + '-subscribeToInstitutionName';
-    let keyForCurrentAddressSubscription = field.id + '-subscribeToCurrentAddress';
-
     if (field.formControl?.value) {
       const sourceAddressInstitutionName = this.getCurrentAddressInstitutionNameIfNotBlank(model, form);
       const sourceAddressControl = this.getCurrentAddressIfCopyable(model, form);
       if (sourceAddressControl === null || sourceAddressInstitutionName === null) {
-        if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
-          this.messageDialogService.showErrorDialog({
-            errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
-            errors: [
-              {
-                text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_ADDRESS,
-              },
-            ],
-          });
-        } else {
-          this.helpers.displayError(CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE, CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_ADDRESS, '');
-        }
+        this.messageDialogService.showErrorDialog({
+          errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+          errors: [
+            {
+              text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_ADDRESS,
+            },
+          ],
+        });
         field.formControl?.setValue(false);
       } else {
-        addressTargetInHospitalization.resetIfCurrentAddressTypeChanges(field, form, this.subscriptions);
+        addressTargetInHospitalization.resetIfCurrentAddressTypeChanges(field, form);
         addressTargetInHospitalization.patch(sourceAddressInstitutionName.value, sourceAddressControl.value);
         addressTargetInHospitalization.disableAll();
 
-        const subscriptionInstitutionName = sourceAddressInstitutionName.valueChanges.subscribe(newValue => {
-          addressTargetInHospitalization.patchInstitutionName(newValue);
+        sourceAddressInstitutionName.valueChanges.subscribe(newValue => {
+          if (field.formControl?.value) {
+            addressTargetInHospitalization.patchInstitutionName(newValue);
+          }
         });
-        this.subscriptions.set(keyForInstitutionNameSubscription, subscriptionInstitutionName);
 
-        const subscriptionCurrentAddress = sourceAddressControl.valueChanges.subscribe(newValue => {
-          addressTargetInHospitalization.patchAddressInHospitalization(newValue);
+        sourceAddressControl.valueChanges.subscribe(newValue => {
+          if (field.formControl?.value) {
+            addressTargetInHospitalization.patchAddressInHospitalization(newValue);
+          }
         });
-        this.subscriptions.set(keyForCurrentAddressSubscription, subscriptionCurrentAddress);
       }
     } else {
       addressTargetInHospitalization.resetAll();
       addressTargetInHospitalization.enableAll();
-      addressTargetInHospitalization.removeAllSubscriptionsForField(this.subscriptions, field);
     }
   }
 
@@ -135,21 +126,17 @@ export class CopyAndKeepInSyncService {
       const sourceNotifierContactPersonControl = this.getNotifierContactControlIfCopyable(model, form);
       const sourceNotifierPhoneAndEmail = this.getNotifierPhoneAndEmail(form);
       if (sourceNotifierContactPersonControl === null) {
-        if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
-          this.messageDialogService.showErrorDialog({
-            errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
-            errors: [
-              {
-                text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_CONTACT,
-              },
-            ],
-          });
-        } else {
-          this.helpers.displayError(CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE, CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_CONTACT, '');
-        }
+        this.messageDialogService.showErrorDialog({
+          errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+          errors: [
+            {
+              text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_CONTACT,
+            },
+          ],
+        });
         field.formControl?.setValue(false);
       } else {
-        contactTargetInHospitalization.resetIfCurrentAddressTypeChanges(field, form, this.subscriptions);
+        contactTargetInHospitalization.resetIfCurrentAddressTypeChanges(field, form);
         contactTargetInHospitalization.patch(sourceNotifierContactPersonControl.value, sourceNotifierPhoneAndEmail?.value);
         contactTargetInHospitalization.disableAll();
 
@@ -218,18 +205,14 @@ export class CopyAndKeepInSyncService {
   }
 
   private changeToSubmittingFacilityImpossible(currentAddressTypeField: FormlyFieldConfig) {
-    if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
-      this.messageDialogService.showErrorDialog({
-        errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
-        errors: [
-          {
-            text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_NOTIFIER,
-          },
-        ],
-      });
-    } else {
-      this.helpers.displayError(CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE, CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_NOTIFIER, '');
-    }
+    this.messageDialogService.showErrorDialog({
+      errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
+      errors: [
+        {
+          text: CopyAndKeepInSyncService.MESSAGE_ERROR_COPY_NOTIFIER,
+        },
+      ],
+    });
     setTimeout(() => {
       currentAddressTypeField?.formControl?.setValue(null);
     });
@@ -292,7 +275,7 @@ export class CopyAndKeepInSyncService {
 }
 
 class CopyTargetField {
-  resetIfCurrentAddressTypeChanges(field: FormlyFieldConfig, form: FormGroup, subscriptions: Map<string, Subscription>): void {
+  resetIfCurrentAddressTypeChanges(field: FormlyFieldConfig, form: FormGroup): void {
     form
       .get('tabPatient.currentAddressType')
       ?.valueChanges.pipe(take(1))
@@ -300,7 +283,6 @@ class CopyTargetField {
         field.formControl?.setValue(false);
         this.resetAll();
         this.enableAll();
-        this.removeAllSubscriptionsForField(subscriptions, field);
       });
   }
 

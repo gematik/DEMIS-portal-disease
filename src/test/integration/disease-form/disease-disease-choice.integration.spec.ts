@@ -53,10 +53,6 @@ describe('DiseaseFormComponent integration tests for Disease Choice Tab', () => 
     expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
   });
 
-  it('should have correct feature flags', async () => {
-    expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_ERROR_DIALOG).toBeTrue();
-  });
-
   describe('handle errors correctly', () => {
     it('getQuestionnaire throws an error', async () => {
       let showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');

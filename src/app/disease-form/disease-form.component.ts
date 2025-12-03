@@ -23,27 +23,19 @@ import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
 import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
 import { distinctUntilChanged, filter, lastValueFrom, Subject, take, takeUntil, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { FACILITY_RULES, PERSON_ADDRESS_RULES, PERSON_RULES } from '../data-transfer/functionRules';
+import { ANONYMOUS_PERSON_RULES, FACILITY_RULES, NOMINAL_PERSON_ADDRESS_RULES, NOMINAL_PERSON_RULES } from '../data-transfer/functionRules';
 import { allowedRoutes, DemisCoding, getNotificationTypeByRouterUrl, NotificationType, QuestionnaireDescriptor } from '../demis-types';
 import { makeFieldSequence, sortItems } from '../format-items';
 import { Ifsg61Service } from '../ifsg61.service';
-import { ErrorResult, MessageType } from '../legacy/message';
 import { CodeDisplay, DiseaseStatus, TerminologyVersion } from '../../api/notification';
 import { ErrorMessage } from '../shared/error-message';
-import { ErrorMessageDialogComponent } from '../shared/error-message-dialog/error-message-dialog.component';
 import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
 import { HelpersService } from '../shared/helpers.service';
 import { createExpressions, findQuantityFieldsByProp } from '../shared/utils';
 import { getDiseaseChoiceFields } from './common/formlyConfigs/disease-choice';
 import { HexHexDummy } from './common/hexHexDummy';
 import { notifierFacilityFormConfigFields } from './common/formlyConfigs/notifier';
-import {
-  CLIPBOARD_ERROR_DIALOG_MESSAGE,
-  CLIPBOARD_ERROR_DIALOG_MESSAGE_DETAILS,
-  CLIPBOARD_ERROR_DIALOG_TITLE,
-  ImportFieldValuesService,
-  ImportTargetComponent,
-} from './services/import-field-values.service';
+import { ImportFieldValuesService, ImportTargetComponent } from './services/import-field-values.service';
 import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-service';
 import { ProcessFormService } from './services/process-form-service';
 import { NGXLogger } from 'ngx-logger';
@@ -275,7 +267,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
             this.followUpNotificationIdService.openDialog({
               dialogData: {
                 routerLink: '/' + allowedRoutes['nominal'],
-                linkTextContent: 'eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG',
+                linkTextContent: 'einer namentlichen Infektionskrankheit nach § 6 IfSG',
                 pathToDestinationLookup: environment.pathToDestinationLookup,
                 errorUnsupportedNotificationCategory:
                   'Aktuell sind Nichtnamentliche Folgemeldungen einer Infektionskrankheit gemäß § 6 Abs. 1 IfSG nur für eine § 6 Abs. 1 IfSG Initialmeldung möglich.',
@@ -325,24 +317,16 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
   }
 
   private handleError(error: any, message: string) {
-    if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
-      this.logger.error(error);
-      this.messageDialogService.showErrorDialog({
-        redirectToHome: true,
-        errorTitle: 'Systemfehler',
-        errors: [
-          {
-            text: message,
-          },
-        ],
-      });
-    } else {
-      this.helpers.displayError(error, 'Systemfehler: ' + message);
-      // timeout to give the user a chance to read the error message
-      setTimeout(() => {
-        this.helpers.exitApplication();
-      }, 2000);
-    }
+    this.logger.error(error);
+    this.messageDialogService.showErrorDialog({
+      redirectToHome: true,
+      errorTitle: 'Systemfehler',
+      errors: [
+        {
+          text: message,
+        },
+      ],
+    });
   }
 
   private combineFields() {
@@ -526,14 +510,10 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
       if (diseaseCode) {
         this.loadQuestionnaire(diseaseCode).then(problems => {
           if (problems.length > 0) {
-            if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
-              this.messageDialogService.showErrorDialog({
-                errorTitle: 'Systemfehler',
-                errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
-              });
-            } else {
-              this.showErrorDialog('Systemfehler', problems);
-            }
+            this.messageDialogService.showErrorDialog({
+              errorTitle: 'Systemfehler',
+              errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
+            });
           }
         });
       } else if (this.prevDiseaseCode) {
@@ -644,62 +624,35 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
       const keyValuePairs: string[][] = this.FEATURE_FLAG_PORTAL_PASTEBOX
         ? [...(keyValuePairsFromClipboard ?? [])]
         : await this.importFieldValuesService.getClipboardKVs();
-      const problems: ErrorMessage[] = await this.importFieldValuesService.fillModelFromKVs(this, keyValuePairs, {
-        ...PERSON_RULES,
-        ...PERSON_ADDRESS_RULES,
-        ...FACILITY_RULES,
-      });
+      const isFollowUp = this.notificationType === NotificationType.FollowUpNotification6_1;
+      const personRules = isFollowUp ? ANONYMOUS_PERSON_RULES : NOMINAL_PERSON_RULES;
+      const personAddressRules = isFollowUp ? {} : NOMINAL_PERSON_ADDRESS_RULES;
+
+      const problems: ErrorMessage[] = await this.importFieldValuesService.fillModelFromKVs(
+        this,
+        keyValuePairs,
+        {
+          ...personRules,
+          ...personAddressRules,
+          ...FACILITY_RULES,
+        },
+        this.notificationType
+      );
 
       if (problems.length > 0) {
-        if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
-          this.messageDialogService.showErrorDialog({
-            errorTitle: 'Fehler bei der Datenübernahme',
-            errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
-          });
-        } else {
-          this.showErrorDialog('Fehler bei der Datenübernahme', problems);
-        }
+        this.messageDialogService.showErrorDialog({
+          errorTitle: 'Fehler bei der Datenübernahme',
+          errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
+        });
       } else {
         window.navigator.clipboard.writeText('');
       }
     } catch (error) {
       this.logger.error(error);
-      if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG) {
-        this.logger.error(error);
-        this.messageDialogService.showErrorDialogInsertDataFromClipboard();
-      } else {
-        this.matDialog.open(
-          ErrorMessageDialogComponent,
-          ErrorMessageDialogComponent.getErrorDialogClose({
-            title: CLIPBOARD_ERROR_DIALOG_TITLE,
-            message: CLIPBOARD_ERROR_DIALOG_MESSAGE,
-            messageDetails: CLIPBOARD_ERROR_DIALOG_MESSAGE_DETAILS,
-            type: MessageType.WARNING,
-            error,
-          })
-        );
-      }
+      this.messageDialogService.showErrorDialogInsertDataFromClipboard();
     } finally {
       this.messageDialogService.closeSpinnerDialog();
     }
-  }
-
-  /**
-   * Can be removed as soon as feature flag "FEATURE_FLAG_PORTAL_ERROR_DIALOG" is active on all stages
-   * */
-  private showErrorDialog(title: string, problems: ErrorMessage[]) {
-    const error: ErrorResult = {
-      type: MessageType.ERROR,
-      title,
-      message: '',
-      messageDetails: ' ',
-      problems,
-    };
-    this.matDialog.open(ErrorMessageDialogComponent, {
-      maxWidth: '50vw',
-      minHeight: '40vh',
-      data: error,
-    });
   }
 
   @HostListener('window:keydown.control.ArrowRight', ['$event'])

@@ -15,7 +15,7 @@
     find details in the "Readme" file.
  */
 
-import { Injectable, inject } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
 import { matchesRegExp } from '../../legacy/notification-form-validation-module';
@@ -23,7 +23,7 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { ErrorMessage } from '../../shared/error-message';
 import { isArray, merge } from 'lodash-es';
 import { equalIgnoreCase, isPromise, sleep } from '../../shared/utils';
-import { DemisCoding } from '../../demis-types';
+import { DemisCoding, NotificationType } from '../../demis-types';
 import { FormGroup } from '@angular/forms';
 import { AddressType } from '../../../api/notification';
 
@@ -132,8 +132,14 @@ export class ImportFieldValuesService {
    * @param pasteTarget ImportTargetComponent
    * @param keyValuePairs string[][] - Array of key-value-pairs containing the import key and a value
    * @param clipboardRules ClipboardRules - Mapping from import-key to formly-path
+   * @param notificationType NotificationType
    */
-  async fillModelFromKVs(pasteTarget: ImportTargetComponent, keyValuePairs: string[][], clipboardRules: ClipboardRules): Promise<ErrorMessage[]> {
+  async fillModelFromKVs(
+    pasteTarget: ImportTargetComponent,
+    keyValuePairs: string[][],
+    clipboardRules: ClipboardRules,
+    notificationType: NotificationType
+  ): Promise<ErrorMessage[]> {
     const problems: ErrorMessage[] = [];
 
     function combinePaths(a: string, b: string | number | (string | number)[] | undefined): string {
@@ -220,22 +226,24 @@ export class ImportFieldValuesService {
           }
         } else {
           //unknown import key, just continue
-          continue;
         }
       }
     }
 
     //if disease code is provided, it has to be set on page 3, so that the other parts of the form will be fetched from the backend
-    const diseaseCode = keyValuePairs.find(kvp => kvp[0] === 'D.code');
-    if (diseaseCode) {
-      //get formly config of disease code form field
-      const fc: FormlyFieldConfig = pasteTarget.formlyConfigFields[0].fieldGroup![2].fieldGroup!.find(g => g.id === 'disease-choice')!;
-      fc.props![FORMLY_PATH_PROPERTY_NAME] = 'tabDiseaseChoice.diseaseChoice.answer.valueCoding';
-      try {
-        await this.executeAction(pasteTarget, diseaseCode[0], diseaseCode[1], fc);
-      } catch (e) {
-        console.error(e);
-        problems.push(new ErrorMessage('E0003', diseaseCode[0], '' + e));
+    // it's not allowed to set the disease code on follow-up notifications
+    if (notificationType !== NotificationType.FollowUpNotification6_1) {
+      const diseaseCode = keyValuePairs.find(kvp => kvp[0] === 'D.code');
+      if (diseaseCode) {
+        //get formly config of disease code form field
+        const fc: FormlyFieldConfig = pasteTarget.formlyConfigFields[0].fieldGroup![2].fieldGroup!.find(g => g.id === 'disease-choice')!;
+        fc.props![FORMLY_PATH_PROPERTY_NAME] = 'tabDiseaseChoice.diseaseChoice.answer.valueCoding';
+        try {
+          await this.executeAction(pasteTarget, diseaseCode[0], diseaseCode[1], fc);
+        } catch (e) {
+          console.error(e);
+          problems.push(new ErrorMessage('E0003', diseaseCode[0], '' + e));
+        }
       }
     }
 
@@ -243,13 +251,13 @@ export class ImportFieldValuesService {
     //so let's go recursively through these forms and see if there is a import value for a specific field and set it.
     if (pasteTarget.formlyConfigFields[0] && pasteTarget.formlyConfigFields[0].fieldGroup) {
       const fieldGroup = pasteTarget.formlyConfigFields[0].fieldGroup;
+      const filteredPairs =
+        notificationType === NotificationType.FollowUpNotification6_1
+          ? keyValuePairs.filter(kvp => kvp[0] !== 'D.code' && kvp[0] !== 'D.notificationId')
+          : keyValuePairs.filter(kvp => kvp[0] !== 'D.code');
+
       for (let i = 2; i < fieldGroup.length; i++) {
-        await checkClipboardForEveryFormField(
-          this,
-          fieldGroup[i],
-          `${fieldGroup[i].key}`,
-          keyValuePairs.filter(kvp => kvp[0] !== 'D.code')
-        );
+        await checkClipboardForEveryFormField(this, fieldGroup[i], `${fieldGroup[i].key}`, filteredPairs);
       }
     }
 
@@ -313,11 +321,3 @@ export class ImportFieldValuesService {
     await setModelValue(model, path, values, !!importSpec.multi, ffc.type === 'autocomplete-multi-coding');
   }
 }
-
-/**
- * Can be removed as soon as feature flag "FEATURE_FLAG_PORTAL_ERROR_DIALOG" is active on all stages
- */
-export const CLIPBOARD_ERROR_DIALOG_TITLE = 'Fehler beim Einlesen der Daten aus der Zwischenablage';
-export const CLIPBOARD_ERROR_DIALOG_MESSAGE = 'Bei der Datenübernahme ist ein Fehler aufgetreten.';
-export const CLIPBOARD_ERROR_DIALOG_MESSAGE_DETAILS =
-  'Diese Daten werden aus der Zwischenablage importiert. Bitte wenden Sie sich an Ihre IT zur Konfiguration des Datenimports.';

@@ -38,6 +38,7 @@ import { EXAMPLE_TOXP_SHORT } from '../../shared/data/test-values-nonnominal';
 import { Router } from '@angular/router';
 import { allowedRoutes, NotificationType } from '../../../app/demis-types';
 import { EXAMPLE_CODESYSTEM_VERSIONS } from '../../shared/data/test-codesystem-versions';
+import { FormlyConstants } from '../../../app/legacy/formly-constants';
 
 const overrides = {
   get Ifsg61Service() {
@@ -51,8 +52,16 @@ const overrides = {
 
   get ValueSetService() {
     return {
-      get: jasmine.createSpy('get').and.returnValue(of(EXAMPLE_COUNTRY_CODES)),
-    };
+      get: jasmine.createSpy('get').and.callFake((identifier: string) => {
+        if (identifier === FormlyConstants.COUNTRY_CODES) {
+          return of([
+            { value: 'DE', label: 'Deutschland' },
+            { value: 'DK', label: 'Dänemark' },
+          ]);
+        }
+        return of([]);
+      }),
+    } as Partial<ValueSetService>;
   },
 };
 
@@ -90,7 +99,6 @@ export const mainConfig = {
   pathToFuts: '/fhir-ui-data-model-translation',
   pathToDestinationLookup: '/destination-lookup/v1',
   featureFlags: {
-    FEATURE_FLAG_PORTAL_ERROR_DIALOG: true,
     FEATURE_FLAG_PORTAL_PASTEBOX: true,
     FEATURE_FLAG_OUTLINE_DESIGN: true,
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,

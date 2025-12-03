@@ -24,9 +24,11 @@ import { TestBed } from '@angular/core/testing';
 import { FollowUpNotificationIdService, MessageDialogService } from '@gematik/demis-portal-core-library';
 import { EXAMPLE_DISEASE_OPTIONS } from '../../shared/data/test-values';
 import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
-import { getInput, navigateTo } from '../../shared/material-harness-utils';
+import { getButton, getInput, getSelect, navigateTo } from '../../shared/material-harness-utils';
 import { checkDescribingError } from '../../shared/assertion-utils';
 import { getHtmlButtonElement } from '../../shared/html-element-utils';
+import { clickNextButton } from '../../shared/test-utils';
+import { lastValueFrom, of } from 'rxjs';
 
 describe('DiseaseFormComponent followUp integration tests', () => {
   let component: DiseaseFormComponent;
@@ -64,7 +66,7 @@ describe('DiseaseFormComponent followUp integration tests', () => {
     expect(showFollowUpDialogSpy).toHaveBeenCalledWith({
       dialogData: {
         routerLink: '/disease-notification/6.1',
-        linkTextContent: 'eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG',
+        linkTextContent: 'einer namentlichen Infektionskrankheit nach § 6 IfSG',
         pathToDestinationLookup: '/destination-lookup/v1',
         errorUnsupportedNotificationCategory:
           'Aktuell sind Nichtnamentliche Folgemeldungen einer Infektionskrankheit gemäß § 6 Abs. 1 IfSG nur für eine § 6 Abs. 1 IfSG Initialmeldung möglich.',
@@ -167,6 +169,38 @@ describe('DiseaseFormComponent followUp integration tests', () => {
 
         expect(getHtmlButtonElement(fixture.nativeElement, '#send-button').disabled).toBe(true);
       });
+    });
+  });
+  describe('clipboard tests', () => {
+    it('should insert correct values for notified person', async () => {
+      await clickNextButton(fixture);
+
+      const gender = await getSelect(loader, '#gender');
+      expect(await gender.getValueText()).toBe('Bitte auswählen');
+
+      const birthDate = await getInput(loader, '#birthDate-datepicker-input-field');
+      expect(await birthDate.getValue()).toBe('');
+
+      const zip = await getInput(loader, '#residence-address-zip');
+      expect(await zip.getValue()).toBe('');
+
+      const country = await getSelect(loader, '#residence-address-country');
+      country.getOptions().then(options => {
+        console.log(options);
+      });
+      expect(await country.getValueText()).toBe('Deutschland');
+
+      const p = lastValueFrom(of('URL P.gender=MALE&P.birthDate=01.01.2023&P.r.zip=12345&P.r.country=DK'));
+      spyOn(window.navigator.clipboard, 'readText').and.returnValue(p);
+      spyOn(window.navigator.clipboard, 'writeText').and.returnValue(Promise.resolve());
+      await (await getButton(loader, '#btn-fill-form')).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(await gender.getValueText()).toBe('Männlich');
+      expect(await birthDate.getValue()).toBe('01.2023');
+      expect(await zip.getValue()).toBe('123');
+      expect(await country.getValueText()).toBe('Dänemark');
     });
   });
 });
