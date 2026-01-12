@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -27,7 +27,7 @@ import { NotificationType } from './demis-types';
 import { Ifsg61Service } from './ifsg61.service';
 import { FileService } from './legacy/file.service';
 import { HelpersService } from './shared/helpers.service';
-import { EXAMPLE_MSVD, EXAMPLE_MSVD_FEATURE_FLAG_DISEASE_DATEPICKER } from 'src/test/shared/data/test-values';
+import { EXAMPLE_MSVD } from 'src/test/shared/data/test-values';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { EXAMPLE_CODESYSTEM_VERSIONS } from '../test/shared/data/test-codesystem-versions';
 
@@ -217,43 +217,9 @@ describe('Ifsg61Service', () => {
       expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire6_1}/testName/formly`, { headers: environment.futsHeaders });
     });
 
-    it('setFieldDefaults applies correct transformation when FEATURE_FLAG_DISEASE_DATEPICKER is false', () => {
+    it('setFieldDefaults applies correct transformation', () => {
       // Import test data
-
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_DATEPICKER = false;
-
       const mockResponse = EXAMPLE_MSVD;
-      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
-
-      service.getQuestionnaire('testName', NotificationType.NominalNotification6_1).subscribe(result => {
-        const valueDateFields = [
-          ...findValueDateFields(result.questionnaireConfigs),
-          ...findValueDateFields(result.conditionConfigs),
-          ...findValueDateFields(result.commonConfig),
-        ];
-
-        valueDateFields.forEach(field => {
-          expect(field.validators).toEqual({ validation: ['date123'] });
-          expect(field.modelOptions).toEqual({ updateOn: 'blur' });
-          // wrappers can be undefined or ['form-field'] - they are not changed by setFieldDefaults
-          // when FEATURE_FLAG_DISEASE_DATEPICKER is false
-          if (field.wrappers !== undefined) {
-            expect(field.wrappers).toEqual(['form-field']);
-          }
-          expect(field.props?.appearance).toBeUndefined();
-          expect(field.props?.allowedPrecisions).toBeUndefined();
-        });
-      });
-
-      expect(httpClientSpy.get).toHaveBeenCalled();
-    });
-
-    it('setFieldDefaults applies correct transformation when FEATURE_FLAG_DISEASE_DATEPICKER is true', () => {
-      // Import test data
-
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_DATEPICKER = true;
-
-      const mockResponse = EXAMPLE_MSVD_FEATURE_FLAG_DISEASE_DATEPICKER;
       httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
 
       service.getQuestionnaire('testName', NotificationType.NominalNotification6_1).subscribe(result => {

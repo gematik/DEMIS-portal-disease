@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -111,6 +111,7 @@ describe('DiseaseFormComponent unit tests', () => {
       featureFlags: {
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
         FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
+        FEATURE_FLAG_ANONYMOUS_NOTIFICATION: true,
       },
       ngxLoggerConfig: {
         level: 1,
@@ -308,6 +309,7 @@ describe('DiseaseFormComponent unit tests', () => {
     it('should keep default NominalNotification6_1 when feature flags are disabled', () => {
       environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE = false;
       environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION = false;
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_ANONYMOUS_NOTIFICATION = false;
       Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['followUp'], configurable: true });
 
       component.ngOnInit();
@@ -322,6 +324,28 @@ describe('DiseaseFormComponent unit tests', () => {
       component.ngOnInit();
 
       expect(getDiseaseOptionsSpy).toHaveBeenCalledWith(NotificationType.FollowUpNotification6_1);
+    });
+  });
+
+  describe('form footer rendering via feature flag', () => {
+    it('should render gem-demis-forms-footer when FEATURE_FLAG_PORTAL_HEADER_FOOTER is true', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_HEADER_FOOTER = true;
+
+      const fixture = MockRender(DiseaseFormComponent);
+      fixture.detectChanges();
+
+      const footerEl: HTMLElement | null = fixture.nativeElement.querySelector('gem-demis-forms-footer');
+      expect(footerEl).toBeTruthy();
+    });
+
+    it('should not render gem-demis-forms-footer when FEATURE_FLAG_PORTAL_HEADER_FOOTER is false', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_HEADER_FOOTER = false;
+
+      const fixture = MockRender(DiseaseFormComponent);
+      fixture.detectChanges();
+
+      const footerEl: HTMLElement | null = fixture.nativeElement.querySelector('gem-demis-forms-footer');
+      expect(footerEl).toBeFalsy();
     });
   });
 });

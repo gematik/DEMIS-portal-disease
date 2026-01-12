@@ -2,20 +2,33 @@
 
 # Release portal-disease
 
+## Release 1.5.2
+- Updated @gematik/demis-portal-core-library to 2.3.8
+- Removed FEATURE_FLAG_DISEASE_DATEPICKER
+- Enabled formly fields to have tooltips aside their labels
+- Disabled Sandbox for ChromeHeadless browser to run karma tests in CI
+- Updated Base Image to 1.29.4-alpine3.23-slim
+- Fixed a issue in the hexhex logic for follow-up notifications
+- Integrated form footer from core library
+- Removed FEATURE_FLAG_PORTAL_PASTEBOX
+- Added routing and header for § 7.3 anonymous notification (FEATURE_FLAG_ANONYMOUS_NOTIFICATION)
+- Added loading-spinner
+
+
 ## Release 1.5.1
 - Removed FEATURE_FLAG_PORTAL_ERROR_DIALOG
-- Update @gematik/demis-portal-core-library to 2.3.6
-- Update Angular dependencies to version 19.2.17
-- Improve clipboard logic for follow-up notification
+- Updated @gematik/demis-portal-core-library to 2.3.6
+- Updated Angular dependencies to version 19.2.17
+- Improved clipboard logic for follow-up notification
 - Refined follow-up pop-up dialog text
-- fix hospitalisation checkbox sync in questionnaires with current address change
+- Fixed hospitalisation checkbox sync in questionnaires with current address change
 
 ## Release 1.5.0
-- fix form and pdf issues with §6.1 follow-up notifications
+- Fixed form and pdf issues with §6.1 follow-up notifications
 - Disease-Notification now entails versions of code systems
-- Use notifiedPersonNotByName config from Portal-Core
-- Update @gematik/demis-portal-core-library to 2.3.3
-- Fix pdf naming issue for 7.3 notification
+- Implemented notifiedPersonNotByName config from Portal-Core
+- Updated @gematik/demis-portal-core-library to 2.3.3
+- Fixed pdf naming issue for 7.3 notification
 
 ## Release 1.4.3
 - Added FEATURE_FLAG_DISEASE_STRICT for strict §6.1 coming with FHIR profile 7.x

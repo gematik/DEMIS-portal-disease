@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -18,7 +18,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ProcessFormService } from './process-form-service';
 import { ExtendedSalutationEnum } from '../../legacy/common-utils';
-import { environment } from 'src/environments/environment';
 import { NotificationType } from '../../demis-types';
 
 describe('ProcessFormService', () => {
@@ -53,7 +52,7 @@ describe('ProcessFormService', () => {
         oneTimeCode: '1234',
       },
       tabPatient: {
-        info: { birthDate: '01.01.2000' },
+        info: { birthDate: '2000-01-01' },
         currentAddressType: 'primaryAsCurrent',
         residenceAddress: { city: 'Berlin' },
         currentAddress: { city: 'Berlin' },
@@ -81,8 +80,8 @@ describe('ProcessFormService', () => {
 
   it('makeCondition should return formatted condition', () => {
     const condition = {
-      recordedDate: { answer: { valueDate: '01.01.2024' } },
-      onset: { answer: { valueDate: '01.01.2024' } },
+      recordedDate: { answer: { valueDate: '2024-01-01' } },
+      onset: { answer: { valueDate: '2024-01-01' } },
       note: { answer: { valueString: 'test' } },
       evidence: { answer: { valueCoding: { code: 'lab' } } },
       verificationStatus: { answer: { valueCoding: { code: 'confirmed' } } },
@@ -270,14 +269,14 @@ describe('ProcessFormService', () => {
     it('should create anonymous person with all fields', () => {
       const model: any = {
         tabPatient: {
-          info: { gender: 'feMALE', birthDate: '1995-07-15' },
+          info: { gender: 'FEMALE', birthDate: '1995-07-15' },
           residenceAddress: { country: 'DE', zip: '50667' },
         },
       };
 
       const result = (service as any).transformAnonymousPerson(model);
       expect(result.notifiedPersonAnonymous).toBeDefined();
-      expect(result.notifiedPersonAnonymous.gender).toBe('feMALE');
+      expect(result.notifiedPersonAnonymous.gender).toBe('FEMALE');
       expect(result.notifiedPersonAnonymous.birthDate).toBe('1995-07-15');
       expect(result.notifiedPersonAnonymous.residenceAddress.country).toBe('DE');
       expect(result.notifiedPersonAnonymous.residenceAddress.zip).toBe('50667');
@@ -297,6 +296,17 @@ describe('ProcessFormService', () => {
       expect(result.notifiedPersonAnonymous.gender).toBe('MALE');
     });
 
+    it('should handle undefined gender', () => {
+      const model: any = {
+        tabPatient: {
+          info: { gender: null },
+          residenceAddress: { country: 'AT', zip: '1010' },
+        },
+      };
+
+      const result = (service as any).transformAnonymousPerson(model);
+      expect(result.notifiedPersonAnonymous.gender).toBeUndefined();
+    });
     it('should handle undefined zip', () => {
       const model: any = {
         tabPatient: {
@@ -325,7 +335,7 @@ describe('ProcessFormService', () => {
     it('should handle empty birthDate string', () => {
       const model: any = {
         tabPatient: {
-          info: { gender: 'feMALE', birthDate: '' },
+          info: { gender: 'FEMALE', birthDate: '' },
           residenceAddress: { country: 'DE', zip: '10115' },
         },
       };
@@ -335,11 +345,8 @@ describe('ProcessFormService', () => {
     });
   });
 
-  describe('birthDate handling with FEATURE_FLAG_DISEASE_DATEPICKER', () => {
-    it('should preserve ISO format birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is active', () => {
-      // Spy auf environment.featureFlags
-      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: true });
-
+  describe('birthDate handling', () => {
+    it('should preserve ISO format birthDate', () => {
       const model: any = {
         tabDiseaseChoice: {
           diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
@@ -374,10 +381,7 @@ describe('ProcessFormService', () => {
       expect(result.notifiedPerson?.info.birthDate).toBe('2000-01-01');
     });
 
-    it('should preserve year-only ISO format birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is active', () => {
-      // Spy auf environment.featureFlags
-      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: true });
-
+    it('should preserve year-only ISO format birthDate', () => {
       const model: any = {
         tabDiseaseChoice: {
           diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
@@ -412,10 +416,7 @@ describe('ProcessFormService', () => {
       expect(result.notifiedPerson?.info.birthDate).toBe('2000');
     });
 
-    it('should preserve year-month ISO format birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is active', () => {
-      // Spy auf environment.featureFlags
-      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: true });
-
+    it('should preserve year-month ISO format birthDate', () => {
       const model: any = {
         tabDiseaseChoice: {
           diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
@@ -448,84 +449,6 @@ describe('ProcessFormService', () => {
 
       const result = service.createNotification(model, NotificationType.NominalNotification6_1);
       expect(result.notifiedPerson?.info.birthDate).toBe('2000-01');
-    });
-
-    it('should convert German format birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is inactive', () => {
-      // Spy auf environment.featureFlags
-      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: false });
-
-      const model: any = {
-        tabDiseaseChoice: {
-          diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
-          clinicalStatus: { answer: { valueString: 'active' } },
-          statusNoteGroup: {
-            statusNote: { answer: { valueString: 'note' } },
-            initialNotificationId: { answer: { valueString: 'initId' } },
-          },
-        },
-        tabNotifier: {
-          address: { street: 'Teststr. 1' },
-          contact: { salutation: ExtendedSalutationEnum.Mr },
-          contacts: { emailAddresses: [], phoneNumbers: [] },
-          facilityInfo: { organizationType: { answer: { valueCoding: { code: 'hospital' } } } },
-          oneTimeCode: '1234',
-        },
-        tabPatient: {
-          info: { birthDate: '01.01.2000' }, // German format
-          currentAddressType: 'primaryAsCurrent',
-          residenceAddress: { city: 'Berlin' },
-          currentAddress: { city: 'Berlin' },
-          currentAddressInstitutionName: 'Klinik',
-          residenceAddressType: 'home',
-          contacts: { emailAddresses: [], phoneNumbers: [] },
-        },
-        tabDiseaseCondition: {},
-        tabDiseaseCommon: undefined,
-        tabQuestionnaire: [],
-      };
-
-      const result = service.createNotification(model, NotificationType.NominalNotification6_1);
-      expect(result.notifiedPerson?.info.birthDate).toBe('2000-01-01');
-    });
-
-    it('should not process birthDate when FEATURE_FLAG_DISEASE_DATEPICKER is inactive and birthDate is already in ISO format', () => {
-      // Spy auf environment.featureFlags
-      spyOnProperty(environment, 'featureFlags', 'get').and.returnValue({ FEATURE_FLAG_DISEASE_DATEPICKER: false });
-
-      const model: any = {
-        tabDiseaseChoice: {
-          diseaseChoice: { answer: { valueCoding: { code: 'COVID19' } } },
-          clinicalStatus: { answer: { valueString: 'active' } },
-          statusNoteGroup: {
-            statusNote: { answer: { valueString: 'note' } },
-            initialNotificationId: { answer: { valueString: 'initId' } },
-          },
-        },
-        tabNotifier: {
-          address: { street: 'Teststr. 1' },
-          contact: { salutation: ExtendedSalutationEnum.Mr },
-          contacts: { emailAddresses: [], phoneNumbers: [] },
-          facilityInfo: { organizationType: { answer: { valueCoding: { code: 'hospital' } } } },
-          oneTimeCode: '1234',
-        },
-        tabPatient: {
-          info: { birthDate: '2000-01-01' }, // Already in ISO format
-          currentAddressType: 'primaryAsCurrent',
-          residenceAddress: { city: 'Berlin' },
-          currentAddress: { city: 'Berlin' },
-          currentAddressInstitutionName: 'Klinik',
-          residenceAddressType: 'home',
-          contacts: { emailAddresses: [], phoneNumbers: [] },
-        },
-        tabDiseaseCondition: {},
-        tabDiseaseCommon: undefined,
-        tabQuestionnaire: [],
-      };
-
-      const result = service.createNotification(model, NotificationType.NominalNotification6_1);
-      // Da dateStringToIso bei bereits ISO-formatierten Daten einen leeren String zurückgibt,
-      // erwarten wir hier einen leeren String (was das Problem ist, das behoben wurde)
-      expect(result.notifiedPerson?.info.birthDate).toBe('');
     });
   });
 });

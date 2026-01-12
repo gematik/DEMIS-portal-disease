@@ -1,3 +1,19 @@
+@use '@angular/material' as mat;
+
+:root {
+  @include mat.tooltip-overrides((
+    container-color: var(--color-neutral-lighter),
+    supporting-text-color: var(--color-black),
+    supporting-text-line-height: 18px,
+    supporting-text-size: 13px,
+    supporting-text-weight: 400,
+  ));
+}
+
+.mat-mdc-tooltip {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 //override for accordion background - needs to be checked if still necessary/styled in other MFs
 .mat-expansion-panel {
   background-color: var(--color-white);

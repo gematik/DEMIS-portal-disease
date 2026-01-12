@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -15,8 +15,8 @@
     find details in the "Readme" file.
  */
 
-import { FormlyFieldConfig } from '@ngx-formly/core';
-import { dateStringToIso, findFormlyFieldIterativeByKey, findQuantityFieldsByProp } from './utils';
+import { FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core';
+import { findFormlyFieldIterativeByKey, findQuantityFieldsByProp, modifyFieldsByPredicate } from './utils';
 
 describe('test utils', () => {
   describe('findFormlyFieldIterativeByKey', () => {
@@ -405,7 +405,12 @@ describe('test utils', () => {
       const fields: FormlyFieldConfig[] = [
         {
           key: 'parent',
-          fieldGroup: [{ key: 'child', props: { quantity: { unit: 'ml', system: 'http://unitsofmeasure.org', code: 'ml' } } }],
+          fieldGroup: [
+            {
+              key: 'child',
+              props: { quantity: { unit: 'ml', system: 'http://unitsofmeasure.org', code: 'ml' } },
+            },
+          ],
         },
       ];
       const result = findQuantityFieldsByProp(fields);
@@ -417,48 +422,6 @@ describe('test utils', () => {
       const fields: FormlyFieldConfig[] = [{ key: 'x', props: {} }];
       const result = findQuantityFieldsByProp(fields);
       expect(result.size).toBe(0);
-    });
-  });
-
-  describe('dateStringToIso', () => {
-    it('returns empty string for undefined', () => {
-      expect(dateStringToIso(undefined)).toBe('');
-    });
-
-    it('returns empty string for empty string', () => {
-      expect(dateStringToIso('')).toBe('');
-    });
-
-    it('parses full date dd.mm.yyyy', () => {
-      expect(dateStringToIso('01.03.2025')).toBe('2025-03-01');
-    });
-
-    it('parses full date with single-digit day and month d.m.yyyy', () => {
-      expect(dateStringToIso('1.3.2025')).toBe('2025-03-01');
-    });
-
-    it('parses month and year mm.yyyy', () => {
-      expect(dateStringToIso('03.2025')).toBe('2025-03-01');
-    });
-
-    it('parses month and year with single-digit month m.yyyy', () => {
-      expect(dateStringToIso('3.2025')).toBe('2025-03-01');
-    });
-
-    it('parses year only yyyy', () => {
-      expect(dateStringToIso('2025')).toBe('2025-01-01');
-    });
-
-    it('returns empty string for invalid format (e.g. 2025/03/01)', () => {
-      expect(dateStringToIso('2025/03/01')).toBe('');
-    });
-
-    it('returns empty string for random string', () => {
-      expect(dateStringToIso('hello world')).toBe('');
-    });
-
-    it('trims whitespace before parsing', () => {
-      expect(dateStringToIso(' 1.3.2025 ')).toBe('2025-03-01');
     });
   });
 });

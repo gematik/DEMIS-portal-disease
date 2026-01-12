@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -21,7 +21,6 @@ import { FormlyConstants } from '../../../legacy/formly-constants';
 import { CURRENT_ADDRESS_TYPE_OPTION_LIST, GENDER_OPTION_LIST, RESIDENCE_ADDRESS_TYPE_OPTION_LIST } from '../../../legacy/formly-options-lists';
 import { TEXT_MAX_LENGTH, UI_DATE_FORMAT_GER } from '../../../legacy/common-utils';
 import { AddressType } from '../../../../api/notification';
-import { environment } from 'src/environments/environment';
 
 const INFO_KEY = 'info';
 
@@ -29,38 +28,24 @@ export const RESIDENCE_ADDRESS_ID = 'residence-address-'; //WOHNSITZ
 export const CURRENT_ADDRESS_ID = 'current-address-'; //DERZEITIGER AUFENTHALTSORT
 
 function getDatePickerConfig(): FormlyFieldConfig {
-  if (environment.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
-    return {
-      id: 'birthDate',
-      key: 'birthDate',
-      className: FormlyConstants.COLMD6,
-      type: 'datepicker',
-      props: {
-        appearance: 'fill',
-        placeholder: UI_DATE_FORMAT_GER,
-        maxLength: 10,
-        label: 'Geburtsdatum',
-        required: false,
-        multiYear: true,
-        maxDate: new Date(),
-        attributes: {
-          appCheckLabelLength: '',
-        },
-      },
-    };
-  }
-
-  return formlyInputField({
+  return {
+    id: 'birthDate',
     key: 'birthDate',
     className: FormlyConstants.COLMD6,
+    type: 'datepicker',
     props: {
+      appearance: 'fill',
       placeholder: UI_DATE_FORMAT_GER,
       maxLength: 10,
       label: 'Geburtsdatum',
       required: false,
+      multiYear: true,
+      maxDate: new Date(),
+      attributes: {
+        appCheckLabelLength: '',
+      },
     },
-    validators: ['dateInputValidator'],
-  });
+  };
 }
 
 export function getNotifiedPersonInfo(): FormlyFieldConfig[] {

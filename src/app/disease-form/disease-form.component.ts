@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -16,29 +16,23 @@
  */
 
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, HostListener, inject, OnDestroy, OnInit, Signal } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostBinding,
+  HostListener,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  Signal,
+  ViewChild,
+  WritableSignal,
+} from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
-import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
-import { distinctUntilChanged, filter, lastValueFrom, Subject, take, takeUntil, tap } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { ANONYMOUS_PERSON_RULES, FACILITY_RULES, NOMINAL_PERSON_ADDRESS_RULES, NOMINAL_PERSON_RULES } from '../data-transfer/functionRules';
-import { allowedRoutes, DemisCoding, getNotificationTypeByRouterUrl, NotificationType, QuestionnaireDescriptor } from '../demis-types';
-import { makeFieldSequence, sortItems } from '../format-items';
-import { Ifsg61Service } from '../ifsg61.service';
-import { CodeDisplay, DiseaseStatus, TerminologyVersion } from '../../api/notification';
-import { ErrorMessage } from '../shared/error-message';
-import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
-import { HelpersService } from '../shared/helpers.service';
-import { createExpressions, findQuantityFieldsByProp } from '../shared/utils';
-import { getDiseaseChoiceFields } from './common/formlyConfigs/disease-choice';
-import { HexHexDummy } from './common/hexHexDummy';
-import { notifierFacilityFormConfigFields } from './common/formlyConfigs/notifier';
-import { ImportFieldValuesService, ImportTargetComponent } from './services/import-field-values.service';
-import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-service';
-import { ProcessFormService } from './services/process-form-service';
-import { NGXLogger } from 'ngx-logger';
+import { Router } from '@angular/router';
 import {
   cloneObject,
   FollowUpNotificationIdService,
@@ -46,11 +40,30 @@ import {
   notifiedPersonAnonymousConfigFields,
   notifiedPersonNotByNameConfigFields,
 } from '@gematik/demis-portal-core-library';
-import { Router } from '@angular/router';
-import { ValueSetOption, ValueSetService } from '../legacy/value-set.service';
+import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
+import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
+import { FormlyFieldProps } from '@ngx-formly/material/form-field';
+import { NGXLogger } from 'ngx-logger';
+import { distinctUntilChanged, filter, lastValueFrom, Subject, take, takeUntil, tap } from 'rxjs';
+import { CodeDisplay, DiseaseStatus, TerminologyVersion } from '../../api/notification';
+import { environment } from '../../environments/environment';
+import { ANONYMOUS_PERSON_RULES, FACILITY_RULES, NOMINAL_PERSON_ADDRESS_RULES, NOMINAL_PERSON_RULES } from '../data-transfer/functionRules';
+import { allowedRoutes, DemisCoding, getNotificationTypeByRouterUrl, NotificationType, QuestionnaireDescriptor } from '../demis-types';
+import { makeFieldSequence, sortItems } from '../format-items';
+import { Ifsg61Service } from '../ifsg61.service';
 import { FormlyConstants } from '../legacy/formly-constants';
 import { GENDER_OPTION_LIST } from '../legacy/formly-options-lists';
+import { ValueSetOption, ValueSetService } from '../legacy/value-set.service';
+import { ErrorMessage } from '../shared/error-message';
+import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
+import { createExpressions, findQuantityFieldsByProp, modifyFieldsByPredicate } from '../shared/utils';
+import { getDiseaseChoiceFields } from './common/formlyConfigs/disease-choice';
 import { notifiedPersonFormConfigFields } from './common/formlyConfigs/notified-person';
+import { notifierFacilityFormConfigFields } from './common/formlyConfigs/notifier';
+import { HexHexDummy } from './common/hexHexDummy';
+import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-service';
+import { ImportFieldValuesService, ImportTargetComponent } from './services/import-field-values.service';
+import { ProcessFormService } from './services/process-form-service';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
 const IFSG61_NOTIFIER = 'IFSG61_NOTIFIER'; // key into local storage
@@ -79,7 +92,13 @@ const NO_DISEASE_CHOOSEN: FormlyFieldConfig[] = [
   styleUrls: ['./disease-form.component.scss'],
   standalone: false,
 })
-export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDestroy {
+export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTargetComponent, OnDestroy {
+  @ViewChild('notificationSubheader', { read: ElementRef })
+  private notificationSubheader?: ElementRef<HTMLElement>;
+
+  @HostBinding('style.--subheader-offset')
+  subheaderOffset: string = '0px';
+
   get formlyConfigFields(): FormlyFieldConfig[] {
     return this.fields;
   }
@@ -96,12 +115,9 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
       template: '',
     },
   ];
-
-  private readonly matDialog = inject(MatDialog);
   private readonly ifsg61Service = inject(Ifsg61Service);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly tabsNavigationService = inject(TabsNavigationService);
-  private readonly helpers = inject(HelpersService);
   private readonly importFieldValuesService = inject(ImportFieldValuesService);
   private readonly copyAndKeepInSyncService = inject(CopyAndKeepInSyncService);
   private readonly processFormService = inject(ProcessFormService);
@@ -111,8 +127,32 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
   private readonly valueSetService = inject(ValueSetService);
   private readonly followUpNotificationIdService = inject(FollowUpNotificationIdService);
   private readonly unsubscriber = new Subject<void>();
+  isLoading: WritableSignal<boolean> = signal(false);
 
   notificationType = NotificationType.NominalNotification6_1;
+
+  get notificationTypeClass(): string {
+    switch (this.notificationType) {
+      case NotificationType.FollowUpNotification6_1:
+        return 'notification-type-followup-6-1';
+      case NotificationType.NonNominalNotification7_3:
+        return 'notification-type-non-nominal-7-3';
+      case NotificationType.AnonymousNotification7_3:
+        return 'notification-type-anonymous-7-3';
+      case NotificationType.NominalNotification6_1:
+      default:
+        return 'notification-type-nominal-6-1';
+    }
+  }
+
+  private calculateSubheaderHeight(): void {
+    if (this.notificationSubheader?.nativeElement) {
+      const height = this.notificationSubheader.nativeElement.offsetHeight;
+      this.subheaderOffset = `${height}px`;
+    } else {
+      this.subheaderOffset = '0px';
+    }
+  }
 
   constructor() {
     this.token = (window as any)['token'];
@@ -141,18 +181,24 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
     );
   };
 
+  ngAfterViewInit(): void {
+    // Verzögere die Berechnung bis zum nächsten Change Detection Zyklus
+    Promise.resolve().then(() => {
+      this.calculateSubheaderHeight();
+      this.changeDetector.detectChanges();
+    });
+  }
+
   ngOnInit() {
+    this.isLoading.set(true);
     const nav = this.router.getCurrentNavigation();
     const data = nav?.extras.state ?? window.history.state;
 
     const notifierJson = localStorage.getItem(IFSG61_NOTIFIER);
     this.model.tabNotifier = notifierJson ? JSON.parse(notifierJson) : {};
-    if (
-      environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION ||
-      environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE
-    ) {
-      this.notificationType = getNotificationTypeByRouterUrl(this.router.url);
-    }
+
+    this.notificationType = getNotificationTypeByRouterUrl(this.router.url);
+
     //set default country for all addresses to germany.
     this.model.tabNotifier.address = {
       ...this.model.tabNotifier.address,
@@ -212,9 +258,11 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
 
           this.diseaseChoiceFields = getDiseaseChoiceFields(this.diseaseCodeDisplays, this.notificationType);
           this.combineFields();
+          this.isLoading.set(false);
         },
         error: (err: any) => {
           this.handleError(err, 'Typen nicht abrufbar');
+          this.isLoading.set(false);
         },
       });
     if (this.isFollowUpNotification6_1()) {
@@ -247,9 +295,8 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
       });
   }
 
-  // TODO: Remove this getter, once FEATURE_FLAG_PORTAL_PASTEBOX will be removed
-  public get FEATURE_FLAG_PORTAL_PASTEBOX(): boolean {
-    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_PASTEBOX;
+  public get FEATURE_FLAG_PORTAL_HEADER_FOOTER(): boolean {
+    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_HEADER_FOOTER;
   }
 
   public isFollowUpNotification6_1(): boolean {
@@ -395,11 +442,33 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
       },
     ];
     createExpressions(this.fields);
+    this.addTooltipWrapperToFormFields(this.fields);
     this.fieldSequence = makeFieldSequence(this.fields);
   }
 
   isFullQuestionnaire() {
     return this.notificationType === NotificationType.NominalNotification6_1 || this.isFollowUpNotification6_1();
+  }
+
+  /**
+   * This method adds the 'form-field-with-tooltip' wrapper to all fields that have a 'tooltip' property in their props
+   * and are already using the 'form-field' wrapper. This is necessary to display tooltips correctly in the form fields,
+   * since we cannot modify the formly field wrapper to support our custom tooltip property directly.
+   *
+   * @param fields
+   */
+  private addTooltipWrapperToFormFields(
+    fields: FormlyFieldConfig<
+      FormlyFieldProps & {
+        [additionalProperties: string]: any;
+      }
+    >[]
+  ) {
+    modifyFieldsByPredicate(
+      fields,
+      field => field.wrappers?.includes('form-field') && field.props?.['tooltip'],
+      field => field.wrappers!.unshift('form-field-with-tooltip') // It is safe to use ! because of the predicate
+    );
   }
 
   chooseTabAfterChoosing() {
@@ -541,7 +610,7 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
         })
       )
     ).then(
-      descriptor => [],
+      () => [],
       reason => {
         console.error(reason);
         if (reason instanceof HttpErrorResponse) {
@@ -572,16 +641,18 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
     const dummy = new HexHexDummy();
     const dummyData = dummy.getDummy(this.notificationType);
 
-    const diseaseCode = dummyData.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code;
+    if (!this.isFollowUpNotification6_1) {
+      const diseaseCode = dummyData.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code;
+      await this.loadQuestionnaire(diseaseCode);
+    }
     const j = JSON.stringify(dummyData);
-    this.model = JSON.parse(j);
-    await this.loadQuestionnaire(diseaseCode);
     setTimeout(() => {
       this.model = JSON.parse(j);
+      if (this.isFollowUpNotification6_1()) {
+        const validatedNotificationId = this.followUpNotificationIdService.validatedNotificationId();
+        this.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId = { answer: { valueString: validatedNotificationId } };
+      }
     }, 10);
-    if (this.isFollowUpNotification6_1()) {
-      this.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer.valueString = this.followUpNotificationIdService.validatedNotificationId();
-    }
   }
 
   private navigateToTab(i: number) {
@@ -614,16 +685,13 @@ export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDe
   /**
    * This method handles the import of data in the form using the clipboard
    *
-   * TODO: Make parameter keyValuePairs mandatory, as soon as the feature flag "FEATURE_FLAG_PORTAL_PASTEBOX" is removed
    * @param keyValuePairs - Map of key-value pairs to be imported from clipboard
    */
-  async paste(keyValuePairsFromClipboard?: Map<string, string>) {
+  async paste(keyValuePairsFromClipboard: Map<string, string>) {
     this.messageDialogService.showSpinnerDialog({ message: 'Zwischenablage wird übernommen' });
     try {
       window.focus();
-      const keyValuePairs: string[][] = this.FEATURE_FLAG_PORTAL_PASTEBOX
-        ? [...(keyValuePairsFromClipboard ?? [])]
-        : await this.importFieldValuesService.getClipboardKVs();
+      const keyValuePairs: string[][] = [...(keyValuePairsFromClipboard ?? [])];
       const isFollowUp = this.notificationType === NotificationType.FollowUpNotification6_1;
       const personRules = isFollowUp ? ANONYMOUS_PERSON_RULES : NOMINAL_PERSON_RULES;
       const personAddressRules = isFollowUp ? {} : NOMINAL_PERSON_ADDRESS_RULES;

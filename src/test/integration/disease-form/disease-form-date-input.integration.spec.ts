@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -18,7 +18,7 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MockedComponentFixture, MockProvider } from 'ng-mocks';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { buildMock, setupIntegrationTests } from './base.spec';
+import { buildMock, setupIntegrationTests } from './base';
 import { MatInputHarness } from '@angular/material/input/testing';
 import { MatRadioButtonHarness } from '@angular/material/radio/testing';
 import { Ifsg61Service } from '../../../app/ifsg61.service';

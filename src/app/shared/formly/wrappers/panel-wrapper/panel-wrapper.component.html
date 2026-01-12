@@ -1,5 +1,10 @@
 <div class="card">
-  <h3 class="card-header">{{ props.label }}</h3>
+  <h3 class="card-header">
+    {{ props.label }}
+    @if(props['tooltip']) {
+      <app-label-info-icon tooltipId="panel-{{ field.id }}" [tooltipText]="props['tooltip']"></app-label-info-icon>
+    }
+  </h3>
   <div class="card-body">
     <ng-container #fieldComponent></ng-container>
   </div>

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -19,9 +19,7 @@ import { Injectable } from '@angular/core';
 import { AddressType, DiseaseNotification, NotifiedPersonAddressInfo, Quantity } from '../../../api/notification';
 import { formatItems } from '../../format-items';
 import { trimStrings } from '@gematik/demis-portal-core-library';
-import { dateStringToIso } from '../../shared/utils';
 import { ExtendedSalutationEnum } from '../../legacy/common-utils';
-import { environment } from 'src/environments/environment';
 import { NotificationType } from '../../demis-types';
 
 @Injectable({
@@ -72,13 +70,7 @@ export class ProcessFormService {
         : {}),
     };
 
-    const trimmedMessage: DiseaseNotification = trimStrings(message);
-    // NOSONAR TODO: By business logic, we know that notified person is defined at this point. Because of requirements by pathogen in terms of follow up notifications
-    // the data structure is made optional. In order to avoid the conditional here, the data structures should be distinguished in the future.
-    if (trimmedMessage.notifiedPerson && !environment.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
-      trimmedMessage.notifiedPerson.info.birthDate = dateStringToIso(trimmedMessage.notifiedPerson.info.birthDate); //NOSONAR Its OK, to use this here, as this code will be removed together with the feature flag
-    }
-    return trimmedMessage;
+    return trimStrings(message);
   }
 
   private transformNotifiedPerson(model: any, notificationType: NotificationType): Partial<DiseaseNotification> {
@@ -121,8 +113,8 @@ export class ProcessFormService {
   private transformAnonymousPerson(model: any): Partial<DiseaseNotification> {
     return {
       notifiedPersonAnonymous: {
-        gender: model.tabPatient.info.gender,
-        birthDate: model.tabPatient.info.birthDate || undefined,
+        gender: model.tabPatient.info?.gender || undefined,
+        birthDate: model.tabPatient.info?.birthDate || undefined,
         residenceAddress: {
           country: model.tabPatient.residenceAddress.country,
           zip: model.tabPatient.residenceAddress.zip || undefined,
@@ -137,18 +129,9 @@ export class ProcessFormService {
   }
 
   private makeCondition(condition: Record<string, any> | undefined) {
-    // TODO: Tidy up this block, once FEATURE_FLAG_DISEASE_DATEPICKER will be removed
-    let recordedDateAnswer = this.answer(condition, 'recordedDate', 'valueDate');
-    if (recordedDateAnswer && !environment.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
-      recordedDateAnswer = dateStringToIso(recordedDateAnswer); //NOSONAR Its OK, to use this here, as this code will be removed together with the feature flag
-    }
-    let onsetAnswer = this.answer(condition, 'onset', 'valueDate');
-    if (onsetAnswer && !environment.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
-      onsetAnswer = dateStringToIso(onsetAnswer); //NOSONAR Its OK, to use this here, as this code will be removed together with the feature flag
-    }
     return {
-      recordedDate: recordedDateAnswer,
-      onset: onsetAnswer,
+      recordedDate: this.answer(condition, 'recordedDate', 'valueDate'),
+      onset: this.answer(condition, 'onset', 'valueDate'),
       note: this.answer(condition, 'note', 'valueString'),
       evidence: this.answer(condition, 'evidence', 'valueCoding'),
       verificationStatus: this.answer(condition, 'verificationStatus', 'valueCoding')?.code,

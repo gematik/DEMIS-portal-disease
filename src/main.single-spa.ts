@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -42,7 +42,8 @@ const lifecycles = singleSpaAngular({
     const appRef = await platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule);
     if (
       environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION ||
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE ||
+      environment.diseaseConfig.featureFlags?.FEATURE_FLAG_ANONYMOUS_NOTIFICATION
     ) {
       router = appRef.injector.get(Router);
       syncUrlWithRouter();
@@ -91,6 +92,8 @@ function syncUrlWithRouter() {
         router.navigate([allowedRoutes['nonNominal']], redirectExtra);
       } else if (redirectUrl.includes('follow-up')) {
         router.navigate([allowedRoutes['followUp']], redirectExtra);
+      } else if (redirectUrl.includes('anonymous')) {
+        router.navigate([allowedRoutes['anonymous']], redirectExtra);
       } else {
         router.navigate([allowedRoutes['main']], redirectExtra);
       }

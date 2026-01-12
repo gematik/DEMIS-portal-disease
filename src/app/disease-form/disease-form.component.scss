@@ -1,12 +1,13 @@
 $max-side-container-width: 437px; //17.5vw;
 $content-width: 345px; //15
 $stepper-top: 44px;
-$tab-top: calc($stepper-top + 110px);
-$hexhex-top: calc($tab-top + 280px);
+$tab-top: calc($stepper-top + 90px);
+$hexhex-top: calc($tab-top + 310px + var(--subheader-offset, 0px));
 $paste-top: calc($hexhex-top + 50px);
+$form-footer-top: calc($paste-top + 300px);
 
 :host {
-  --mdc-text-button-label-text-color: var(--color-primary);;
+  --mdc-text-button-label-text-color: var(--color-primary);
 }
 
 ::ng-deep .mat-mdc-tab-label-container {
@@ -16,6 +17,18 @@ $paste-top: calc($hexhex-top + 50px);
 
 
 :host ::ng-deep {
+
+  .loading-indicator {
+    max-width: 1140px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+  }
 
   .mat-mdc-tab {
     letter-spacing: normal;
@@ -34,6 +47,21 @@ $paste-top: calc($hexhex-top + 50px);
     border-right-style: solid;
     border-right-width: 1px;
     border-top-right-radius: 0;
+  }
+
+
+  //temporary fix to prevent overlapping bug, should be fixed with new side navigation component
+  .disease-form-root.notification-type-non-nominal-7-3 .mat-mdc-tab-label-container {
+    padding-top: calc($tab-top + 5px);
+  }
+
+  .disease-form-root.notification-type-followup-6-1 .mat-mdc-tab-label-container {
+    padding-top: calc($tab-top + 30px);
+  }
+
+  .disease-form-root.notification-type-anonymous-7-3 .mat-mdc-tab-label-container,
+  {
+    padding-top: calc($tab-top + 35px);
   }
 
   .mat-mdc-outlined-button {
@@ -107,9 +135,11 @@ $paste-top: calc($hexhex-top + 50px);
     padding-bottom: 15px;
   }
 
-  //temporary fix to prevent overlapping bug, should be fixed with new side navigation component
-  .follow-up-header {
-    font-size: 12px;
+  .notification-subheader {
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
   }
 
   app-hexhexbutton {
@@ -128,6 +158,16 @@ $paste-top: calc($hexhex-top + 50px);
     width: $content-width;
     z-index: 999;
   }
+
+  gem-demis-forms-footer {
+    position: absolute;
+    top: $form-footer-top;
+    left: 0;
+    bottom: 0;
+    width: $max-side-container-width;
+    z-index: 1000;
+  }
+
 }
 
 :host ::ng-deep #disease-form gem-demis-max-height-content-container > div {

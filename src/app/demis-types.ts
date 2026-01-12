@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -16,6 +16,7 @@
  */
 
 import { FormlyFieldConfig } from '@ngx-formly/core';
+import { environment } from '../environments/environment';
 
 // TOOD: Why is this hardocded hier and not served from  CodeDisplay type
 export type DemisCoding = {
@@ -59,10 +60,12 @@ export const allowedRoutes: AllowedRoutes = {
 };
 
 export const getNotificationTypeByRouterUrl = (url: string): NotificationType => {
-  if (url.includes(allowedRoutes['nonNominal'])) {
+  if (url.includes(allowedRoutes['nonNominal']) && environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION === true) {
     return NotificationType.NonNominalNotification7_3;
-  } else if (url.includes(allowedRoutes['followUp'])) {
+  } else if (url.includes(allowedRoutes['followUp']) && environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE === true) {
     return NotificationType.FollowUpNotification6_1;
+  } else if (url.includes(allowedRoutes['anonymous']) && environment.diseaseConfig.featureFlags?.FEATURE_FLAG_ANONYMOUS_NOTIFICATION === true) {
+    return NotificationType.AnonymousNotification7_3;
   } else {
     return NotificationType.NominalNotification6_1;
   }

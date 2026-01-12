@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -227,25 +227,18 @@ function setFieldDefaults(configs: FormlyFieldConfig[]) {
     // Whenever the BE delivers, remove the next three lines of code
     // For the backend, providing Regexps seems more appropriate
     if (typeof fc.key === 'string' && fc.key.endsWith('valueDate')) {
-      if (environment.diseaseConfig.featureFlags?.FEATURE_FLAG_DISEASE_DATEPICKER) {
-        fc.wrappers = [];
-        fc.props = {
-          ...fc.props,
-          appearance: 'fill', // TODO: Should not be necessary and be controlled by the form-field wrapper itself. Will be fixed with DEMIS-4007
-          allowedPrecisions: fc.props?.['allowedPrecisions'] ? fc.props['allowedPrecisions'] : ['day', 'month', 'year'],
-        };
-        // TODO: Remove this workaround in DEMIS-4098
-        if (fc.props['minDate']) {
-          delete fc.props['minDate'];
-        }
-        if (fc.props['maxDate']) {
-          delete fc.props['maxDate'];
-        }
-      } else {
-        fc.modelOptions = {
-          updateOn: 'blur',
-        };
-        fc.validators = { validation: ['date123'] };
+      fc.wrappers = [];
+      fc.props = {
+        ...fc.props,
+        appearance: environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN ? 'outline' : 'fill', // TODO: Should not be necessary and be controlled by the form-field wrapper itself. Will be fixed with DEMIS-4007
+        allowedPrecisions: fc.props?.['allowedPrecisions'] ? fc.props['allowedPrecisions'] : ['day', 'month', 'year'],
+      };
+      // TODO: Remove this workaround in DEMIS-4098
+      if (fc.props['minDate']) {
+        delete fc.props['minDate'];
+      }
+      if (fc.props['maxDate']) {
+        delete fc.props['maxDate'];
       }
     }
 

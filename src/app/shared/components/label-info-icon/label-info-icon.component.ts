@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -15,24 +15,17 @@
     find details in the "Readme" file.
  */
 
-import { PasteBoxComponent } from './paste-box.component';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { AppComponent } from '../../../app.component';
-import { AppModule } from '../../../app.module';
+import { Component, input } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
-describe('PasteBoxComponent', () => {
-  let fixture: MockedComponentFixture<PasteBoxComponent>;
-  let component: AppComponent;
-
-  const createComponent = () => {
-    fixture = MockRender(PasteBoxComponent);
-    component = fixture.point.componentInstance;
-  };
-
-  beforeEach(() => MockBuilder(PasteBoxComponent, AppModule));
-
-  it('should create', () => {
-    createComponent();
-    expect(component).withContext('component was not created').toBeTruthy();
-  });
-});
+@Component({
+  selector: 'app-label-info-icon',
+  templateUrl: './label-info-icon.component.html',
+  styleUrl: './label-info-icon.component.scss',
+  imports: [MatIconModule, MatTooltipModule],
+})
+export class LabelInfoIconComponent {
+  tooltipId = input<string>('');
+  tooltipText = input<string>('');
+}

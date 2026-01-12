@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -18,7 +18,6 @@
 import { inject, Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { NGXLogger } from 'ngx-logger';
-import { matchesRegExp } from '../../legacy/notification-form-validation-module';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { ErrorMessage } from '../../shared/error-message';
 import { isArray, merge } from 'lodash-es';
@@ -108,24 +107,6 @@ async function setModelValue(model: any, path: string, values: any[], multi: boo
 export class ImportFieldValuesService {
   dialog = inject(MatDialog);
   private logger = inject(NGXLogger);
-
-  /**
-   * @deprecated TODO: remove this method, once FEATURE_FLAG_PORTAL_PASTEBOX will be removed
-   */
-  async getClipboardKVs(): Promise<string[][]> {
-    const raw = await window.navigator.clipboard.readText();
-    if (!matchesRegExp(/^URL .*/, raw)) {
-      throw 'invalid clipboard: it does not start with "URL "';
-    }
-    const urlParams = raw.substring(4);
-    const kvs: string[][] = decodeURI(urlParams)
-      .split('&')
-      .map(s => s.split('=').map(s => s.trim()));
-    if (kvs.length === 0) {
-      throw 'empty parameter list';
-    }
-    return kvs;
-  }
 
   /**
    * Transfers the parameters from the clipboard to the form.

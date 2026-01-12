@@ -1,18 +1,24 @@
-<gem-demis-max-height-content-container [elementSelectorsToSubtract]="['app-navbar']">
-  <form id="disease-form" [formGroup]="form" (ngSubmit)="submitForm()" appCheckLabelLength>
+<gem-demis-max-height-content-container [elementSelectorsToSubtract]="['app-navbar']" class="disease-form-root" [class]="notificationTypeClass">
+  @if (isLoading()){
+    <div class="loading-indicator">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+  @else {
+    <form id="disease-form" [formGroup]="form" (ngSubmit)="submitForm()" appCheckLabelLength>
     <formly-form [model]="model" [fields]="fields" [form]="form" [options]="formOptions"></formly-form>
     <div id="disease-form-action-bar-wrapper" class="action-bar-wrapper">
       <div class="action-bar">
         <div class="back-button-container">
           <button mat-button id="back-button" class="btn navigate--color back" [disabled]="!canGoBack()" type="button"
-                (click)="goBack()">
+                  (click)="goBack()">
             <mat-icon fontIcon="arrow_back_ios"></mat-icon>
             <span>Zurück</span>
           </button>
         </div>
         <div class="button-group">
           <button mat-button id="forward-button" class="btn navigate--color style forward" [disabled]="!canGoForward()"
-                type="button"
+                  type="button"
                   (click)="goForward()">
             <span>Weiter</span>
             <mat-icon iconPositionEnd fontIcon="arrow_forward_ios"></mat-icon>
@@ -25,23 +31,28 @@
       </div>
     </div>
   </form>
-<div class="stepper-heading">
-  @if (notificationType === NotificationType.NominalNotification6_1) {
-    <h1>Krankheitsmeldung (§6.1)</h1>
-  }
-  @if (notificationType === NotificationType.NonNominalNotification7_3) {
-    <h1>Krankheit</h1>
-    <h4>Meldung einer Krankheit gemäß § 7 Abs. 3 IfSG</h4>
-  }
-    @if (notificationType === NotificationType.FollowUpNotification6_1) {
-      <h1>Folgemeldung</h1>
-      <h4 class="follow-up-header">Meldung eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG ohne Angaben von Personendaten</h4>
-    }
-</div>
-<app-hexhexbutton (paste)="hexHex()"></app-hexhexbutton>
-  @if (FEATURE_FLAG_PORTAL_PASTEBOX) {
+    <div class="stepper-heading">
+      @if (notificationType === NotificationType.NominalNotification6_1) {
+        <h1>Krankheitsmeldung (§ 6.1)</h1>
+      }
+      @if (notificationType === NotificationType.NonNominalNotification7_3) {
+        <h1>Krankheit</h1>
+        <h4 #notificationSubheader class="notification-subheader">Meldung einer Krankheit gemäß § 7 Abs. 3 IfSG</h4>
+      }
+      @if (notificationType === NotificationType.FollowUpNotification6_1) {
+        <h1>Folgemeldung</h1>
+        <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG ohne Angaben von
+          Personendaten</h4>
+      }
+      @if (notificationType === NotificationType.AnonymousNotification7_3) {
+        <h1 style="font-size: 20px">Ärztliche Ergänzungsmeldung (anonym)</h1>
+        <h4 #notificationSubheader class="notification-subheader">Anonyme Meldung von Infektionskrankheiten gemäß § 7 Abs. 3 IfSG</h4>
+      }
+    </div>
+    <app-hexhexbutton (paste)="hexHex()"></app-hexhexbutton>
     <gem-demis-paste-box (dataPasted)="paste($event)"></gem-demis-paste-box>
-  }   @else {
-    <app-paste-box (paste)="paste()"></app-paste-box>
+    @if (FEATURE_FLAG_PORTAL_HEADER_FOOTER) {
+      <gem-demis-forms-footer></gem-demis-forms-footer>
+    }
   }
 </gem-demis-max-height-content-container>

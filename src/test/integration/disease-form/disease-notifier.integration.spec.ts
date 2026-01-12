@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -23,7 +23,7 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { selectTab } from '../utils/disease-common-utils';
 import { getAllButtonsWithSameSelector, getButton, getMultipleInputFieldsWithSameSelector } from '../../shared/material-harness-utils';
 import { MatButtonHarness } from '@angular/material/button/testing';
-import { buildMock, mainConfig, setupIntegrationTests } from './base.spec';
+import { buildMock, mainConfig, setupIntegrationTests } from './base';
 
 describe('DiseaseFormComponent integration tests for Notifier Tab', () => {
   let component: DiseaseFormComponent;
