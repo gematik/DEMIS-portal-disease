@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -24,10 +24,10 @@ import StatusEnum = DiseaseStatus.StatusEnum;
 export class HexHexDummy {
   getDummy(type: NotificationType) {
     if (type === NotificationType.NonNominalNotification7_3) {
-      // §7.3 is a strict-only feature
+      // § 7.3 is a strict-only feature
       return this.maxHivDummy;
     }
-    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT && type === NotificationType.FollowUpNotification6_1) {
+    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT === true && type === NotificationType.FollowUpNotification6_1) {
       return {
         ...this.strictMaxMasernDummy,
         tabPatient: {
@@ -43,7 +43,23 @@ export class HexHexDummy {
         },
       };
     }
-    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT && type === NotificationType.NominalNotification6_1) {
+    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT === false && type === NotificationType.FollowUpNotification6_1) {
+      return {
+        ...this.maxMasernDummy,
+        tabPatient: {
+          residenceAddress: {
+            zip: '123',
+            country: GERMANY_COUNTRY_CODE,
+            addressType: AddressType.Primary,
+          },
+          info: {
+            gender: 'MALE',
+            birthDate: '01.1970',
+          },
+        },
+      };
+    }
+    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT === true && type === NotificationType.NominalNotification6_1) {
       return this.strictMaxMasernDummy;
     }
     return this.maxMasernDummy;

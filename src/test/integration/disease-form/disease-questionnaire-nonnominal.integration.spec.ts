@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -21,7 +21,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { environment } from '../../../environments/environment';
 import { selectDisease, selectTab } from '../utils/disease-common-utils';
-import { buildMock, mainConfig } from './base.spec';
+import { buildMock, mainConfig } from './base';
 import { getInput } from '../../shared/material-harness-utils';
 import { checkDescribingError } from '../../shared/assertion-utils';
 import { VALUE_INVALID_QUANTITY } from '../../shared/test-constants';

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -69,12 +69,12 @@ export const oneTimeCodeConfigField = formlyRow([
 export const infoOutline: FormlyFieldConfig = {
   className: 'col-sm-12',
   template: `<div class="info-notification-text">
-               <span class="material-icons md-48">info_outline</span>
+               <span class="material-icons-outlined primary-color-icon">error_outline</span>
                <span class="message">Grundsätzlich müssen Sie gemäß Infektionsschutzgesetz alle Ihnen vorliegenden Informationen im Meldeformular angeben, um die Meldepflicht zu erfüllen. Die Nachmeldung oder Korrektur von Angaben hat unverzüglich zu erfolgen.</span>
              </div>`,
   props: {
     addonLeft: {
-      icon: 'info_outline',
+      icon: 'error_outline',
     },
   },
 };
@@ -82,12 +82,12 @@ export const infoOutline: FormlyFieldConfig = {
 export const personalDataWillBeStoredInLocalStorageOutline: FormlyFieldConfig = {
   className: 'col-sm-12',
   template: `<div class="info-notification-text">
-               <span class="material-icons md-48">info_outline</span>
+               <span class="material-icons-outlined primary-color-icon">error_outline</span>
                <span class="message">Die Informationen aus den Eingabefeldern zur meldenden Person werden <i>lokal im aktuellen Browser</i> gespeichert. Bei Folgemeldungen werden diese Eingabefelder automatisch mit den gespeicherten Daten vorbefüllt, damit der Meldevorgang beschleunigt wird.</span>
              </div>`,
   props: {
     addonLeft: {
-      icon: 'info_outline',
+      icon: 'error_outline',
     },
   },
 };

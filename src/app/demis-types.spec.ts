@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -16,19 +16,46 @@
  */
 
 import { allowedRoutes, getNotificationTypeByRouterUrl, NotificationType } from './demis-types';
+import { environment } from '../environments/environment';
 
 describe('demis-types utilities', () => {
+  let originalDiseaseConfig: any;
+
+  beforeEach(() => {
+    originalDiseaseConfig = environment.diseaseConfig;
+    environment.diseaseConfig = {
+      featureFlags: {
+        FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: false,
+        FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: false,
+        FEATURE_FLAG_ANONYMOUS_NOTIFICATION: false,
+      },
+    } as any;
+  });
+
+  afterEach(() => {
+    environment.diseaseConfig = originalDiseaseConfig;
+  });
+
   describe('getNotificationTypeByRouterUrl', () => {
     it('should return FollowUpNotification6_1 when url includes follow-up route', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE = true;
       const url = `http://localhost:4200/${allowedRoutes['followUp']}`;
       const result = getNotificationTypeByRouterUrl(url);
       expect(result).toBe(NotificationType.FollowUpNotification6_1);
     });
 
     it('should return NonNominalNotification7_3 when url includes non-nominal route', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION = true;
       const url = `http://localhost:4200/${allowedRoutes['nonNominal']}`;
       const result = getNotificationTypeByRouterUrl(url);
       expect(result).toBe(NotificationType.NonNominalNotification7_3);
+    });
+
+    it('should return AnonymousNotification7_3 when url includes anonymous route', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_ANONYMOUS_NOTIFICATION = true;
+      const url = `http://localhost:4200/${allowedRoutes['anonymous']}`;
+      const result = getNotificationTypeByRouterUrl(url);
+      expect(result).toBe(NotificationType.AnonymousNotification7_3);
     });
 
     it('should return NominalNotification6_1 for nominal route', () => {
@@ -44,6 +71,8 @@ describe('demis-types utilities', () => {
     });
 
     it('should prioritize non-nominal over follow-up when both are in url', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE = true;
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION = true;
       const url = `http://localhost:4200/${allowedRoutes['nonNominal']}/${allowedRoutes['followUp']}`;
       const result = getNotificationTypeByRouterUrl(url);
       expect(result).toBe(NotificationType.NonNominalNotification7_3);

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -27,7 +27,12 @@ import { FieldWrapper } from '@ngx-formly/core';
           <mat-expansion-panel>
             <mat-expansion-panel-header>
               <mat-panel-title style="margin-top: 15px">
-                <h2>{{ field.props!.label }}</h2>
+                <h2>
+                  {{ field.props!.label }}
+                  @if (props['tooltip']) {
+                    <app-label-info-icon tooltipId="expansion-panel-{{ field.id }}" [tooltipText]="props['tooltip']"></app-label-info-icon>
+                  }
+                </h2>
               </mat-panel-title>
             </mat-expansion-panel-header>
             @if (field.props!.description) {

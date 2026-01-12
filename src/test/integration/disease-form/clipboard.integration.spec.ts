@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -32,7 +32,7 @@ import {
 import { clickNextButton } from '../../shared/test-utils';
 import { AddressType } from '../../../api/notification';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { buildMock, setupIntegrationTests } from './base.spec';
+import { buildMock, setupIntegrationTests } from './base';
 import {
   getStepHeader,
   selectTab,
@@ -54,7 +54,7 @@ import { TestBed } from '@angular/core/testing';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { ImportFieldValuesService } from '../../../app/disease-form/services/import-field-values.service';
 import { ErrorMessage } from '../../../app/shared/error-message';
-import { VALUE_DEFAULT_PLACEHOLDER, VALUE_DEFUALT_SELECT_PLACEHOLDER } from 'src/app/legacy/common-utils';
+import { VALUE_DEFUALT_SELECT_PLACEHOLDER } from 'src/app/legacy/common-utils';
 
 describe('User fills in form through clipboard', () => {
   let component: DiseaseFormComponent;
@@ -287,13 +287,11 @@ describe('User fills in form through clipboard', () => {
     let showErrorDialogSpy: jasmine.Spy;
     let showErrorDialogInsertDataFromClipboard: jasmine.Spy;
     let fillModelFromKVsSpy: jasmine.Spy;
-    let getClipboardKVsSpy: jasmine.Spy;
 
     beforeEach(() => {
       showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
       showErrorDialogInsertDataFromClipboard = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialogInsertDataFromClipboard');
       fillModelFromKVsSpy = spyOn(TestBed.inject(ImportFieldValuesService), 'fillModelFromKVs');
-      getClipboardKVsSpy = spyOn(TestBed.inject(ImportFieldValuesService), 'getClipboardKVs');
     });
 
     it('fillModelFromKVsSpy returns an error', async () => {
@@ -311,7 +309,6 @@ describe('User fills in form through clipboard', () => {
     });
 
     it('Other error happens', async () => {
-      getClipboardKVsSpy.and.throwError('boo');
       await userImportsDataThroughClipboard('URL N.salutation=Mrs');
       fixture.detectChanges();
       expect(showErrorDialogInsertDataFromClipboard).toHaveBeenCalled();

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -41,7 +41,7 @@ import {
 import { NOTIFIER_PERSON_CONTACT_INPUT } from '../../shared/test-data';
 import { CLIPBOARD_VALUE_HOUSENR, CLIPBOARD_VALUE_STREET, FIELD_CURRENT_ADDRESS_HOUSE_NUMBER, FIELD_CURRENT_ADDRESS_ZIP } from '../../shared/test-constants';
 import { AddressType } from '../../../api/notification';
-import { buildMock, mainConfig } from './base.spec';
+import { buildMock, mainConfig } from './base';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { TestBed } from '@angular/core/testing';
 import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';

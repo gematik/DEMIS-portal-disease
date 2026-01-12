@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -62,7 +62,6 @@ import {
   CLIPBOARD_VALUE_STREET,
   CLIPBOARD_VALUE_ZIP,
   ERROR_INVALID_BSNR,
-  ERROR_INVALID_DATE,
   ERROR_INVALID_EMAIL,
   ERROR_INVALID_HOUSE_NUMBER,
   ERROR_INVALID_PHONE,
@@ -71,7 +70,6 @@ import {
   ERROR_MIN_ONE_CHAR,
   ERROR_REQUIRED,
   ERROR_SHORT_ZIP,
-  FIELD_BIRTH_DATE,
   FIELD_BSNR,
   FIELD_CURRENT_ADDRESS_CITY,
   FIELD_CURRENT_ADDRESS_HOUSE_NUMBER,
@@ -91,7 +89,6 @@ import {
   FIELD_RESIDENCE_ADDRESS_ZIP,
   VALUE_EMPTY,
   VALUE_INVALD_BSNR,
-  VALUE_INVALID_DATE,
   VALUE_INVALID_EMAIL_1,
   VALUE_INVALID_EMAIL_2,
   VALUE_INVALID_EMAIL_3,
@@ -297,11 +294,6 @@ export const TEST_PARAMETER_VALIDATION = {
       field: FIELD_FIRST_NAME,
       value: VALUE_INVALID_NAME_NUMBER,
       expectedResult: ERROR_INVALID_SPECIAL_CHAR,
-    },
-    {
-      field: FIELD_BIRTH_DATE,
-      value: VALUE_INVALID_DATE,
-      expectedResult: ERROR_INVALID_DATE,
     },
     {
       field: FIELD_LAST_NAME,

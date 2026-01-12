@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -21,9 +21,9 @@ import { MockedComponentFixture, MockRender } from 'ng-mocks';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { environment } from '../../../environments/environment';
 import { selectTab } from '../utils/disease-common-utils';
-import { buildMock, mainConfig } from './base.spec';
+import { buildMock, mainConfig } from './base';
 
-describe('NotifiedPerson with FEATURE_FLAG_DISEASE_DATEPICKER', () => {
+describe('NotifiedPerson', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
   let loader: HarnessLoader;
@@ -56,90 +56,37 @@ describe('NotifiedPerson with FEATURE_FLAG_DISEASE_DATEPICKER', () => {
     fixture.detectChanges();
   });
 
-  describe('when FEATURE_FLAG_DISEASE_DATEPICKER is enabled', () => {
-    beforeEach(() => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_DATEPICKER = true;
-      fixture.detectChanges();
-    });
-
-    it('should create', () => {
-      expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
-    });
-
-    it('should have FEATURE_FLAG_DISEASE_DATEPICKER enabled', () => {
-      expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_DATEPICKER).toBeTrue();
-    });
-
-    it('should use datepicker type for birthDate field when feature flag is enabled', async () => {
-      // Navigate to NotifiedPerson tab
-      await selectTab(fixture, loader, 2);
-
-      // Check that the birthDate field has type 'datepicker'
-      const notifiedPersonFields = component.formlyConfigFields;
-
-      const birthDateField = findBirthDateField(notifiedPersonFields);
-
-      expect(birthDateField).toBeTruthy();
-      expect(birthDateField.type).toBe('datepicker');
-      expect(birthDateField.props?.multiYear).toBeTrue();
-      expect(birthDateField.props?.maxDate).toBeInstanceOf(Date);
-    });
-
-    it('should have correct datepicker properties when feature flag is enabled', async () => {
-      await selectTab(fixture, loader, 2);
-
-      const notifiedPersonFields = component.formlyConfigFields;
-
-      const birthDateField = findBirthDateField(notifiedPersonFields);
-
-      expect(birthDateField).toBeTruthy();
-      expect(birthDateField.props?.label).toBe('Geburtsdatum');
-      expect(birthDateField.props?.appearance).toBe('fill');
-      expect(birthDateField.props?.placeholder).toBe('TT.MM.JJJJ');
-      expect(birthDateField.props?.maxLength).toBe(10);
-      expect(birthDateField.props?.required).toBeFalse();
-    });
+  it('should create', () => {
+    expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
   });
 
-  describe('when FEATURE_FLAG_DISEASE_DATEPICKER is disabled', () => {
-    beforeEach(() => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_DATEPICKER = false;
-      fixture.detectChanges();
-    });
+  it('should use datepicker type for birthDate field', async () => {
+    // Navigate to NotifiedPerson tab
+    await selectTab(fixture, loader, 2);
 
-    it('should have FEATURE_FLAG_DISEASE_DATEPICKER disabled', () => {
-      expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_DATEPICKER).toBeFalse();
-    });
+    // Check that the birthDate field has type 'datepicker'
+    const notifiedPersonFields = component.formlyConfigFields;
 
-    it('should use input type for birthDate field when feature flag is disabled', async () => {
-      await selectTab(fixture, loader, 2);
+    const birthDateField = findBirthDateField(notifiedPersonFields);
 
-      const notifiedPersonFields = component.formlyConfigFields;
+    expect(birthDateField).toBeTruthy();
+    expect(birthDateField.type).toBe('datepicker');
+    expect(birthDateField.props?.multiYear).toBeTrue();
+    expect(birthDateField.props?.maxDate).toBeInstanceOf(Date);
+  });
 
-      const birthDateField = findBirthDateField(notifiedPersonFields);
+  it('should have correct datepicker properties', async () => {
+    await selectTab(fixture, loader, 2);
 
-      expect(birthDateField).toBeTruthy();
-      expect(birthDateField.type).toBe('input');
-      expect(birthDateField.validators?.validation).toContain('dateInputValidator');
-    });
+    const notifiedPersonFields = component.formlyConfigFields;
 
-    it('should have correct input properties when feature flag is disabled', async () => {
-      await selectTab(fixture, loader, 2);
+    const birthDateField = findBirthDateField(notifiedPersonFields);
 
-      const notifiedPersonFields = component.formlyConfigFields;
-
-      const birthDateField = findBirthDateField(notifiedPersonFields);
-
-      expect(birthDateField).toBeTruthy();
-      expect(birthDateField.props?.label).toBe('Geburtsdatum');
-      expect(birthDateField.props?.placeholder).toBe('TT.MM.JJJJ');
-      expect(birthDateField.props?.maxLength).toBe(10);
-      expect(birthDateField.props?.required).toBeFalse();
-      // Should not have datepicker specific properties
-      expect(birthDateField.props?.multiYear).toBeUndefined();
-      expect(birthDateField.props?.maxDate).toBeUndefined();
-      // Note: appearance may have a default value from Material theme, but should not be 'fill'
-      expect(birthDateField.props?.appearance).not.toBe('fill');
-    });
+    expect(birthDateField).toBeTruthy();
+    expect(birthDateField.props?.label).toBe('Geburtsdatum');
+    expect(birthDateField.props?.appearance).toBe('fill');
+    expect(birthDateField.props?.placeholder).toBe('TT.MM.JJJJ');
+    expect(birthDateField.props?.maxLength).toBe(10);
+    expect(birthDateField.props?.required).toBeFalse();
   });
 });

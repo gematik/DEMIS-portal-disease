@@ -5,6 +5,11 @@ $button-bg: $fuchsia;
 $button-text-color: #fff;
 $baby-blue: #f8faff;
 
+#btn-magic {
+  padding: 0.5rem;
+  align-self: center;
+}
+
 .bubbly-container {
   display: flex;
   flex-direction: row;

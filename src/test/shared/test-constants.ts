@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -91,7 +91,6 @@ export const ADDRESS_TYPE_PRIMARY = 'primary';
 export const ADDRESS_TYPE_ORDINARY = 'ordinary';
 
 //validation input values
-export const VALUE_INVALID_DATE = '12.13.2012';
 export const VALUE_INVALID_NAME_SPECIAL_CHAR = 'Eins$';
 export const VALUE_INVALID_NAME_NUMBER = 'Eins1';
 export const VALUE_EMPTY = '';
@@ -120,7 +119,6 @@ export const VALUE_INVALD_BSNR = '12345678';
 export const VALUE_INVALID_QUANTITY = 'Der eingegebene Wert muss zwischen 1 und 42 liegen.';
 
 //validation error messages
-export const ERROR_INVALID_DATE = 'Kein gültiges Datum (Beispiele: 05.11.1998)';
 export const ERROR_INVALID_SPECIAL_CHAR = 'Ihre Eingabe enthält unzulässige Sonderzeichen';
 export const ERROR_REQUIRED = 'Diese Angabe wird benötigt';
 export const ERROR_MIN_LENGTH = 'Minimallänge nicht erreicht';

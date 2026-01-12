@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -52,7 +52,6 @@ import { IconLoaderService } from './legacy/icon-loader.service';
 import { registerValueSetExtension } from './legacy/value-set.extension';
 import { ValueSetService } from './legacy/value-set.service';
 import { HexhexbuttonComponent } from './shared/components/hexhexbutton/hexhexbutton.component';
-import { PasteBoxComponent as DeprecatedPasteBoxComponent } from './shared/components/paste-box/paste-box.component';
 import { AddBreadcrumbDirective } from './shared/formly/components/autocomplete-coding/add-breadcrumb.directive';
 import { Date123Validator, Date1Validator, Date2Validator, Date3Validator } from './shared/formly/validators/validators';
 import { ExpansionPanelWrapperComponent } from './shared/formly/wrappers/expansion-panel-wrapper/expansion-panel.wrapper';
@@ -65,6 +64,7 @@ import { environment } from '../environments/environment';
 import {
   FormlyDatepickerComponent,
   FormlyRepeaterComponent,
+  FormsFooterComponent,
   MaxHeightContentContainerComponent,
   PasteBoxComponent,
   SectionHeaderComponent,
@@ -72,6 +72,8 @@ import {
 import { defaultAppearanceExtension, defaultPlaceholderExtension } from './shared/formly-extensions';
 import { CheckLabelLengthDirective } from './shared/directives/check-label-length.directive';
 import { withFormlyMaterial } from '@ngx-formly/material';
+import { FormFieldWithTooltipWrapperComponent } from './shared/formly/wrappers/form-field-with-tooltip-wrapper/form-field-with-tooltip-wrapper.component';
+import { LabelInfoIconComponent } from './shared/components/label-info-icon/label-info-icon.component';
 
 export function initIconLoaderService(iconLoaderService: IconLoaderService) {
   return (): Promise<void> => {
@@ -94,7 +96,6 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     RepeatComponent,
     EmptyRouteComponent,
     PanelWrapperComponent,
-    DeprecatedPasteBoxComponent,
     HexhexbuttonComponent,
     ExpansionPanelWrapperComponent,
     AddBreadcrumbDirective,
@@ -128,6 +129,9 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     PasteBoxComponent,
     MaxHeightContentContainerComponent,
     SectionHeaderComponent,
+    FormFieldWithTooltipWrapperComponent,
+    LabelInfoIconComponent,
+    FormsFooterComponent,
   ],
   providers: [
     provideAppInitializer(() => {
@@ -178,6 +182,7 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
         wrappers: [
           { name: 'panel', component: PanelWrapperComponent },
           { name: 'expansion-panel', component: ExpansionPanelWrapperComponent },
+          { name: 'form-field-with-tooltip', component: FormFieldWithTooltipWrapperComponent },
         ],
         validators: [
           { name: 'date123', validation: Date123Validator },

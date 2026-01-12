@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -29,7 +29,7 @@ import { ValueSetService } from '../../../app/legacy/value-set.service';
 import { environment } from '../../../environments/environment';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BehaviorSubject, of } from 'rxjs';
-import { EXAMPLE_COUNTRY_CODES, EXAMPLE_DISEASE_OPTIONS, EXAMPLE_DISEASE_OPTIONS_NONNOMINAL, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
+import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_DISEASE_OPTIONS_NONNOMINAL, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
@@ -99,11 +99,10 @@ export const mainConfig = {
   pathToFuts: '/fhir-ui-data-model-translation',
   pathToDestinationLookup: '/destination-lookup/v1',
   featureFlags: {
-    FEATURE_FLAG_PORTAL_PASTEBOX: true,
     FEATURE_FLAG_OUTLINE_DESIGN: true,
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
-    FEATURE_FLAG_DISEASE_DATEPICKER: false,
     FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
+    FEATURE_FLAG_ANONYMOUS_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_STRICT: true,
   },
   ngxLoggerConfig: {
@@ -123,6 +122,9 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
   } else if (notificationType === NotificationType.FollowUpNotification6_1) {
     ifsg61Service = overrides.Ifsg61Service;
     allowedRoutesMock = allowedRoutes['followUp'];
+  } else if (notificationType === NotificationType.AnonymousNotification7_3) {
+    ifsg61Service = overrides.Ifsg61Service;
+    allowedRoutesMock = allowedRoutes['anonymous'];
   } else {
     ifsg61Service = overrides.Ifsg61Service;
     allowedRoutesMock = allowedRoutes['nominal'];
