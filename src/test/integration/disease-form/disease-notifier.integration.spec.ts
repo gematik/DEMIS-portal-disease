@@ -53,8 +53,8 @@ describe('DiseaseFormComponent integration tests for Notifier Tab', () => {
     let getAddEmailButton: () => Promise<MatButtonHarness>;
 
     beforeEach(async () => {
-      getPhoneFieldsCount = async () => (await getMultipleInputFieldsWithSameSelector(loader, '[data-cy="phoneNo"]')).length;
-      getEmailFieldsCount = async () => (await getMultipleInputFieldsWithSameSelector(loader, '[data-cy="email"]')).length;
+      getPhoneFieldsCount = async () => (await getMultipleInputFieldsWithSameSelector(loader, '[id*="phoneNo"]')).length;
+      getEmailFieldsCount = async () => (await getMultipleInputFieldsWithSameSelector(loader, '[id*="email"]')).length;
       getDeletePhoneButtons = async () => getAllButtonsWithSameSelector(loader, '[id^="phoneNumbers-delete-button"]');
       getDeleteEmailButtons = async () => getAllButtonsWithSameSelector(loader, '[id^="emailAddresses-delete-button"]');
       getAddPhoneButton = async () => getButton(loader, '#phoneNumbers-add-button');

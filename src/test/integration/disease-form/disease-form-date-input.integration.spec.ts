@@ -101,7 +101,6 @@ describe('Date input without dots integration test', () => {
     const specificIfsg61ServiceMock = {
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(getModifiedMockQuestionnaire())),
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
-      getCodeSystemVersions: jasmine.createSpy('getCodeSystemVersions').and.returnValue(of(EXAMPLE_CODESYSTEM_VERSIONS)),
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
     } as jasmine.SpyObj<Ifsg61Service>;
 

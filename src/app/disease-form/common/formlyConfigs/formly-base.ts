@@ -197,12 +197,12 @@ export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPe
               className: 'flex-grow-1',
               type: 'input',
               key: 'value',
+              id: 'phoneNo',
               defaultValue: '',
               props: {
                 label: 'Telefonnummer',
                 maxLength: 50,
                 required: true,
-                attributes: { 'data-cy': 'phoneNo' },
               },
               validators: {
                 validation: ['phoneValidator'],
@@ -240,12 +240,12 @@ export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPe
               className: 'flex-grow-1',
               type: 'input',
               key: 'value',
+              id: 'email',
               defaultValue: '',
               props: {
                 label: 'Email-Adresse',
                 required: true,
                 maxLength: 5000,
-                attributes: { 'data-cy': 'email' },
               },
               validators: {
                 validation: ['emailValidator'],

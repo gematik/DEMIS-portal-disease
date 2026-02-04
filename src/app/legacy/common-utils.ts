@@ -18,8 +18,7 @@
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import localeDeExtra from '@angular/common/locales/extra/de';
-import { DateTime } from 'luxon';
-import { NotifiedPersonBasicInfo, PractitionerInfo } from 'src/api/notification';
+import { Gender, PractitionerInfo } from 'src/api/notification';
 
 // CONST:..................................
 
@@ -72,7 +71,6 @@ export const DATE_IN_FUTURE_ERROR_MSG: string = 'Das Datum darf nicht in der Zuk
 export const EMAIL_ERROR_MSG: string = 'Keine gültige E-Mail (Beispiel: meine.Email@email.de)';
 export const BLANK_ERROR_MSG: string = 'Es muss mindestens ein Zeichen eingegeben werden';
 export const HOUSE_NBR_ERROR_MSG: string = 'Keine gültige Hausnummer';
-export const END_DATE_LATER_THAN_START_DATE_ERROR_MSG: string = 'Das Startdatum darf nicht nach dem Enddatum liegen';
 export const PHONE_ERROR_MSG: string = 'Die Telefonnummer muss mit 0 oder + beginnen, gefolgt von mindestens 6 Ziffern.';
 export const TEXT_ERROR_MSG: string = 'Ihre Eingabe enthält unzulässige Sonderzeichen';
 export const ZIP_GERMANY_ERROR_MSG: string = 'Die Postleitzahl muss aus 5 Ziffern bestehen';
@@ -82,36 +80,6 @@ export const NUMBER_ERROR_MSG: string = 'Bitte geben Sie eine positive Zahl ein.
 export const VALUE_DEFAULT_PLACEHOLDER: string = 'Bitte eingeben';
 export const VALUE_DEFUALT_SELECT_PLACEHOLDER = 'Bitte auswählen';
 
-/***
- * to convert string to Luxon date
- *
- * @param date
- * @param format
- */
-export function stringToDateFromLuxon(date: string, format?: string): Date | null {
-  format = format ?? UI_LUXON_DATE_FORMAT;
-  return !!date && DateTime.fromFormat(date, format).isValid ? DateTime.fromFormat(date, format).toJSDate() : null;
-}
-
-/**
- * Create a new function that attempts to match an unknown value to an instance
- * of the given Enum. If the function fails, an error is thrown. Otherwise the
- * matched instance is returned.
- */
-function createEnumParser<Enum>(enumDefinition: Record<string, Enum>) {
-  return function (val: unknown): Enum {
-    if (typeof val === 'string') {
-      const titleCase = `${val[0].toLocaleUpperCase()}${val.substring(1).toLocaleLowerCase()}`;
-      const result = enumDefinition[titleCase];
-      if (result !== undefined) {
-        return result;
-      }
-    }
-
-    throw new Error(`Unknown value '${val}'`);
-  };
-}
-
 // 'None' is hardcoded and not in the enum because it's only needed for the frontend
 export const ExtendedSalutationEnum = {
   ...PractitionerInfo.SalutationEnum,
@@ -120,5 +88,29 @@ export const ExtendedSalutationEnum = {
 
 export type ExtendedSalutationType = PractitionerInfo.SalutationEnum | 'None';
 
-export const parseGender = createEnumParser<NotifiedPersonBasicInfo.GenderEnum>(NotifiedPersonBasicInfo.GenderEnum);
-export const parseSalutation = createEnumParser<ExtendedSalutationType>(ExtendedSalutationEnum);
+export const parseGender = (value: string) => getEnumKeyByValue(Gender, value);
+export const parseSalutation = (value: string) => getEnumKeyByValue(ExtendedSalutationEnum, value);
+
+// temporary handling for @deprecated gender value OTHER. Stays for now for backwards compatibility
+function handleDeprecatedOther(upperValue: string) {
+  if (upperValue === 'OTHER') {
+    upperValue = Gender.Diverse;
+  }
+  return upperValue;
+}
+
+/**
+ * Generic function to get the key of an enum by its value (case-insensitive, value will be uppercased).
+ * Throws an error if the value is not found.
+ */
+export function getEnumKeyByValue<T extends Record<string, string>>(enumObj: T, value: string): string {
+  value = handleDeprecatedOther(value);
+  const key = Object.keys(enumObj).find(key => enumObj[key as keyof typeof enumObj] === value);
+  if (key !== undefined) {
+    const result = enumObj[key];
+    if (result !== undefined) {
+      return result;
+    }
+  }
+  throw new Error(`Unknown value '${value}'`);
+}

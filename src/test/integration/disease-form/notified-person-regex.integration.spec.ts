@@ -136,7 +136,7 @@ describe('DiseaseFormComponent notified person regex integration tests', () => {
       it(`for the '${parameter.value}', the value: '${parameter.value}' should throw the error: '${parameter.expectedResult}'`, async () => {
         await navigateTo(loader, 1);
         await (await getButton(loader, '#phoneNumbers-add-button')).click();
-        const phoneNoInput = await getInput(loader, '[data-cy=phoneNo]');
+        const phoneNoInput = await getInput(loader, '[id*="phoneNo"]');
         await phoneNoInput.setValue(parameter.value);
         await phoneNoInput.blur();
 
@@ -154,7 +154,7 @@ describe('DiseaseFormComponent notified person regex integration tests', () => {
       it(`for email, the value: '${parameter.value}' should throw the error: '${parameter.expectedResult}'`, async () => {
         await navigateTo(loader, 1);
         await (await getButton(loader, '#emailAddresses-add-button')).click();
-        const emailInput = await getInput(loader, '[data-cy=email]');
+        const emailInput = await getInput(loader, '[id*="email"]');
         await emailInput.setValue(parameter.value);
         await emailInput.blur();
 

@@ -24,11 +24,12 @@ import { TestBed } from '@angular/core/testing';
 import { FollowUpNotificationIdService, MessageDialogService } from '@gematik/demis-portal-core-library';
 import { EXAMPLE_DISEASE_OPTIONS } from '../../shared/data/test-values';
 import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
-import { getButton, getInput, getSelect, navigateTo } from '../../shared/material-harness-utils';
+import { getButton, getCheckBox, getInput, getSelect, navigateTo } from '../../shared/material-harness-utils';
 import { checkDescribingError } from '../../shared/assertion-utils';
 import { getHtmlButtonElement } from '../../shared/html-element-utils';
 import { clickNextButton } from '../../shared/test-utils';
 import { lastValueFrom, of } from 'rxjs';
+import { selectIsHospitalizedYes, selectTab } from '../utils/disease-common-utils';
 
 describe('DiseaseFormComponent followUp integration tests', () => {
   let component: DiseaseFormComponent;
@@ -202,5 +203,25 @@ describe('DiseaseFormComponent followUp integration tests', () => {
       expect(await zip.getValue()).toBe('123');
       expect(await country.getValueText()).toBe('Dänemark');
     });
+  });
+
+  it('should hide hospitalized checkboxes', async () => {
+    const mockDiseaseCode = EXAMPLE_DISEASE_OPTIONS[0].code;
+    const mockNotificationId = 'test-notification-id-999';
+
+    (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
+    (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
+
+    component.ngOnInit();
+    await fixture.whenStable();
+
+    (followUpNotificationIdService.hasValidNotificationId$ as any).next(true);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    await selectTab(fixture, loader, 5);
+    await selectIsHospitalizedYes(loader);
+    await expectAsync(getCheckBox(loader, '#copyNotifiedPersonCurrentAddress')).toBeRejectedWithError(/Failed[\s\S]*copyNotifiedPersonCurrentAddress/);
+    await expectAsync(getCheckBox(loader, '#copyNotifierContact')).toBeRejectedWithError(/Failed[\s\S]*copyNotifierContact/);
   });
 });

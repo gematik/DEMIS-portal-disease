@@ -660,11 +660,11 @@ export const NOTIFIER_PERSON_CONTACT_INPUT = [
     value: 'Graf',
   },
   {
-    selector: '[data-cy="phoneNo"]',
+    selector: '[id*="phoneNo"]',
     value: '0521 123456',
   },
   {
-    selector: '[data-cy="email"]',
+    selector: '[id*="email"]',
     value: 'abc@xxx.de',
   },
 ];

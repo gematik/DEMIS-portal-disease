@@ -47,7 +47,6 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
   beforeEach(async () => {
     const ifsg61ServiceMock = {
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
-      getCodeSystemVersions: jasmine.createSpy('getCodeSystemVersions').and.returnValue(of(EXAMPLE_CODESYSTEM_VERSIONS)),
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(QUESTIONNAIRE_WITH_TOOLTIP)),
     };

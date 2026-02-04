@@ -10,7 +10,7 @@
     <formly-field class="col-sm-10" [id]="setIdName('repeat-field', field, i)" [field]="field"></formly-field>
     <div class="col-sm-2 d-flex align-items-center">
       @if (!isLonely(field, !!props['isContact']) || !props['keepLastItem']) {
-        <button [id]="setIdName('btn-delete', field, i)" mat-icon-button color="primary" type="button" (click)="remove(i)" data-cy="remove-button">
+        <button [id]="setIdName('btn-delete', field, i)" mat-icon-button color="primary" type="button" (click)="remove(i)">
           <mat-icon>delete</mat-icon>
         </button>
       }
