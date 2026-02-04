@@ -15,9 +15,7 @@
     find details in the "Readme" file.
  */
 
-import GenderEnum = NotifiedPersonBasicInfo.GenderEnum;
-
-import { AddressType, NotifiedPersonBasicInfo } from '../../api/notification';
+import { AddressType, Gender } from '../../api/notification';
 
 export const RESIDENCE_ADDRESS_TYPE_OPTION_LIST = [
   { value: AddressType.Primary, label: 'Hauptwohnung' },
@@ -32,8 +30,9 @@ export const CURRENT_ADDRESS_TYPE_OPTION_LIST = [
 ];
 
 export const GENDER_OPTION_LIST = [
-  { value: GenderEnum.Male, label: 'Männlich' },
-  { value: GenderEnum.Female, label: 'Weiblich' },
-  { value: GenderEnum.Other, label: 'Divers' },
-  { value: GenderEnum.Unknown, label: 'Keine Angabe' },
+  { value: Gender.Male, label: 'Männlich' },
+  { value: Gender.Female, label: 'Weiblich' },
+  { value: Gender.Diverse, label: 'Divers' },
+  { value: Gender.Otherx, label: 'Kein Geschlechtseintrag' },
+  { value: Gender.Unknown, label: 'Unbekannt' },
 ];

@@ -2,7 +2,7 @@ $max-side-container-width: 437px; //17.5vw;
 $content-width: 345px; //15
 $stepper-top: 44px;
 $tab-top: calc($stepper-top + 90px);
-$hexhex-top: calc($tab-top + 310px + var(--subheader-offset, 0px));
+$hexhex-top: calc($tab-top + 360px + var(--subheader-offset, 0px));
 $paste-top: calc($hexhex-top + 50px);
 $form-footer-top: calc($paste-top + 300px);
 

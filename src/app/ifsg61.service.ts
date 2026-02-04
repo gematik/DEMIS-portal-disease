@@ -23,10 +23,9 @@ import { environment } from '../environments/environment';
 import { DemisCoding, NotificationType, QuestionnaireDescriptor } from './demis-types';
 import { NGXLogger } from 'ngx-logger';
 import { FileService } from './legacy/file.service';
-import { DiseaseNotification, TerminologyVersion, ValidationError } from '../api/notification';
+import { DiseaseNotification, ValidationError } from '../api/notification';
 import { infoOutline } from './disease-form/common/formlyConfigs/formly-base';
 import { MessageDialogService, SubmitDialogProps } from '@gematik/demis-portal-core-library';
-import { map } from 'rxjs/operators';
 
 const PREFFERED_LANGUAGES = [/de-DE/, /de.*/];
 
@@ -47,24 +46,6 @@ export class Ifsg61Service {
     return this.httpClient.get<DemisCoding[]>(url, {
       headers: environment.futsHeaders,
     });
-  }
-
-  getCodeSystemVersions(): Observable<TerminologyVersion[]> {
-    const url = `${environment.pathToFuts}/CodeSystem`;
-    return this.httpClient
-      .get<string[]>(url, {
-        headers: environment.futsHeaders,
-      })
-      .pipe(
-        map((values: string[]) =>
-          values
-            .filter(item => item.includes('|'))
-            .map(item => {
-              const [system, version] = item.split('|');
-              return { system, version };
-            })
-        )
-      );
   }
 
   getDiseaseOptions(type: NotificationType): Observable<DemisCoding[]> {

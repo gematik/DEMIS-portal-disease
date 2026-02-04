@@ -19,10 +19,12 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { environment } from '../environments/environment';
 
 // TOOD: Why is this hardocded hier and not served from  CodeDisplay type
+// Answer: This is hardcoded, because we do not communicate with the gateway but with FUTS
 export type DemisCoding = {
   code: string;
   display: string;
   system: string;
+  systemVersion?: string;
   designations?: { language: string; value: string }[];
   breadcrumb?: string;
   selected?: boolean;

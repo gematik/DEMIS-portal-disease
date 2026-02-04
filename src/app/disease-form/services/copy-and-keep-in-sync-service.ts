@@ -46,9 +46,13 @@ export class CopyAndKeepInSyncService {
     this.subscriptions = new Map<string, Subscription>();
   }
 
-  addChangeListenersForCopyCheckboxesInHospitalization(diseaseCommonFields: FormlyFieldConfig[], form: FormGroup, model: any) {
+  addChangeListenersForCopyCheckboxesInHospitalization(diseaseCommonFields: FormlyFieldConfig[], form: FormGroup, model: any, isFollowUpNotification: boolean) {
     const copyNotifiedPersonCurrentAddress = findFormlyFieldIterativeByKey(diseaseCommonFields, 'copyNotifiedPersonCurrentAddress');
     if (copyNotifiedPersonCurrentAddress) {
+      copyNotifiedPersonCurrentAddress.expressions = {
+        ...copyNotifiedPersonCurrentAddress.expressions,
+        hide: () => isFollowUpNotification,
+      };
       copyNotifiedPersonCurrentAddress.props = {
         ...copyNotifiedPersonCurrentAddress.props,
         change: (field: FormlyFieldConfig) => {
@@ -59,6 +63,10 @@ export class CopyAndKeepInSyncService {
 
     const copyNotifierContact = findFormlyFieldIterativeByKey(diseaseCommonFields, 'copyNotifierContact');
     if (copyNotifierContact) {
+      copyNotifierContact.expressions = {
+        ...copyNotifierContact.expressions,
+        hide: () => isFollowUpNotification,
+      };
       copyNotifierContact.props = {
         ...copyNotifierContact.props,
         change: (field: FormlyFieldConfig) => {

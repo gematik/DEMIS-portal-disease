@@ -45,7 +45,7 @@ import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
 import { FormlyFieldProps } from '@ngx-formly/material/form-field';
 import { NGXLogger } from 'ngx-logger';
 import { distinctUntilChanged, filter, lastValueFrom, Subject, take, takeUntil, tap } from 'rxjs';
-import { CodeDisplay, DiseaseStatus, TerminologyVersion } from '../../api/notification';
+import { CodeDisplay, DiseaseStatus } from '../../api/notification';
 import { environment } from '../../environments/environment';
 import { ANONYMOUS_PERSON_RULES, FACILITY_RULES, NOMINAL_PERSON_ADDRESS_RULES, NOMINAL_PERSON_RULES } from '../data-transfer/functionRules';
 import { allowedRoutes, DemisCoding, getNotificationTypeByRouterUrl, NotificationType, QuestionnaireDescriptor } from '../demis-types';
@@ -170,8 +170,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   prevDiseaseCode?: string;
   formOptions: FormlyFormOptions = {};
 
-  terminologyVersions: TerminologyVersion[] = [];
-
   initHook = (field: FormlyFieldConfig) => {
     return field.options!.fieldChanges!.pipe(
       tap((e: FormlyValueChangeEvent) => {
@@ -204,10 +202,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       ...this.model.tabNotifier.address,
       country: 'DE',
     };
-
-    if (environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT) {
-      this.fetchCodesystemVersions();
-    }
 
     this.model.tabPatient = {
       currentAddress: {
@@ -279,20 +273,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       default:
         return notifiedPersonFormConfigFields(true);
     }
-  }
-
-  private fetchCodesystemVersions() {
-    this.ifsg61Service
-      .getCodeSystemVersions()
-      .pipe(take(1))
-      .subscribe({
-        next: versions => {
-          this.terminologyVersions = versions;
-        },
-        error: err => {
-          this.logger.warn('Failed to fetch codesystem versions', err);
-        },
-      });
   }
 
   public get FEATURE_FLAG_PORTAL_HEADER_FOOTER(): boolean {
@@ -388,7 +368,12 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       });
     }
 
-    this.copyAndKeepInSyncService.addChangeListenersForCopyCheckboxesInHospitalization(this.diseaseCommonFields, this.form, this.model);
+    this.copyAndKeepInSyncService.addChangeListenersForCopyCheckboxesInHospitalization(
+      this.diseaseCommonFields,
+      this.form,
+      this.model,
+      this.isFollowUpNotification6_1()
+    );
 
     this.fields = [
       {
@@ -485,7 +470,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     if (notification.disease?.item) {
       sortItems(notification.disease.item, this.fieldSequence.tabQuestionnaire);
     }
-    notification.terminologyVersions = this.terminologyVersions;
     this.ifsg61Service.submitNotification(notification, this.notificationType);
   }
 
@@ -674,8 +658,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   async afterTransfer(importKey: string, value: any): Promise<ErrorMessage[]> {
     switch (importKey) {
       case 'D.code':
-        const problems = await this.loadQuestionnaire(value);
-        return problems;
+        return await this.loadQuestionnaire(value);
       default:
         this.model = { ...this.model }; // angular tricks...
         return Promise.resolve([]);
@@ -713,7 +696,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
           errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
         });
       } else {
-        window.navigator.clipboard.writeText('');
+        await window.navigator.clipboard.writeText('');
       }
     } catch (error) {
       this.logger.error(error);

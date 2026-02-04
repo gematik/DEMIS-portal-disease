@@ -2,6 +2,14 @@
 
 # Release portal-disease
 
+## Release 1.5.3
+- hide hospitalization copy checkboxes for follow up notification
+- Updated @gematik/demis-portal-core-library to 2.3.9
+- Updated Angular dependencies to version 19.2.18 and 19.2.19
+- Removed data-cy attributes from elements
+- Adapted gender enum according to openapi model, added gender other x
+- added systemVersion parameter to formly input and gateway output FHIR codings
+
 ## Release 1.5.2
 - Updated @gematik/demis-portal-core-library to 2.3.8
 - Removed FEATURE_FLAG_DISEASE_DATEPICKER
@@ -14,14 +22,13 @@
 - Added routing and header for § 7.3 anonymous notification (FEATURE_FLAG_ANONYMOUS_NOTIFICATION)
 - Added loading-spinner
 
-
 ## Release 1.5.1
 - Removed FEATURE_FLAG_PORTAL_ERROR_DIALOG
 - Updated @gematik/demis-portal-core-library to 2.3.6
 - Updated Angular dependencies to version 19.2.17
 - Improved clipboard logic for follow-up notification
 - Refined follow-up pop-up dialog text
-- Fixed hospitalisation checkbox sync in questionnaires with current address change
+- Fixed hospitalization checkbox sync in questionnaires with current address change
 
 ## Release 1.5.0
 - Fixed form and pdf issues with §6.1 follow-up notifications

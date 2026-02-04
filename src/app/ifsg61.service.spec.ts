@@ -29,7 +29,6 @@ import { FileService } from './legacy/file.service';
 import { HelpersService } from './shared/helpers.service';
 import { EXAMPLE_MSVD } from 'src/test/shared/data/test-values';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
-import { EXAMPLE_CODESYSTEM_VERSIONS } from '../test/shared/data/test-codesystem-versions';
 
 export const mainConfig = {
   production: false,
@@ -123,48 +122,6 @@ describe('Ifsg61Service', () => {
       expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/ValueSet?system=test-system`, { headers: environment.futsHeaders });
     });
 
-    it('getCodeSystemVersions calls correct URL and maps response correctly', () => {
-      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(EXAMPLE_CODESYSTEM_VERSIONS));
-
-      service.getCodeSystemVersions().subscribe(result => {
-        expect(result).toBeDefined();
-        expect(result.length).toBe(3);
-        expect(result).toEqual([
-          { system: 'http://fhir.de/CodeSystem/ifa/pei/vaccine-product', version: '1.0.0' },
-          { system: 'http://terminology.hl7.org/CodeSystem/v3-NullFlavor', version: '2.1.0' },
-          { system: 'http://snomed.info/sct', version: '2023-03' },
-        ]);
-      });
-
-      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/CodeSystem`, { headers: environment.futsHeaders });
-    });
-
-    it('getCodeSystemVersions returns empty array when no items contain pipe', () => {
-      const mockResponse = ['invalid-format', 'another-invalid'];
-      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
-
-      service.getCodeSystemVersions().subscribe(result => {
-        expect(result).toBeDefined();
-        expect(result.length).toBe(0);
-        expect(result).toEqual([]);
-      });
-
-      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/CodeSystem`, { headers: environment.futsHeaders });
-    });
-
-    it('getCodeSystemVersions handles empty response', () => {
-      const mockResponse: string[] = [];
-      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
-
-      service.getCodeSystemVersions().subscribe(result => {
-        expect(result).toBeDefined();
-        expect(result.length).toBe(0);
-        expect(result).toEqual([]);
-      });
-
-      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/CodeSystem`, { headers: environment.futsHeaders });
-    });
-
     it('getDiseaseOptions calls pathToNotificationCategories7_3 when NotificationType === NonNominalNotification7_3', () => {
       const mockResponse = [{ code: 'test', display: 'Test', system: 'test-system' }];
       httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
@@ -219,8 +176,7 @@ describe('Ifsg61Service', () => {
 
     it('setFieldDefaults applies correct transformation', () => {
       // Import test data
-      const mockResponse = EXAMPLE_MSVD;
-      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(EXAMPLE_MSVD));
 
       service.getQuestionnaire('testName', NotificationType.NominalNotification6_1).subscribe(result => {
         const valueDateFields = [
