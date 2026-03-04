@@ -18,7 +18,7 @@
 import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
 import { LabelInfoIconComponent } from './label-info-icon.component';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 
 describe('LabelInfoIconComponent', () => {
   beforeEach(() => {
@@ -75,25 +75,29 @@ describe('LabelInfoIconComponent', () => {
   it('should render id attribute with empty tooltipId when not provided', () => {
     MockRender(LabelInfoIconComponent);
     const matIcon = ngMocks.find('mat-icon');
-    expect(matIcon.nativeElement.getAttribute('id')).toBe('info-icon-');
+    expect(matIcon.nativeElement.id).toBe('info-icon-');
   });
 
   it('should have matTooltip attribute with tooltipText value', () => {
     MockRender(LabelInfoIconComponent, { tooltipText: 'Information text' });
     const matIcon = ngMocks.find('mat-icon');
-    expect(matIcon.nativeElement.getAttribute('ng-reflect-message')).toBe('Information text');
+    // Prüfe, ob das Tooltip-Directive existiert und den richtigen Wert hat
+    const tooltipDirective = ngMocks.get(matIcon, MatTooltip) as MatTooltip;
+    expect(tooltipDirective.message).toBe('Information text');
   });
 
   it('should have matTooltipClass set to "wide-tooltip"', () => {
     MockRender(LabelInfoIconComponent);
     const matIcon = ngMocks.find('mat-icon');
-    expect(matIcon.nativeElement.getAttribute('ng-reflect-tooltip-class')).toBe('wide-tooltip');
+    const tooltipDirective = ngMocks.get(matIcon, MatTooltip) as MatTooltip;
+    expect(tooltipDirective.tooltipClass).toBe('wide-tooltip');
   });
 
   it('should have matTooltipPosition set to "above"', () => {
     MockRender(LabelInfoIconComponent);
     const matIcon = ngMocks.find('mat-icon');
-    expect(matIcon.nativeElement.getAttribute('ng-reflect-position')).toBe('above');
+    const tooltipDirective = ngMocks.get(matIcon, MatTooltip) as MatTooltip;
+    expect(tooltipDirective.position).toBe('above');
   });
 
   it('should have tabindex set to 0', () => {
@@ -119,6 +123,7 @@ describe('LabelInfoIconComponent', () => {
     });
     const matIcon = ngMocks.find('mat-icon');
     expect(matIcon.nativeElement.getAttribute('id')).toBe('info-icon-full-test');
-    expect(matIcon.nativeElement.getAttribute('ng-reflect-message')).toBe('Full test tooltip');
+    const tooltipDirective = ngMocks.get(matIcon, MatTooltip) as MatTooltip;
+    expect(tooltipDirective.message).toBe('Full test tooltip');
   });
 });

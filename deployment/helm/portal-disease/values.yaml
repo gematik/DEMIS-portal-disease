@@ -22,39 +22,34 @@ config:
   production: true
   ## these are physical routes, relative to the pod URL of this micro frontend, not angular ones
   gatewayPaths:
-    main: ../gateway/notification/api/ng/notification/disease
+    main: ../../gateway/disease/notification/disease
     disease_6_1: /6.1
     disease_7_3_non_nominal: /7.3/non_nominal
   futsPaths:
-    main: ../fhir-ui-data-model-translation/disease
+    main: ../../translation/ui-data-model/v6/fhir/disease
     notificationCategories_6_1: /6.1
     disease_7_3: /7.3/non_nominal
     notificationCategories_7_3: /7.3
     questionnaire: /questionnaire
     questionnaire_6_1: /6.1/questionnaire
     questionnaire_7_3: /7.3/questionnaire
-  pathToFuts: ../fhir-ui-data-model-translation
-  pathToDestinationLookup: ../destination-lookup/v1
+  pathToFuts: ../../translation/ui-data-model/v6/fhir
+  pathToDestinationLookup: ../../destination-lookup/v1
   files: { }
   featureFlags: #Always set this to false here; feature flags will then be activated as needed via the stage configurations.
     FEATURE_FLAG_OUTLINE_DESIGN: false
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: false
-    FEATURE_FLAG_NEW_API_ENDPOINTS: false
     FEATURE_FLAG_PORTAL_PAGE_STRUCTURE: false
     FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: false
     FEATURE_FLAG_ANONYMOUS_NOTIFICATION: false
     FEATURE_FLAG_PORTAL_HEADER_FOOTER: false
     FEATURE_FLAG_DISEASE_STRICT: false
+    FEATURE_FLAG_PORTAL_ACCESSIBILITY: false
+    FEATURE_FLAG_MIXED_FOLLOW_UP: false
+    FEATURE_FLAG_FOOTER_LINKS_CORRECTION: false
   ngxLoggerConfig:
     level: 1,
     disableConsoleLogging: true
-  newApiEndpoints:
-    pathToFuts: ../../translation/ui-data-model/v6/fhir
-    pathToDestinationLookup: ../../destination-lookup/v1
-    futsPaths:
-      main: ../../translation/ui-data-model/v6/fhir/disease
-    gatewayPaths:
-      main: ../../gateway/disease/notification/disease
 
 # Extra Labels to be added
 # E.g.
@@ -140,7 +135,6 @@ service:
 # Default Resources
 resources:
   limits:
-    cpu: '500m'
     memory: '256Mi'
   requests:
     cpu: '100m'

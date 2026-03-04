@@ -24,7 +24,6 @@ import { findFormlyFieldIterativeByKey } from '../../shared/utils';
 import { AddressAsModel, ContactsAsModel } from '../common/formlyConfigs/formly-base';
 import { PractitionerInfoAsModel } from '../common/formlyConfigs/notifier';
 import { DemisCoding } from '../../demis-types';
-import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 
 @Injectable({
@@ -165,13 +164,13 @@ export class CopyAndKeepInSyncService {
     }
   }
 
-  subscribeToCurrentAddressTypeChanges(e: FormlyValueChangeEvent, notifiedPersonFields: FormlyFieldConfig[], form: FormGroup, model: any) {
+  subscribeToCurrentAddressTypeChanges(field: FormlyFieldConfig, value: any, notifiedPersonFields: FormlyFieldConfig[], form: FormGroup, model: any) {
     const currentAddressField = notifiedPersonFields.find(field => field.key === 'currentAddress') as FormlyFieldConfig;
     const currentAddressTypeField = notifiedPersonFields.find(field => field.id === 'currentAddressType') as FormlyFieldConfig;
     const currentAddressInstitutionNameField = notifiedPersonFields.find(field => field.id === 'currentAddressInstitutionName') as FormlyFieldConfig;
 
-    let keyForNotifierAddressSubscription = e.field.id + '-subscribeToNotifierAddress';
-    let keyForNotifierInstitutionNameSubscription = e.field.id + '-subscribeToNotifierInstitutionName';
+    let keyForNotifierAddressSubscription = field.id + '-subscribeToNotifierAddress';
+    let keyForNotifierInstitutionNameSubscription = field.id + '-subscribeToNotifierInstitutionName';
 
     //reset input data on value change
     setTimeout(() => {
@@ -185,7 +184,7 @@ export class CopyAndKeepInSyncService {
       }
     });
 
-    if (e.value === AddressType.SubmittingFacility) {
+    if (value === AddressType.SubmittingFacility) {
       const sourceAddressInstitutionName = this.getNotifierInstitutionNameIfNotBlank(model, form);
       const sourceAddress = this.getNotifierAddressIfCopyable(model, form);
       if (sourceAddressInstitutionName === null || sourceAddress === null) {

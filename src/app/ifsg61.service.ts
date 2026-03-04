@@ -17,13 +17,13 @@
 
 import { inject, Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { finalize, Observable, tap } from 'rxjs';
+import { catchError, finalize, Observable, tap } from 'rxjs';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { environment } from '../environments/environment';
 import { DemisCoding, NotificationType, QuestionnaireDescriptor } from './demis-types';
 import { NGXLogger } from 'ngx-logger';
 import { FileService } from './legacy/file.service';
-import { DiseaseNotification, ValidationError } from '../api/notification';
+import { CodeDisplay, DiseaseNotification, ValidationError } from '../api/notification';
 import { infoOutline } from './disease-form/common/formlyConfigs/formly-base';
 import { MessageDialogService, SubmitDialogProps } from '@gematik/demis-portal-core-library';
 
@@ -71,6 +71,29 @@ export class Ifsg61Service {
       })
     );
   }
+
+  fetchFollowUpCode = (notificationCategory: string): Observable<CodeDisplay[]> => {
+    const path = `${environment.pathToFuts}/disease/6.1/followup/${notificationCategory}`;
+    return this.httpClient
+      .get<CodeDisplay[]>(path, {
+        headers: environment.futsHeaders,
+      })
+      .pipe(
+        catchError(error => {
+          this.logger.error('Error fetching follow up code', error);
+          this.messageDialogService.showErrorDialog({
+            errorTitle: 'Fehler',
+            errors: [
+              {
+                text: 'Für diese Meldekategorie nach § 7 Abs. 1 IfSG gibt es keine entsprechende Meldekategorie nach § 6 Abs. 1 IfSG. Daher besteht hier nicht die Möglichkeit einer Folgemeldung.',
+              },
+            ],
+            redirectToHome: true,
+          });
+          throw error;
+        })
+      );
+  };
 
   submitNotification(notification: DiseaseNotification, notificationType: NotificationType) {
     this.messageDialogService.showSpinnerDialog({ message: 'Erkrankungsmeldung wird gesendet' });

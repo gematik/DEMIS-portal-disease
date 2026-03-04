@@ -18,7 +18,7 @@
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import localeDeExtra from '@angular/common/locales/extra/de';
-import { Gender, PractitionerInfo } from 'src/api/notification';
+import { CodeDisplay, Gender, PractitionerInfo } from 'src/api/notification';
 
 // CONST:..................................
 
@@ -113,4 +113,8 @@ export function getEnumKeyByValue<T extends Record<string, string>>(enumObj: T, 
     }
   }
   throw new Error(`Unknown value '${value}'`);
+}
+
+export function findCodeDisplayByCodeValue(codeDisplayList: CodeDisplay[], codeValue: string): CodeDisplay | undefined {
+  return codeDisplayList.find(cd => cd.code === codeValue);
 }

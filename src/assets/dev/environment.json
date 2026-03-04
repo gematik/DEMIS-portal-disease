@@ -1,12 +1,12 @@
 {
   "production": false,
   "gatewayPaths": {
-    "main": "/gateway/notification/api/ng/notification/disease",
+    "main": "/gateway/disease/notification/disease",
     "disease_6_1": "/6.1",
     "disease_7_3_non_nominal": "/7.3/non_nominal"
   },
   "futsPaths": {
-    "main": "/fhir-ui-data-model-translation/disease",
+    "main": "/translation/ui-data-model/v6/fhir/disease",
     "notificationCategories_6_1": "/6.1",
     "disease_7_3": "/7.3/non_nominal",
     "notificationCategories_7_3": "/7.3",
@@ -14,17 +14,19 @@
     "questionnaire_6_1": "/6.1/questionnaire",
     "questionnaire_7_3": "/7.3/questionnaire"
   },
-  "pathToFuts": "/fhir-ui-data-model-translation",
+  "pathToFuts": "/translation/ui-data-model/v6/fhir",
   "pathToDestinationLookup": "/destination-lookup/v1",
   "featureFlags": {
     "FEATURE_FLAG_NON_NOMINAL_NOTIFICATION": true,
     "FEATURE_FLAG_OUTLINE_DESIGN": true,
-    "FEATURE_FLAG_NEW_API_ENDPOINTS": false,
     "FEATURE_FLAG_PORTAL_PAGE_STRUCTURE": true,
     "FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE": true,
     "FEATURE_FLAG_DISEASE_STRICT": true,
     "FEATURE_FLAG_PORTAL_HEADER_FOOTER": true,
-    "FEATURE_FLAG_ANONYMOUS_NOTIFICATION": true
+    "FEATURE_FLAG_ANONYMOUS_NOTIFICATION": true,
+    "FEATURE_FLAG_PORTAL_ACCESSIBILITY": true,
+    "FEATURE_FLAG_MIXED_FOLLOW_UP": true,
+    "FEATURE_FLAG_FOOTER_LINKS_CORRECTION": true
   },
   "ngxLoggerConfig": {
     "level": 1,
