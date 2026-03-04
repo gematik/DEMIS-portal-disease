@@ -24,6 +24,7 @@ import {
   HostBinding,
   HostListener,
   inject,
+  NgZone,
   OnDestroy,
   OnInit,
   signal,
@@ -35,13 +36,14 @@ import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   cloneObject,
+  customCodeDisplay,
+  FollowUpMixedCodesService,
   FollowUpNotificationIdService,
   MessageDialogService,
   notifiedPersonAnonymousConfigFields,
   notifiedPersonNotByNameConfigFields,
 } from '@gematik/demis-portal-core-library';
 import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
-import { FormlyValueChangeEvent } from '@ngx-formly/core/lib/models';
 import { FormlyFieldProps } from '@ngx-formly/material/form-field';
 import { NGXLogger } from 'ngx-logger';
 import { distinctUntilChanged, filter, lastValueFrom, Subject, take, takeUntil, tap } from 'rxjs';
@@ -65,6 +67,7 @@ import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-servi
 import { ImportFieldValuesService, ImportTargetComponent } from './services/import-field-values.service';
 import { ProcessFormService } from './services/process-form-service';
 import StatusEnum = DiseaseStatus.StatusEnum;
+import { findCodeDisplayByCodeValue } from '../legacy/common-utils';
 
 const IFSG61_NOTIFIER = 'IFSG61_NOTIFIER'; // key into local storage
 
@@ -98,6 +101,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
 
   @HostBinding('style.--subheader-offset')
   subheaderOffset: string = '0px';
+  private readonly ngZone = inject(NgZone); // ensure we can force change detection
 
   get formlyConfigFields(): FormlyFieldConfig[] {
     return this.fields;
@@ -126,6 +130,8 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   private readonly router = inject(Router);
   private readonly valueSetService = inject(ValueSetService);
   private readonly followUpNotificationIdService = inject(FollowUpNotificationIdService);
+  private readonly followUpMixedCodesService = inject(FollowUpMixedCodesService);
+
   private readonly unsubscriber = new Subject<void>();
   isLoading: WritableSignal<boolean> = signal(false);
 
@@ -172,7 +178,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
 
   initHook = (field: FormlyFieldConfig) => {
     return field.options!.fieldChanges!.pipe(
-      tap((e: FormlyValueChangeEvent) => {
+      tap((e: any) => {
         this.storeFacilityOnUpdate(e);
         this.handleFieldChange(e);
       })
@@ -189,7 +195,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
 
   ngOnInit() {
     this.isLoading.set(true);
-    const nav = this.router.getCurrentNavigation();
+    const nav = this.router.currentNavigation();
     const data = nav?.extras.state ?? window.history.state;
 
     const notifierJson = localStorage.getItem(IFSG61_NOTIFIER);
@@ -260,7 +266,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
         },
       });
     if (this.isFollowUpNotification6_1()) {
-      this.handleFollowUpNotification6_1();
+      this.handleFollowUpNotifications6_1();
     }
   }
 
@@ -279,6 +285,18 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_HEADER_FOOTER;
   }
 
+  public get FEATURE_FLAG_PORTAL_ACCESSIBILITY(): boolean {
+    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ACCESSIBILITY;
+  }
+
+  public get FEATURE_FLAG_MIXED_FOLLOW_UP(): boolean {
+    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_MIXED_FOLLOW_UP;
+  }
+
+  public get FEATURE_FLAG_FOOTER_LINKS_CORRECTION(): boolean {
+    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOOTER_LINKS_CORRECTION ?? false;
+  }
+
   public isFollowUpNotification6_1(): boolean {
     return this.notificationType === NotificationType.FollowUpNotification6_1;
   }
@@ -291,6 +309,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
         next: (diseaseOptions: CodeDisplay[]) => {
           this.diseaseCodeDisplays = diseaseOptions;
           if (this.isFollowUpNotification6_1() && !isRedirect) {
+            this.followUpNotificationIdService.isMixedCodesActive = this.FEATURE_FLAG_MIXED_FOLLOW_UP;
             this.followUpNotificationIdService.openDialog({
               dialogData: {
                 routerLink: '/' + allowedRoutes['nominal'],
@@ -309,7 +328,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       });
   }
 
-  private handleFollowUpNotification6_1() {
+  private handleFollowUpNotifications6_1() {
     this.followUpNotificationIdService.hasValidNotificationId$
       .pipe(
         takeUntil(this.unsubscriber),
@@ -317,30 +336,62 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
         filter(hasValid => hasValid === true)
       )
       .subscribe(() => {
-        const diseaseCode = this.followUpNotificationIdService.followUpNotificationCategory();
-        const diseaseCodeDisplay = this.diseaseCodeDisplays.find(dc => dc.code === diseaseCode);
-
-        if (diseaseCode) {
-          this.handleDiseaseSelectionChange(diseaseCode);
-          this.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding = diseaseCodeDisplay;
-          this.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer.valueString = this.followUpNotificationIdService.validatedNotificationId();
-        } else {
-          this.messageDialogService.showErrorDialog({
-            errorTitle: 'Fehler',
-            errors: [
-              {
-                text:
-                  'Der gespeicherte Erreger ' +
-                  this.followUpNotificationIdService.followUpNotificationCategory() +
-                  ' für die ID ' +
-                  this.followUpNotificationIdService.validatedNotificationId +
-                  ' wird für die §6.1er Meldungen nicht unterstützt.',
-              },
-            ],
-            redirectToHome: true,
-          });
+        const diseaseCode = this.followUpNotificationIdService.followUpNotificationCategory()!;
+        if (this.FEATURE_FLAG_MIXED_FOLLOW_UP) {
+          this.handleFollowUpMixedCodes(diseaseCode);
+        }
+        //TODO can be removed when FEATURE_FLAG_MIXED_FOLLOW_UP is removed
+        else {
+          this.handleFollowUp(diseaseCode);
         }
       });
+  }
+
+  private handleFollowUp(diseaseCode: string) {
+    let diseaseCodeDisplay: CodeDisplay | undefined;
+    diseaseCodeDisplay = findCodeDisplayByCodeValue(this.diseaseCodeDisplays, diseaseCode);
+    if (diseaseCode) {
+      this.updateDiseaseChoiceModel(diseaseCodeDisplay!);
+    } else {
+      this.messageDialogService.showErrorDialog({
+        errorTitle: 'Fehler',
+        errors: [
+          {
+            text:
+              'Der gespeicherte Erreger ' +
+              this.followUpNotificationIdService.followUpNotificationCategory() +
+              ' für die ID ' +
+              this.followUpNotificationIdService.validatedNotificationId +
+              ' wird für die §6.1er Meldungen nicht unterstützt.',
+          },
+        ],
+        redirectToHome: true,
+      });
+    }
+  }
+
+  private handleFollowUpMixedCodes(diseaseCode: string) {
+    let diseaseCodeDisplay: CodeDisplay | undefined;
+    this.ifsg61Service.fetchFollowUpCode(diseaseCode).subscribe(response => {
+      if (response) {
+        if (response.length > 1) {
+          this.followUpNotificationIdService.closeDialog();
+          this.followUpMixedCodesService.openDialog(response as customCodeDisplay[]).subscribe(selectedCode => {
+            diseaseCodeDisplay = findCodeDisplayByCodeValue(this.diseaseCodeDisplays, selectedCode as string);
+            this.updateDiseaseChoiceModel(diseaseCodeDisplay!);
+          });
+        } else if (response.length === 1) {
+          diseaseCodeDisplay = findCodeDisplayByCodeValue(this.diseaseCodeDisplays, response[0].code);
+          this.updateDiseaseChoiceModel(diseaseCodeDisplay!);
+        }
+      }
+    });
+  }
+
+  private updateDiseaseChoiceModel(diseaseCodeDisplay: CodeDisplay) {
+    this.handleDiseaseSelectionChange(diseaseCodeDisplay.code);
+    this.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding = diseaseCodeDisplay;
+    this.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer.valueString = this.followUpNotificationIdService.validatedNotificationId();
   }
 
   private handleError(error: any, message: string) {
@@ -426,9 +477,11 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
         ],
       },
     ];
-    createExpressions(this.fields);
-    this.addTooltipWrapperToFormFields(this.fields);
-    this.fieldSequence = makeFieldSequence(this.fields);
+    this.ngZone.run(() => {
+      createExpressions(this.fields);
+      this.addTooltipWrapperToFormFields(this.fields);
+      this.fieldSequence = makeFieldSequence(this.fields);
+    });
   }
 
   isFullQuestionnaire() {
@@ -473,7 +526,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     this.ifsg61Service.submitNotification(notification, this.notificationType);
   }
 
-  private storeFacilityOnUpdate(e: FormlyValueChangeEvent) {
+  private storeFacilityOnUpdate(e: any) {
     if (e.type === 'valueChanges' && this.isNotifierField(e.field)) {
       const notifierJson = JSON.stringify(this.model.tabNotifier);
       localStorage.setItem(IFSG61_NOTIFIER, notifierJson);
@@ -538,22 +591,22 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
    *                   },
    *                 }
    */
-  private handleFieldChange(e: FormlyValueChangeEvent) {
-    if (e.field.validators?.validation.includes('date123') && e.type === 'valueChanges') {
+  private handleFieldChange(e: any) {
+    if (e.field?.validators?.validation?.includes('date123') && e.type === 'valueChanges') {
       const transformedDate = this.transformDate123Input(e.value);
       e.field.formControl?.setValue(transformedDate);
     }
 
-    if ((e.field.validators?.validation.includes('date3') || e.field.validators?.validation.includes('dateInputValidator')) && e.type === 'valueChanges') {
+    if ((e.field?.validators?.validation?.includes('date3') || e.field?.validators?.validation?.includes('dateInputValidator')) && e.type === 'valueChanges') {
       const transformedDate = this.transformDate3Input(e.value);
       e.field.formControl?.setValue(transformedDate);
     }
 
-    if (e.field.id === 'currentAddressType') {
-      this.copyAndKeepInSyncService.subscribeToCurrentAddressTypeChanges(e, this.notifiedPersonFields, this.form, this.model);
+    if (e.field?.id === 'currentAddressType') {
+      this.copyAndKeepInSyncService.subscribeToCurrentAddressTypeChanges(e.field, e.value, this.notifiedPersonFields, this.form, this.model);
     }
 
-    if (e.field.id === 'disease-choice' && e.type === 'valueChanges') {
+    if (e.field?.id === 'disease-choice' && e.type === 'valueChanges') {
       this.handleDiseaseSelectionChange(e.value.code);
     }
   }
@@ -707,14 +760,16 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   }
 
   @HostListener('window:keydown.control.ArrowRight', ['$event'])
-  nextTab(event: KeyboardEvent) {
+  nextTab(event: Event) {
+    const keyboardEvent = event as KeyboardEvent;
     if (this.canGoForward()) {
       this.goForward();
     }
   }
 
   @HostListener('window:keydown.control.ArrowLeft', ['$event'])
-  prevTab(event: KeyboardEvent) {
+  prevTab(event: Event) {
+    const keyboardEvent = event as KeyboardEvent;
     if (this.canGoBack()) {
       this.goBack();
     }

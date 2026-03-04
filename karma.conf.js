@@ -28,14 +28,8 @@ module.exports = function (config) {
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
       require('karma-sonarqube-unit-reporter'),
-      require('@angular-devkit/build-angular/plugins/karma'),
+      require('@angular/build/private'),
     ],
-    customLaunchers: {
-      Chrome_silenced: {
-        base: 'Chrome',
-        flags: ['--disable-search-engine-choice-screen', '--disable-extensions', '--remote-debugging-port=9222'],
-      },
-    },
     client: {
       jasmine: {
         // you can add configuration options for Jasmine here
@@ -67,13 +61,7 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome_silenced'],
-    browserConsoleLogOptions: {
-      level: 'debug',
-      format: '%b %T: %m',
-      path: 'tmp/' + new Date().getTime() + '_chrome-test-console.log',
-      terminal: true,
-    },
+    browsers: ['Chrome'],
     browserNoActivityTimeout: 3600000,
     singleRun: false,
     restartOnFileChange: true,

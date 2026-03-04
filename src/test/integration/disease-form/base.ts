@@ -33,7 +33,7 @@ import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_DISEASE_OPTIONS_NONNOMINAL, EXAMPLE_VA
 import { HarnessLoader } from '@angular/cdk/testing';
 import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { FollowUpNotificationIdService, PasteBoxComponent } from '@gematik/demis-portal-core-library';
+import { FollowUpNotificationIdService, FollowUpMixedCodesService, PasteBoxComponent } from '@gematik/demis-portal-core-library';
 import { EXAMPLE_TOXP_SHORT } from '../../shared/data/test-values-nonnominal';
 import { Router } from '@angular/router';
 import { allowedRoutes, NotificationType } from '../../../app/demis-types';
@@ -46,6 +46,7 @@ const overrides = {
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_MSVD_SHORT)),
+      fetchFollowUpCode: jasmine.createSpy('fetchFollowUpCode').and.returnValue(of([])),
     } as Partial<Ifsg61Service>;
   },
 
@@ -81,12 +82,12 @@ let loader: HarnessLoader;
 export const mainConfig = {
   production: false,
   gatewayPaths: {
-    main: '/gateway/notification/api/ng/notification/disease',
+    main: '/gateway/disease/notification/disease',
     disease_6_1: '/6.1',
     disease_7_3_non_nominal: '/7.3/non_nominal',
   },
   futsPaths: {
-    main: '/fhir-ui-data-model-translation/disease',
+    main: '/translation/ui-data-model/v6/fhir/disease',
     notificationCategories_6_1: '/6.1',
     disease_7_3: '/7.3/non_nominal',
     notificationCategories_7_3: '/7.3',
@@ -94,7 +95,7 @@ export const mainConfig = {
     questionnaire_6_1: '/6.1/questionnaire',
     questionnaire_7_3: '/7.3/questionnaire',
   },
-  pathToFuts: '/fhir-ui-data-model-translation',
+  pathToFuts: '/translation/ui-data-model/v6/fhir',
   pathToDestinationLookup: '/destination-lookup/v1',
   featureFlags: {
     FEATURE_FLAG_OUTLINE_DESIGN: true,
@@ -102,6 +103,7 @@ export const mainConfig = {
     FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
     FEATURE_FLAG_ANONYMOUS_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_STRICT: true,
+    FEATURE_FLAG_MIXED_FOLLOW_UP: true,
   },
   ngxLoggerConfig: {
     level: 1,
@@ -131,9 +133,14 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
   const followUpNotificationIdServiceMock = {
     hasValidNotificationId$: new BehaviorSubject<boolean>(false),
     openDialog: jasmine.createSpy('openDialog'),
+    closeDialog: jasmine.createSpy('closeDialog'),
     resetState: jasmine.createSpy('resetState'),
     followUpNotificationCategory: jasmine.createSpy('followUpNotificationCategory').and.returnValue(''),
     validatedNotificationId: jasmine.createSpy('validatedNotificationId').and.returnValue(''),
+  } as any;
+
+  const followUpMixedCodesServiceMock = {
+    openDialog: jasmine.createSpy('openDialog'),
   } as any;
 
   return MockBuilder(DiseaseFormComponent)
@@ -151,6 +158,10 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
       useValue: followUpNotificationIdServiceMock,
     })
     .provide({
+      provide: FollowUpMixedCodesService,
+      useValue: followUpMixedCodesServiceMock,
+    })
+    .provide({
       provide: FORMLY_CONFIG,
       multi: true,
       useFactory: registerValueSetExtension,
@@ -158,7 +169,7 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
     })
     .provide({
       provide: Router,
-      useValue: jasmine.createSpyObj('Router', ['navigate', 'getCurrentNavigation'], {
+      useValue: jasmine.createSpyObj('Router', ['navigate', 'currentNavigation'], {
         url: allowedRoutesMock,
         routerState: { root: {} },
       }),

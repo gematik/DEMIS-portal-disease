@@ -2,13 +2,26 @@
 
 # Release portal-disease
 
+## Release 1.6.0
+- Updated Angular to v21
+- Updated @gematik/demis-portal-core-library to 3.0.5
+- Added accessibility statement footer link (FEATURE_FLAG_PORTAL_ACCESSIBILITY)
+- Removed FEATURE_FLAG_NEW_API_ENDPOINTS
+- Removed CPU limit in helm chart
+- Marked notification status as required
+- Added handling of mixed follow-up notifications with both §6.1 and §7.1 codes (FEATURE_FLAG_FOLLOW_UP_MIXED_CODES)
+- Removed istio helm chart
+- Fixed change detection bug with expressions
+- Changed imprint link and add ids in footer (FEATURE_FLAG_FOOTER_LINKS_CORRECTION)
+- Fixed change detection bug with questionnaires
+
 ## Release 1.5.3
 - hide hospitalization copy checkboxes for follow up notification
 - Updated @gematik/demis-portal-core-library to 2.3.9
 - Updated Angular dependencies to version 19.2.18 and 19.2.19
 - Removed data-cy attributes from elements
 - Adapted gender enum according to openapi model, added gender other x
-- added systemVersion parameter to formly input and gateway output FHIR codings
+- Added systemVersion parameter to formly input and gateway output FHIR codings
 
 ## Release 1.5.2
 - Updated @gematik/demis-portal-core-library to 2.3.8

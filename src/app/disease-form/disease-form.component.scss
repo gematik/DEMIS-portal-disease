@@ -7,12 +7,12 @@ $paste-top: calc($hexhex-top + 50px);
 $form-footer-top: calc($paste-top + 300px);
 
 :host {
-  --mdc-text-button-label-text-color: var(--color-primary);
+  --mat-button-text-label-text-color: var(--color-primary);
 }
 
 ::ng-deep .mat-mdc-tab-label-container {
   padding-bottom: 15px;
-  --mdc-text-button-label-text-color: var(--color-primary);
+  --mat-button-text-label-text-color: var(--color-primary);
 }
 
 

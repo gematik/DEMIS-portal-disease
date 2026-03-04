@@ -16,7 +16,7 @@
  */
 
 import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
-import { CommonModule } from '@angular/common';
+
 import { AfterViewInit, ApplicationRef, Component, ElementRef, inject, Injector, Renderer2 } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -26,7 +26,7 @@ import { LabelInfoIconComponent } from 'src/app/shared/components/label-info-ico
 
 @Component({
   selector: 'app-form-field-with-tooltip-wrapper',
-  imports: [CommonModule, FormlyModule, MatFormFieldModule, MatIconModule, MatTooltipModule],
+  imports: [FormlyModule, MatFormFieldModule, MatIconModule, MatTooltipModule],
   templateUrl: './form-field-with-tooltip-wrapper.component.html',
 })
 export class FormFieldWithTooltipWrapperComponent extends FieldWrapper implements AfterViewInit {
@@ -46,7 +46,7 @@ export class FormFieldWithTooltipWrapperComponent extends FieldWrapper implement
   }
 
   private attachTooltipIconToLabel(label: HTMLElement) {
-    const outlet = new DomPortalOutlet(label, this.injector, this.appRef);
+    const outlet = new DomPortalOutlet(label, this.appRef, this.injector);
     const portal = new ComponentPortal(LabelInfoIconComponent);
     const componentRef = outlet.attach(portal);
 

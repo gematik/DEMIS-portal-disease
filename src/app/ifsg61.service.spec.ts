@@ -33,12 +33,12 @@ import { MessageDialogService } from '@gematik/demis-portal-core-library';
 export const mainConfig = {
   production: false,
   gatewayPaths: {
-    main: '/gateway/notification/api/ng/notification/disease',
+    main: '/gateway/disease/notification/disease',
     disease_6_1: '/6.1',
     disease_7_3_non_nominal: '/7.3/non_nominal',
   },
   futsPaths: {
-    main: '/fhir-ui-data-model-translation/disease',
+    main: '/translation/ui-data-model/v6/fhir/disease',
     notificationCategories_6_1: '/6.1',
     disease_7_3: '/7.3/non_nominal',
     notificationCategories_7_3: '/7.3',
@@ -46,7 +46,7 @@ export const mainConfig = {
     questionnaire_6_1: '/6.1/questionnaire',
     questionnaire_7_3: '/7.3/questionnaire',
   },
-  pathToFuts: '/fhir-ui-data-model-translation',
+  pathToFuts: '/translation/ui-data-model/v6/fhir',
   featureFlags: {
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_STRICT: false,
@@ -318,7 +318,80 @@ describe('Ifsg61Service', () => {
       expect(result).toEqual([{ text: 'Parsed Error', queryString: 'Parsed Error' }]);
     });
 
-    // ...existing code...
+    it('fetchFollowUpCode calls correct URL with notification category', () => {
+      const mockResponse = [
+        { code: 'MSVD', display: 'Masern-Virus' },
+        { code: 'MUVD', display: 'Mumps-Virus' },
+      ];
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      const notificationCategory = 'TEST_CATEGORY';
+      service.fetchFollowUpCode(notificationCategory).subscribe(result => {
+        expect(result).toEqual(mockResponse);
+        expect(result.length).toBe(2);
+        expect(result[0].code).toBe('MSVD');
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/disease/6.1/followup/${notificationCategory}`, {
+        headers: environment.futsHeaders,
+      });
+    });
+
+    it('fetchFollowUpCode returns empty array when no follow-up codes exist', () => {
+      const mockResponse: any[] = [];
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
+
+      service.fetchFollowUpCode('NO_FOLLOWUP_CATEGORY').subscribe(result => {
+        expect(result).toEqual([]);
+        expect(result.length).toBe(0);
+      });
+
+      expect(httpClientSpy.get).toHaveBeenCalled();
+    });
+
+    it('fetchFollowUpCode logs error and shows error dialog on HTTP error', () => {
+      const httpError = {
+        status: 404,
+        statusText: 'Not Found',
+        error: { message: 'No follow-up found' },
+      };
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(throwError(() => httpError));
+      loggerSpy.error = jasmine.createSpy('error');
+
+      service.fetchFollowUpCode('INVALID_CATEGORY').subscribe({
+        next: () => fail('Should have thrown an error'),
+        error: err => {
+          expect(err).toEqual(httpError);
+        },
+      });
+
+      expect(loggerSpy.error).toHaveBeenCalledWith('Error fetching follow up code', httpError);
+      expect(messageDialogServiceSpy.showErrorDialog).toHaveBeenCalledWith({
+        errorTitle: 'Fehler',
+        errors: [
+          {
+            text: 'Für diese Meldekategorie nach § 7 Abs. 1 IfSG gibt es keine entsprechende Meldekategorie nach § 6 Abs. 1 IfSG. Daher besteht hier nicht die Möglichkeit einer Folgemeldung.',
+          },
+        ],
+        redirectToHome: true,
+      });
+    });
+
+    it('fetchFollowUpCode handles network error and rethrows', () => {
+      const networkError = new Error('Network failure');
+      httpClientSpy.get = jasmine.createSpy('get').and.returnValue(throwError(() => networkError));
+      loggerSpy.error = jasmine.createSpy('error');
+
+      service.fetchFollowUpCode('SOME_CATEGORY').subscribe({
+        next: () => fail('Should have thrown an error'),
+        error: err => {
+          expect(err).toBe(networkError);
+        },
+      });
+
+      expect(loggerSpy.error).toHaveBeenCalledWith('Error fetching follow up code', networkError);
+      expect(messageDialogServiceSpy.showErrorDialog).toHaveBeenCalled();
+    });
   });
 
   describe('FEATURE_FLAG_NON_NOMINAL_NOTIFICATION == false', () => {

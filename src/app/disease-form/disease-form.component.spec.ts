@@ -82,7 +82,7 @@ describe('DiseaseFormComponent unit tests', () => {
       })
       .provide({
         provide: Router,
-        useValue: jasmine.createSpyObj('Router', ['navigate', 'getCurrentNavigation'], {
+        useValue: jasmine.createSpyObj('Router', ['navigate', 'currentNavigation'], {
           url: allowedRoutes['nominal'],
           events: of(new NavigationStart(0, allowedRoutes['nominal'])),
           routerState: { root: {} },
@@ -94,12 +94,12 @@ describe('DiseaseFormComponent unit tests', () => {
     environment.diseaseConfig = {
       production: false,
       gatewayPaths: {
-        main: '/gateway/notification/api/ng/notification/disease',
+        main: '/gateway/disease/notification/disease',
         disease_6_1: '/6.1',
         disease_7_3_non_nominal: '/7.3/non_nominal',
       },
       futsPaths: {
-        main: '/fhir-ui-data-model-translation/disease',
+        main: '/translation/ui-data-model/v6/fhir/disease',
         notificationCategories_6_1: '/6.1',
         disease_7_3: '/7.3/non_nominal',
         notificationCategories_7_3: '/7.3',
@@ -107,7 +107,7 @@ describe('DiseaseFormComponent unit tests', () => {
         questionnaire_6_1: '/6.1/questionnaire',
         questionnaire_7_3: '/7.3/questionnaire',
       },
-      pathToFuts: '/fhir-ui-data-model-translation',
+      pathToFuts: '/translation/ui-data-model/v6/fhir',
       featureFlags: {
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
         FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,

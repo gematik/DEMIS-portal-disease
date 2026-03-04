@@ -57,7 +57,7 @@ export function getDiseaseChoiceFields(diseaseOptions: CodeDisplay[], notificati
       },
     },
     {
-      template: '<div class="question-title">Status</div>',
+      template: '<div class="question-title">Status *</div>',
       className: 'diseaseStatus',
     },
     {

@@ -15,7 +15,7 @@
     find details in the "Readme" file.
  */
 
-import { enableProdMode, NgZone } from '@angular/core';
+import { enableProdMode, NgZone, provideZoneChangeDetection } from '@angular/core';
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { NavigationStart, Router } from '@angular/router';
@@ -39,7 +39,9 @@ if (environment.isProduction) {
 const lifecycles = singleSpaAngular({
   bootstrapFunction: async singleSpaProps => {
     singleSpaPropsSubject.next(singleSpaProps);
-    const appRef = await platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule);
+    const appRef = await platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule, {
+      applicationProviders: [provideZoneChangeDetection()],
+    });
     if (
       environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION ||
       environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE ||
@@ -47,6 +49,7 @@ const lifecycles = singleSpaAngular({
     ) {
       router = appRef.injector.get(Router);
       syncUrlWithRouter();
+      setupRouterSync();
     }
     return appRef;
   },
@@ -78,6 +81,26 @@ function bootstrapFn(props: AppProps) {
   });
 }
 
+function isSafeRoute(redirectUrl: string) {
+  return Object.values(allowedRoutes).some(route => redirectUrl.includes(route));
+}
+
+/**
+ * Get the current URL from the hash or pathname
+ * Since we're using HashLocationStrategy, we need to extract the route from the hash
+ */
+function getCurrentUrlFromLocation(): string {
+  // Check if we're using hash-based routing
+  if (window.location.hash) {
+    // Extract the path after the # and remove the leading /
+    const hashPath = window.location.hash.substring(1); // Remove the #
+    return hashPath.startsWith('/') ? hashPath.substring(1) : hashPath;
+  }
+  // Fallback to pathname if no hash
+  const pathname = window.location.pathname;
+  return pathname.startsWith('/') ? pathname.substring(1) : pathname;
+}
+
 /**
  * shell and microfrontend are using different routers
  * when switching tabs, the shell is switching the URL, but the angular router of this microfrontend is not updated automatically
@@ -85,20 +108,28 @@ function bootstrapFn(props: AppProps) {
  */
 function syncUrlWithRouter() {
   if (router) {
-    const redirectUrl = window.location.hash.replace(/^#\//, '').split('?')[0];
-    const redirectExtra = { state: { redirect: true } };
-    router.navigateByUrl('').then(_ => {
-      if (redirectUrl.includes('non-nominal')) {
-        router.navigate([allowedRoutes['nonNominal']], redirectExtra);
-      } else if (redirectUrl.includes('follow-up')) {
-        router.navigate([allowedRoutes['followUp']], redirectExtra);
-      } else if (redirectUrl.includes('anonymous')) {
-        router.navigate([allowedRoutes['anonymous']], redirectExtra);
-      } else {
-        router.navigate([allowedRoutes['main']], redirectExtra);
-      }
-    });
+    const currentUrl = getCurrentUrlFromLocation();
+    const normalizedRouterUrl = router.url.startsWith('/') ? router.url.substring(1) : router.url;
+
+    if (normalizedRouterUrl !== currentUrl && isSafeRoute(currentUrl)) {
+      router.navigateByUrl('/' + currentUrl).catch(err => console.error('Navigation Error:', err));
+    }
   }
+}
+
+/**
+ * Set up a listener for popstate events to sync the router when the shell changes the URL
+ */
+function setupRouterSync() {
+  // Listen for hash changes (primary mechanism for HashLocationStrategy)
+  window.addEventListener('hashchange', () => {
+    syncUrlWithRouter();
+  });
+
+  // Listen for browser navigation events (back/forward buttons)
+  window.addEventListener('popstate', () => {
+    syncUrlWithRouter();
+  });
 }
 
 export const bootstrap = bootstrapFn;
