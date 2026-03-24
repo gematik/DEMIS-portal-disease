@@ -15,30 +15,29 @@
     find details in the "Readme" file.
  */
 
-import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { AppModule } from '../../../app/app.module';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { Ifsg61Service } from '../../../app/ifsg61.service';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ChangeDetectorRef } from '@angular/core';
-import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
-import { HelpersService } from '../../../app/shared/helpers.service';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { Router } from '@angular/router';
+import { FollowUpMixedCodesService, FollowUpNotificationIdService, PasteBoxComponent } from '@gematik/demis-portal-core-library';
 import { FORMLY_CONFIG } from '@ngx-formly/core';
+import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
+import { BehaviorSubject, of } from 'rxjs';
+import { AppModule } from '../../../app/app.module';
+import { allowedRoutes, NotificationType } from '../../../app/demis-types';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
+import { Ifsg61Service } from '../../../app/ifsg61.service';
+import { FormlyConstants } from '../../../app/legacy/formly-constants';
 import { registerValueSetExtension } from '../../../app/legacy/value-set.extension';
 import { ValueSetService } from '../../../app/legacy/value-set.service';
+import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
+import { HelpersService } from '../../../app/shared/helpers.service';
 import { environment } from '../../../environments/environment';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { BehaviorSubject, of } from 'rxjs';
 import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_DISEASE_OPTIONS_NONNOMINAL, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
-import { HarnessLoader } from '@angular/cdk/testing';
-import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
-import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { FollowUpNotificationIdService, FollowUpMixedCodesService, PasteBoxComponent } from '@gematik/demis-portal-core-library';
 import { EXAMPLE_TOXP_SHORT } from '../../shared/data/test-values-nonnominal';
-import { Router } from '@angular/router';
-import { allowedRoutes, NotificationType } from '../../../app/demis-types';
-import { EXAMPLE_CODESYSTEM_VERSIONS } from '../../shared/data/test-codesystem-versions';
-import { FormlyConstants } from '../../../app/legacy/formly-constants';
+import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
 
 const overrides = {
   get Ifsg61Service() {
@@ -87,7 +86,8 @@ export const mainConfig = {
     disease_7_3_non_nominal: '/7.3/non_nominal',
   },
   futsPaths: {
-    main: '/translation/ui-data-model/v6/fhir/disease',
+    baseUrl: '/translation/ui-data-model/v6/fhir',
+    diseaseBase: '/disease',
     notificationCategories_6_1: '/6.1',
     disease_7_3: '/7.3/non_nominal',
     notificationCategories_7_3: '/7.3',
@@ -95,7 +95,6 @@ export const mainConfig = {
     questionnaire_6_1: '/6.1/questionnaire',
     questionnaire_7_3: '/7.3/questionnaire',
   },
-  pathToFuts: '/translation/ui-data-model/v6/fhir',
   pathToDestinationLookup: '/destination-lookup/v1',
   featureFlags: {
     FEATURE_FLAG_OUTLINE_DESIGN: true,
@@ -106,7 +105,7 @@ export const mainConfig = {
     FEATURE_FLAG_MIXED_FOLLOW_UP: true,
   },
   ngxLoggerConfig: {
-    level: 1,
+    level: 5,
     disableConsoleLogging: false,
   },
 };

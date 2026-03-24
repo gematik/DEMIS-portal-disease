@@ -55,6 +55,7 @@ describe('DiseaseFormComponent integration tests for Disease Choice Tab', () => 
 
   describe('handle errors correctly', () => {
     it('getQuestionnaire throws an error', async () => {
+      spyOn(console, 'error'); // suppress expected error output
       let showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
       getQuestionnaireSpy.and.returnValue(throwError(() => new Error('Foo')));
 

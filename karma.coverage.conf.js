@@ -28,7 +28,7 @@ module.exports = function (config) {
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
       require('karma-sonarqube-unit-reporter'),
-      require('@angular-devkit/build-angular/plugins/karma'),
+      require('@angular/build/private'),
       require('karma-junit-reporter'),
     ],
     client: {
@@ -65,7 +65,7 @@ module.exports = function (config) {
     reporters: ['progress', 'coverage', 'junit', 'sonarqubeUnit'],
     port: 9876,
     colors: true,
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_WARN,
     autoWatch: false,
     browsers: ['ChromeHeadless'],
     singleRun: true,

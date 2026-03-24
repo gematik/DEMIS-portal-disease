@@ -39,7 +39,6 @@ interface Configuration {
   futsPaths: FutsPaths;
   featureFlags: any;
   ngxLoggerConfig: NgxLoggerConfig;
-  pathToFuts: string;
   pathToDestinationLookup: string;
 }
 
@@ -89,44 +88,44 @@ export class Environment {
     return this.config?.pathToDestinationLookup;
   }
 
+  public get futsBaseUrl(): string {
+    return this.config?.futsPaths?.['baseUrl'];
+  }
+
   /**
    * Meldetatbestände §6.1
    */
   public get pathToDisease(): string {
-    return this.config?.futsPaths?.['main'];
+    return this.futsBaseUrl + this.config?.futsPaths?.['diseaseBase'];
   }
 
   public get pathToNotificationCategories6_1(): string {
-    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['notificationCategories_6_1'];
+    return this.pathToDisease + this.config.futsPaths?.['notificationCategories_6_1'];
   }
 
   /**
    * Meldetatbestände §7.3 (nichtnamentlich)
    */
   public get pathToNotificationCategories7_3(): string {
-    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['notificationCategories_7_3'];
+    return this.pathToDisease + this.config.futsPaths?.['notificationCategories_7_3'];
   }
 
   /**
    * Fragebögen §6.1
    */
   public get pathToDiseaseQuestionnaire(): string {
-    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['questionnaire'];
+    return this.pathToDisease + this.config.futsPaths?.['questionnaire'];
   }
 
   public get pathToDiseaseQuestionnaire6_1(): string {
-    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['questionnaire_6_1'];
+    return this.pathToDisease + this.config.futsPaths?.['questionnaire_6_1'];
   }
 
   /**
    * Fragebögen §7.3 (nichtnamentlich)
    */
   public get pathToDiseaseQuestionnaire7_3(): string {
-    return this.config?.futsPaths?.['main'] + this.config.futsPaths?.['questionnaire_7_3'];
-  }
-
-  public get pathToFuts(): string {
-    return this.config?.pathToFuts;
+    return this.pathToDisease + this.config.futsPaths?.['questionnaire_7_3'];
   }
 
   public get futsHeaders(): HttpHeaders {

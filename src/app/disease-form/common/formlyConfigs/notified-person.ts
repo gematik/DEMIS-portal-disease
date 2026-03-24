@@ -34,12 +34,12 @@ function getDatePickerConfig(): FormlyFieldConfig {
     className: FormlyConstants.COLMD6,
     type: 'datepicker',
     props: {
-      appearance: 'fill',
       placeholder: UI_DATE_FORMAT_GER,
       maxLength: 10,
       label: 'Geburtsdatum',
       required: false,
       multiYear: true,
+      minDate: new Date('1900-01-01'),
       maxDate: new Date(),
       attributes: {
         appCheckLabelLength: '',

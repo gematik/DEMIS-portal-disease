@@ -99,7 +99,8 @@ describe('DiseaseFormComponent unit tests', () => {
         disease_7_3_non_nominal: '/7.3/non_nominal',
       },
       futsPaths: {
-        main: '/translation/ui-data-model/v6/fhir/disease',
+        baseUrl: '/translation/ui-data-model/v6/fhir',
+        diseaseBase: '/disease',
         notificationCategories_6_1: '/6.1',
         disease_7_3: '/7.3/non_nominal',
         notificationCategories_7_3: '/7.3',
@@ -107,14 +108,13 @@ describe('DiseaseFormComponent unit tests', () => {
         questionnaire_6_1: '/6.1/questionnaire',
         questionnaire_7_3: '/7.3/questionnaire',
       },
-      pathToFuts: '/translation/ui-data-model/v6/fhir',
       featureFlags: {
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
         FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
         FEATURE_FLAG_ANONYMOUS_NOTIFICATION: true,
       },
       ngxLoggerConfig: {
-        level: 1,
+        level: 5,
         disableConsoleLogging: false,
       },
     };

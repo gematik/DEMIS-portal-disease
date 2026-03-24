@@ -73,6 +73,7 @@ export const infoOutline: FormlyFieldConfig = {
                <span class="message">Grundsätzlich müssen Sie gemäß Infektionsschutzgesetz alle Ihnen vorliegenden Informationen im Meldeformular angeben, um die Meldepflicht zu erfüllen. Die Nachmeldung oder Korrektur von Angaben hat unverzüglich zu erfolgen.</span>
              </div>`,
   props: {
+    safeHtml: true,
     addonLeft: {
       icon: 'error_outline',
     },
@@ -86,6 +87,7 @@ export const personalDataWillBeStoredInLocalStorageOutline: FormlyFieldConfig = 
                <span class="message">Die Informationen aus den Eingabefeldern zur meldenden Person werden <i>lokal im aktuellen Browser</i> gespeichert. Bei Folgemeldungen werden diese Eingabefelder automatisch mit den gespeicherten Daten vorbefüllt, damit der Meldevorgang beschleunigt wird.</span>
              </div>`,
   props: {
+    safeHtml: true,
     addonLeft: {
       icon: 'error_outline',
     },

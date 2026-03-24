@@ -15,14 +15,14 @@
     find details in the "Readme" file.
  */
 
-import { Component, forwardRef, Input, OnInit, ViewChild, input, OnDestroy } from '@angular/core';
-import { DemisCoding } from '../../../demis-types';
+import { Component, forwardRef, Input, input, OnDestroy, OnInit, viewChild } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { FieldTypeConfig } from '@ngx-formly/core';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { startWith, distinctUntilChanged } from 'rxjs/operators';
-import { map, Observable, Subscription } from 'rxjs';
 import { MatAutocompleteActivatedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { ErrorStateMatcher } from '@angular/material/core';
+import { FieldTypeConfig } from '@ngx-formly/core';
+import { map, Observable, Subscription } from 'rxjs';
+import { distinctUntilChanged, startWith } from 'rxjs/operators';
+import { DemisCoding } from '../../../demis-types';
 
 @Component({
   selector: 'app-autocomplete',
@@ -49,7 +49,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
   readonly multi = input<boolean>(false);
   readonly showCode = input<boolean>(false);
   readonly options = input<DemisCoding[]>([]);
-  @ViewChild(MatAutocompleteTrigger) autocomplete?: MatAutocompleteTrigger;
+  autocomplete = viewChild<MatAutocompleteTrigger>(MatAutocompleteTrigger);
   latestValidSelection?: DemisCoding;
   selectData: Array<DemisCoding> = [];
   selectControl: FormControl = new FormControl('');
@@ -61,6 +61,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
   @Input() placeholder: string = '';
   private statusSubscription?: Subscription;
   autocompleteDisabled = false;
+  private suppressPropagation = false;
 
   ngOnInit() {
     this.initialPlaceholder = this.placeholder;
@@ -75,7 +76,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
       if (parentControl.disabled && this.selectControl.enabled) {
         this.selectControl.disable({ emitEvent: false });
         this.autocompleteDisabled = true;
-        this.autocomplete?.closePanel();
+        this.autocomplete()?.closePanel();
       } else if (parentControl.enabled && this.selectControl.disabled) {
         this.selectControl.enable({ emitEvent: false });
         this.autocompleteDisabled = false;
@@ -87,41 +88,49 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
       map((value: string | DemisCoding) => {
         const display = typeof value === 'string' ? value : value?.display;
         const matchingOptions = this.findMatchingOptions(display);
-        // this might be good behaviour, or it might not
         if (matchingOptions.length === 1 && matchingOptions[0].display === value) {
-          this.selectControl.setValue(matchingOptions[0]);
+          const autoSelectedCoding = matchingOptions[0];
+          this.selectControl.setValue(autoSelectedCoding, { emitEvent: false });
+          this.propagateValueToParent(autoSelectedCoding);
         }
         return matchingOptions;
       })
     );
 
     this.selectControl.valueChanges.subscribe((value: DemisCoding | string) => {
-      const formControl = this.formControl();
-      if (!this.multi() && formControl.value !== value) {
-        formControl.setValue(value);
-        this.onChange(value);
-      }
-
-      if (!formControl.errors && formControl.value !== '') {
-        this.latestValidSelection = formControl.value;
-      }
+      this.propagateValueToParent(value);
     });
+  }
+
+  private propagateValueToParent(value: DemisCoding | string): void {
+    if (this.suppressPropagation) {
+      return;
+    }
+    const formControl = this.formControl();
+    if (!this.multi() && formControl.value !== value) {
+      formControl.setValue(value);
+      this.onChange(value);
+    }
+
+    if (!formControl.errors && formControl.value !== '') {
+      this.latestValidSelection = formControl.value;
+    }
   }
 
   private findMatchingOptions(value: string): DemisCoding[] {
     const filterValue = value ? value.toLowerCase() : '';
     const options = this.options();
-    return options && options.length
+    return options?.length
       ? options.filter(coding => coding.display.toLowerCase().includes(filterValue) || (this.showCode() && coding.code.includes(filterValue)))
       : [];
   }
 
-  private isDisabled(): boolean {
-    return this.formControl().disabled || this.selectControl.disabled;
+  private canToggleSelection(): boolean {
+    return !this.formControl().disabled && !this.selectControl.disabled;
   }
 
   toggleSelection = (data: DemisCoding): void => {
-    if (this.isDisabled()) return;
+    if (!this.canToggleSelection()) return;
     data.selected = !data.selected;
 
     if (data.selected) {
@@ -135,19 +144,19 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     this.onChange(this.selectData);
     this.markAsTouched();
     setTimeout(() => {
-      if (this.autocomplete) {
-        this.autocomplete.updatePosition();
+      if (this.autocomplete()) {
+        this.autocomplete()?.updatePosition();
       }
     }, 0);
   };
 
   removeChip = (data: DemisCoding): void => {
-    if (this.isDisabled()) return;
+    if (!this.canToggleSelection()) return;
     this.toggleSelection(data);
   };
 
   handleSpace(evt: Event): boolean {
-    if (this.isDisabled()) return true;
+    if (!this.canToggleSelection()) return true;
     evt.preventDefault();
     if (!this.multi() || !this.activeOption) {
       return true;
@@ -159,7 +168,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
   }
 
   activateOption(evt: MatAutocompleteActivatedEvent) {
-    if (this.isDisabled()) return;
+    if (!this.canToggleSelection()) return;
     this.activeOption = evt.option?.value;
   }
 
@@ -182,7 +191,7 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     const multi = this.multi();
     if (multi && Array.isArray(obj)) {
       this.options().forEach(opt => {
-        opt.selected = !!obj.find(item => item.code === opt.code);
+        opt.selected = obj.some(item => item.code === opt.code);
       });
 
       this.selectData = obj;
@@ -191,7 +200,6 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
 
     if (!multi && obj.code) {
       this.selectControl.setValue(obj);
-      return;
     }
   }
 
@@ -214,18 +222,41 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
 
   setDisabledState?(isDisabled: boolean): void {
     if (isDisabled) {
-      this.selectControl.disable({ emitEvent: false });
-      this.autocompleteDisabled = true;
-      this.autocomplete?.closePanel();
-    } else {
-      this.selectControl.enable({ emitEvent: false });
-      this.autocompleteDisabled = false;
+      this.disableSelectControl();
+      return;
     }
+    this.enableSelectControl();
+  }
+
+  private disableSelectControl(): void {
+    this.selectControl.disable({ emitEvent: false });
+    this.autocompleteDisabled = true;
+    this.autocomplete()?.closePanel();
+  }
+
+  private enableSelectControl(): void {
+    this.selectControl.enable({ emitEvent: false });
+    this.autocompleteDisabled = false;
   }
 
   onClick() {
-    if (this.isDisabled()) return;
+    this.clearOnEntry();
+    if (!this.autocompleteDisabled) {
+      this.autocomplete()?.openPanel();
+    }
+  }
+
+  onInputFocus() {
+    this.clearOnEntry();
+  }
+
+  private clearOnEntry(): void {
+    if (!this.canToggleSelection()) {
+      return;
+    }
+    this.suppressPropagation = true;
     this.selectControl.setValue('');
+    this.suppressPropagation = false;
   }
 
   onClosePanel() {
@@ -241,9 +272,12 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
   }
 
   private populateLatestValidSelectionIfNothingHasBeenSelected() {
-    const currentValueDisplayed = this.formControl().value;
-    if (currentValueDisplayed === '' && this.latestValidSelection) {
+    const selectValue = this.selectControl.value;
+    const isUnselected = selectValue === '' || selectValue === null || typeof selectValue === 'string';
+    if (isUnselected && this.latestValidSelection) {
+      this.suppressPropagation = true;
       this.selectControl.setValue(this.latestValidSelection);
+      this.suppressPropagation = false;
     }
   }
 
@@ -252,7 +286,9 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
   }
 
   onRemoveSelection(event: MouseEvent) {
-    if (this.isDisabled()) return;
+    if (!this.canToggleSelection()) {
+      return;
+    }
     event.stopPropagation(); //required otherwise the field is still focused
     this.selectControl.setValue('');
     this.latestValidSelection = undefined;

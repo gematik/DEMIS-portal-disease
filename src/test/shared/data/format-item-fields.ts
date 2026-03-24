@@ -109,7 +109,7 @@ export const FIELDS = [
                 fieldGroup: [
                   {
                     key: 'valueDate',
-                    type: 'input',
+                    type: 'datepicker',
                     props: {
                       placeholder: 'dd.mm.yyyy',
                       label: 'Datum des Todes',
@@ -122,9 +122,6 @@ export const FIELDS = [
                       ],
                       disabled: false,
                       hidden: true,
-                    },
-                    validators: {
-                      validation: ['date123'],
                     },
                     wrappers: ['form-field'],
                     className: 'LinkId_deathDate',
@@ -767,15 +764,12 @@ export const FIELDS = [
                                   fieldGroup: [
                                     {
                                       key: 'answer.valueDate',
-                                      type: 'input',
+                                      type: 'datepicker',
                                       props: {
                                         required: true,
                                         label: 'Aufnahmedatum',
                                       },
                                       className: 'LinkId_hospitalizationRef',
-                                      validators: {
-                                        validation: ['date123'],
-                                      },
                                       defaultValue: '',
                                     },
                                   ],
@@ -786,15 +780,12 @@ export const FIELDS = [
                                   fieldGroup: [
                                     {
                                       key: 'answer.valueDate',
-                                      type: 'input',
+                                      type: 'datepicker',
                                       props: {
                                         required: false,
                                         label: 'Entlassdatum',
                                       },
                                       className: 'LinkId_hospitalizationRef',
-                                      validators: {
-                                        validation: ['date123'],
-                                      },
                                       defaultValue: '',
                                     },
                                   ],
@@ -1056,7 +1047,7 @@ export const FIELDS = [
                       fieldGroup: [
                         {
                           key: 'valueDate',
-                          type: 'input',
+                          type: 'datepicker',
                           props: {
                             placeholder: 'dd.mm.yyyy',
                             label: 'Beginn der Tätigkeit/Betreuung/Unterbringung',
@@ -1067,9 +1058,6 @@ export const FIELDS = [
                                 value: 'yes',
                               },
                             ],
-                          },
-                          validators: {
-                            validation: ['date123'],
                           },
                           wrappers: ['form-field'],
                           className: 'LinkId_infectProtectFacilityBegin',
@@ -1083,7 +1071,7 @@ export const FIELDS = [
                       fieldGroup: [
                         {
                           key: 'valueDate',
-                          type: 'input',
+                          type: 'datepicker',
                           props: {
                             placeholder: 'dd.mm.yyyy',
                             label: 'Ende der Tätigkeit/Betreuung/Unterbringung',
@@ -1094,9 +1082,6 @@ export const FIELDS = [
                                 value: 'yes',
                               },
                             ],
-                          },
-                          validators: {
-                            validation: ['date123'],
                           },
                           wrappers: ['form-field'],
                           className: 'LinkId_infectProtectFacilityEnd',
@@ -1406,7 +1391,7 @@ export const FIELDS = [
                       fieldGroup: [
                         {
                           key: 'valueDate',
-                          type: 'input',
+                          type: 'datepicker',
                           props: {
                             placeholder: 'dd.mm.yyyy',
                             label: 'Beginn des Aufenthalts am wahrscheinlichen Expositionsort/Datum des Aufenthalts',
@@ -1417,9 +1402,6 @@ export const FIELDS = [
                                 value: 'yes',
                               },
                             ],
-                          },
-                          validators: {
-                            validation: ['date123'],
                           },
                           wrappers: ['form-field'],
                           className: 'LinkId_placeExposureBegin',
@@ -1433,7 +1415,7 @@ export const FIELDS = [
                       fieldGroup: [
                         {
                           key: 'valueDate',
-                          type: 'input',
+                          type: 'datepicker',
                           props: {
                             placeholder: 'dd.mm.yyyy',
                             label: 'Ende des Aufenthalts am wahrscheinlichen Expositionsort',
@@ -1444,9 +1426,6 @@ export const FIELDS = [
                                 value: 'yes',
                               },
                             ],
-                          },
-                          validators: {
-                            validation: ['date123'],
                           },
                           wrappers: ['form-field'],
                           className: 'LinkId_placeExposureEnd',
@@ -3124,13 +3103,10 @@ export const FIELDS = [
                           fieldGroup: [
                             {
                               key: 'answer.valueDate',
-                              type: 'input',
+                              type: 'datepicker',
                               props: {
                                 required: true,
                                 label: 'Datum der Impfung',
-                              },
-                              validators: {
-                                validation: ['date123'],
                               },
                               defaultValue: '',
                             },
