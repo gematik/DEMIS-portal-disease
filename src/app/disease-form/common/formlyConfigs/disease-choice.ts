@@ -30,6 +30,7 @@ export function getDiseaseChoiceFields(diseaseOptions: CodeDisplay[], notificati
     {
       template:
         '<div class="info-link" id="knowledge-db-info-link">Weiterführende Informationen zur Meldung gemäß § 6 IfSG finden Sie in der <a href="https://go.gematik.de/demis-info-disease" target="_blank">DEMIS-Wissensdatenbank</a></div>',
+      props: { safeHtml: true },
       expressions: {
         hide: () => isNonNominal,
       },

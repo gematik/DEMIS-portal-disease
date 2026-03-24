@@ -592,16 +592,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
    *                 }
    */
   private handleFieldChange(e: any) {
-    if (e.field?.validators?.validation?.includes('date123') && e.type === 'valueChanges') {
-      const transformedDate = this.transformDate123Input(e.value);
-      e.field.formControl?.setValue(transformedDate);
-    }
-
-    if ((e.field?.validators?.validation?.includes('date3') || e.field?.validators?.validation?.includes('dateInputValidator')) && e.type === 'valueChanges') {
-      const transformedDate = this.transformDate3Input(e.value);
-      e.field.formControl?.setValue(transformedDate);
-    }
-
     if (e.field?.id === 'currentAddressType') {
       this.copyAndKeepInSyncService.subscribeToCurrentAddressTypeChanges(e.field, e.value, this.notifiedPersonFields, this.form, this.model);
     }

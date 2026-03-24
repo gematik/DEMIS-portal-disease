@@ -208,9 +208,6 @@ describe('DiseaseFormComponent followUp integration tests', () => {
       expect(await zip.getValue()).toBe('');
 
       const country = await getSelect(loader, '#residence-address-country');
-      country.getOptions().then(options => {
-        console.log(options);
-      });
       expect(await country.getValueText()).toBe('Deutschland');
 
       const p = lastValueFrom(of('URL P.gender=MALE&P.birthDate=01.01.2023&P.r.zip=12345&P.r.country=DK'));

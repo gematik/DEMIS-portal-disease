@@ -53,7 +53,6 @@ import { registerValueSetExtension } from './legacy/value-set.extension';
 import { ValueSetService } from './legacy/value-set.service';
 import { HexhexbuttonComponent } from './shared/components/hexhexbutton/hexhexbutton.component';
 import { AddBreadcrumbDirective } from './shared/formly/components/autocomplete-coding/add-breadcrumb.directive';
-import { Date123Validator, Date1Validator, Date2Validator, Date3Validator } from './shared/formly/validators/validators';
 import { ExpansionPanelWrapperComponent } from './shared/formly/wrappers/expansion-panel-wrapper/expansion-panel.wrapper';
 import { PanelWrapperComponent } from './shared/formly/wrappers/panel-wrapper/panel-wrapper.component';
 import { MatChipsModule } from '@angular/material/chips';
@@ -62,6 +61,7 @@ import { AutocompleteMultiCodingComponent } from './shared/formly/components/aut
 import { AutocompleteComponent } from './shared/components/autocomplete/autocomplete.component';
 import { environment } from '../environments/environment';
 import {
+  DATEPICKER_VALIDATION_MESSAGES,
   FormlyDatepickerComponent,
   FormlyRepeaterComponent,
   FormsFooterComponent,
@@ -161,7 +161,7 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
     provideFormlyCore([
       {
         types: [
-          { name: 'datepicker', component: FormlyDatepickerComponent, wrappers: [] },
+          { name: 'datepicker', component: FormlyDatepickerComponent },
           { name: 'repeater', component: FormlyRepeaterComponent },
           { name: 'repeat', component: RepeatComponent },
           { name: 'repeat-section', component: RepeatSectionComponent },
@@ -184,24 +184,8 @@ export function initIconLoaderService(iconLoaderService: IconLoaderService) {
           { name: 'expansion-panel', component: ExpansionPanelWrapperComponent },
           { name: 'form-field-with-tooltip', component: FormFieldWithTooltipWrapperComponent },
         ],
-        validators: [
-          { name: 'date123', validation: Date123Validator },
-          { name: 'date1', validation: Date1Validator },
-          { name: 'date2', validation: Date2Validator },
-          { name: 'date3', validation: Date3Validator },
-        ],
-        validationMessages: [
-          { name: 'date1', message: 'Bitte geben Sie nur das Jahr an (JJJJ)' },
-          {
-            name: 'date2',
-            message: 'Bitte geben Sie Monat und Jahr an (MM.JJJJ)',
-          },
-          {
-            name: 'date3',
-            message: 'Bitte geben Sie Tag, Monat und Jahr an (TT.MM.JJJJ)',
-          },
-          { name: 'date123', message: 'TT.MM.JJJJ  oder MM.JJJJ oder JJJJ' },
-        ],
+        validators: [],
+        validationMessages: [...DATEPICKER_VALIDATION_MESSAGES],
         extensions: [
           {
             name: 'default-placeholder',

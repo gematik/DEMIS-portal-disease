@@ -19,7 +19,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MockBuilder, MockRender } from 'ng-mocks';
 import { NGXLogger } from 'ngx-logger';
-import { of, throwError } from 'rxjs';
+import { lastValueFrom, of, throwError } from 'rxjs';
 
 import { DiseaseNotification } from '../api/notification';
 import { environment } from '../environments/environment';
@@ -38,7 +38,8 @@ export const mainConfig = {
     disease_7_3_non_nominal: '/7.3/non_nominal',
   },
   futsPaths: {
-    main: '/translation/ui-data-model/v6/fhir/disease',
+    baseUrl: '/translation/ui-data-model/v6/fhir',
+    diseaseBase: '/disease',
     notificationCategories_6_1: '/6.1',
     disease_7_3: '/7.3/non_nominal',
     notificationCategories_7_3: '/7.3',
@@ -46,7 +47,6 @@ export const mainConfig = {
     questionnaire_6_1: '/6.1/questionnaire',
     questionnaire_7_3: '/7.3/questionnaire',
   },
-  pathToFuts: '/translation/ui-data-model/v6/fhir',
   featureFlags: {
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_STRICT: false,
@@ -67,24 +67,6 @@ describe('Ifsg61Service', () => {
   let messageDialogServiceSpy: jasmine.SpyObj<MessageDialogService>;
 
   describe('FEATURE_FLAG_NON_NOMINAL_NOTIFICATION == true', () => {
-    // Helper function to find fields with valueDate keys
-    const findValueDateFields = (configs: any[]): any[] => {
-      const fields: any[] = [];
-      const traverse = (fc: any) => {
-        if (typeof fc.key === 'string' && fc.key.endsWith('valueDate')) {
-          fields.push(fc);
-        }
-        if (fc.fieldGroup) {
-          fc.fieldGroup.forEach(traverse);
-        }
-        if (fc.fieldArray) {
-          traverse(fc.fieldArray);
-        }
-      };
-      configs.forEach(traverse);
-      return fields;
-    };
-
     beforeEach(() => {
       environment.diseaseConfig = mainConfig;
       return MockBuilder(Ifsg61Service).mock(HttpClient).mock(NGXLogger).mock(FileService).mock(MatDialog).mock(HelpersService).mock(MessageDialogService);
@@ -119,7 +101,7 @@ describe('Ifsg61Service', () => {
         expect(result).toBeDefined();
       });
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/ValueSet?system=test-system`, { headers: environment.futsHeaders });
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.futsBaseUrl}/ValueSet?system=test-system`, { headers: environment.futsHeaders });
     });
 
     it('getDiseaseOptions calls pathToNotificationCategories7_3 when NotificationType === NonNominalNotification7_3', () => {
@@ -174,24 +156,11 @@ describe('Ifsg61Service', () => {
       expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToDiseaseQuestionnaire6_1}/testName/formly`, { headers: environment.futsHeaders });
     });
 
-    it('setFieldDefaults applies correct transformation', () => {
+    it('setFieldDefaults applies correct transformation', async () => {
       // Import test data
       httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(EXAMPLE_MSVD));
 
-      service.getQuestionnaire('testName', NotificationType.NominalNotification6_1).subscribe(result => {
-        const valueDateFields = [
-          ...findValueDateFields(result.questionnaireConfigs),
-          ...findValueDateFields(result.conditionConfigs),
-          ...findValueDateFields(result.commonConfig),
-        ];
-
-        valueDateFields.forEach(field => {
-          expect(field.wrappers).toEqual([]);
-          expect(field.props?.appearance).toBe('fill');
-          expect(field.props?.allowedPrecisions).toEqual(field.props?.allowedPrecisions || ['day', 'month', 'year']);
-          expect(field.validators).toBeUndefined();
-        });
-      });
+      await lastValueFrom(service.getQuestionnaire('testName', NotificationType.NominalNotification6_1));
 
       expect(httpClientSpy.get).toHaveBeenCalled();
     });
@@ -332,7 +301,7 @@ describe('Ifsg61Service', () => {
         expect(result[0].code).toBe('MSVD');
       });
 
-      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToFuts}/disease/6.1/followup/${notificationCategory}`, {
+      expect(httpClientSpy.get).toHaveBeenCalledWith(`${environment.pathToNotificationCategories6_1}/followup/${notificationCategory}`, {
         headers: environment.futsHeaders,
       });
     });

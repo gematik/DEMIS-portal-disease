@@ -60,8 +60,8 @@ export class ValueSetService {
 
   private getValueSetURL(identifier: string): string {
     return identifier === FormlyConstants.COUNTRY_CODES
-      ? `${environment.pathToFuts}/utils/countryCodes`
-      : `${environment.pathToFuts}/ValueSet?system=${encodeURI(identifier)}`;
+      ? `${environment.futsBaseUrl}/utils/countryCodes`
+      : `${environment.futsBaseUrl}/ValueSet?system=${encodeURI(identifier)}`;
   }
 
   private getLocalValueSetRequest(url: string): Observable<ValueSetOption[]> {

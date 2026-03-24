@@ -15,20 +15,34 @@
     find details in the "Readme" file.
  */
 
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { buildMock, setupIntegrationTests } from './base';
-import { selectTab } from '../utils/disease-common-utils';
-import { getRadioGroup } from '../../shared/material-harness-utils';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { TestBed } from '@angular/core/testing';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { MockedComponentFixture } from 'ng-mocks';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';
+import { getRadioGroup } from '../../shared/material-harness-utils';
+import { selectTab } from '../utils/disease-common-utils';
+import { buildMock, setupIntegrationTests } from './base';
 
 describe('DiseaseFormComponent integration tests for Notified Person Tab', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
   let loader: HarnessLoader;
+
+  // Helper function to find birthDate field in the formly configuration
+  const findBirthDateField = (fields: any[]): any => {
+    for (const field of fields) {
+      if (field.key === 'birthDate') {
+        return field;
+      }
+      if (field.fieldGroup) {
+        const found = findBirthDateField(field.fieldGroup);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
 
   beforeAll(() => {
     localStorage.clear();
@@ -66,5 +80,34 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
         },
       ],
     });
+  });
+
+  it('should use datepicker type for birthDate field', async () => {
+    // Navigate to NotifiedPerson tab
+    await selectTab(fixture, loader, 2);
+
+    // Check that the birthDate field has type 'datepicker'
+    const notifiedPersonFields = component.formlyConfigFields;
+
+    const birthDateField = findBirthDateField(notifiedPersonFields);
+
+    expect(birthDateField).toBeTruthy();
+    expect(birthDateField.type).toBe('datepicker');
+    expect(birthDateField.props?.multiYear).toBeTrue();
+    expect(birthDateField.props?.maxDate).toBeInstanceOf(Date);
+  });
+
+  it('should have correct datepicker properties', async () => {
+    await selectTab(fixture, loader, 2);
+
+    const notifiedPersonFields = component.formlyConfigFields;
+
+    const birthDateField = findBirthDateField(notifiedPersonFields);
+
+    expect(birthDateField).toBeTruthy();
+    expect(birthDateField.props?.label).toBe('Geburtsdatum');
+    expect(birthDateField.props?.placeholder).toBe('TT.MM.JJJJ');
+    expect(birthDateField.props?.maxLength).toBe(10);
+    expect(birthDateField.props?.required).toBeFalse();
   });
 });

@@ -15,25 +15,14 @@
     find details in the "Readme" file.
  */
 
-import { buildMock, setupIntegrationTests } from './base';
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { MockedComponentFixture } from 'ng-mocks';
-import { HarnessLoader } from '@angular/cdk/testing';
 import { NotificationType } from '../../../app/demis-types';
-import { TestBed } from '@angular/core/testing';
-import { FollowUpNotificationIdService, MessageDialogService } from '@gematik/demis-portal-core-library';
-import { EXAMPLE_DISEASE_OPTIONS } from '../../shared/data/test-values';
-import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
-import { getButton, getInput, getSelect, navigateTo } from '../../shared/material-harness-utils';
-import { checkDescribingError } from '../../shared/assertion-utils';
-import { getHtmlButtonElement } from '../../shared/html-element-utils';
-import { clickNextButton } from '../../shared/test-utils';
-import { lastValueFrom, of } from 'rxjs';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
+import { buildMock, setupIntegrationTests } from './base';
 
 describe('DiseaseFormComponent anonymous integration tests', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
-  let loader: HarnessLoader;
 
   beforeEach(() => buildMock(NotificationType.AnonymousNotification7_3));
 
@@ -41,7 +30,6 @@ describe('DiseaseFormComponent anonymous integration tests', () => {
     const result = setupIntegrationTests();
     fixture = result.fixture;
     component = result.component;
-    loader = result.loader;
   });
 
   it('should create', () => {
@@ -50,7 +38,6 @@ describe('DiseaseFormComponent anonymous integration tests', () => {
 
   it('should show follow up heading', async () => {
     let textContent = fixture.nativeElement.textContent;
-    console.log(textContent);
     expect(textContent.includes('Ärztliche Ergänzungsmeldung (anonym)')).toBeTruthy();
   });
 });

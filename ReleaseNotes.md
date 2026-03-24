@@ -2,6 +2,14 @@
 
 # Release portal-disease
 
+## Release 1.6.1
+- Used fixed version of formly-datepicker from portal-core 3.0.7 and removed obsolete code
+- Enabled BSNR validation for questionnaire fields
+- Updated @gematik/demis-portal-core-library to 3.0.8
+- Dependency updates because of GHSA-g93w-mfhg-p222
+- Fixed a bug where the click in the input for the choice of the disease code system did not open the code system selection dialog
+- Simplified FUTS configuration
+
 ## Release 1.6.0
 - Updated Angular to v21
 - Updated @gematik/demis-portal-core-library to 3.0.5

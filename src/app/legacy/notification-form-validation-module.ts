@@ -249,8 +249,15 @@ export function setValidationMessage(valMessage: string): any {
 
 // Private:...
 
-function bsNrValidation(control: AbstractControl): any {
-  return !!control?.parent?.value?.existsBsnr ? validateBSNR(control.value) : null;
+export function bsNrValidation(control: AbstractControl): ValidationErrors | null {
+  const parentValue = control.parent?.value;
+  const hasBsnrRadioButton = parentValue != null && 'existsBsnr' in parentValue;
+  if (hasBsnrRadioButton) {
+    // Case1: BSNR validation is linked to a radio button (existsBsnr).
+    return parentValue.existsBsnr ? validateBSNR(control.value) : null;
+  }
+  // Case2: BSNR validation is not linked to a radio button.
+  return control.value ? validateBSNR(control.value) : null;
 }
 
 function codingValidation(control: AbstractControl): any {
@@ -310,12 +317,14 @@ function internationalZipValidation(control: AbstractControl): any {
   return validateInternationalZip(control.value);
 }
 
-function phoneValidation(control: AbstractControl, field: FormlyFieldConfig, options: any): any {
-  return validatePhoneNo(control.value, options.required);
+export function phoneValidation(control: AbstractControl, field: FormlyFieldConfig, options: any): any {
+  const isRequired = field.props?.required ?? options.required;
+  return validatePhoneNo(control.value, isRequired);
 }
 
-function emailValidation(control: AbstractControl, field: FormlyFieldConfig, options: any): any {
-  return validateEmail(control.value, options.required);
+export function emailValidation(control: AbstractControl, field: FormlyFieldConfig, options: any): any {
+  const isRequired = field.props?.required ?? options.required;
+  return validateEmail(control.value, isRequired);
 }
 
 function additionalInfoTextValidation(control: AbstractControl): any {

@@ -1,9 +1,8 @@
 {{- $configMapData := dict }}
 {{- $_ := set $configMapData "production" .Values.config.production }}
-{{- $_ = set $configMapData "pathToFuts" (mergeOverwrite (deepCopy .Values.config) (default .Values.config.newApiEndpoints dict)).pathToFuts }}
 {{- $_ = set $configMapData "pathToDestinationLookup" .Values.config.pathToDestinationLookup }}
 {{- $_ = set $configMapData "gatewayPaths" .Values.config.gatewayPaths }}
-{{- $_ = set $configMapData "futsPaths" .Values.config.futsPaths }}
+{{- $_ = set $configMapData "futsPaths" (mergeOverwrite (deepCopy .Values.config.futsPaths) (dict "baseUrl" (default .Values.config.futsPaths.baseUrl .Values.config.pathToFuts))) }}
 {{- $_ = set $configMapData "featureFlags" .Values.config.featureFlags }}
 {{- $_ = set $configMapData "ngxLoggerConfig" .Values.config.ngxLoggerConfig }}
 {{- $configMapData | toPrettyJson }}

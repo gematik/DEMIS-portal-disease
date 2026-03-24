@@ -42,7 +42,7 @@ export class Ifsg61Service {
   // TODO würde eigentlich in core-lib reingehören, die gibt es aber nicht mehr
   getCodeValueSet(system: string): Observable<DemisCoding[]> {
     const systemEncoded: string = encodeURIComponent(system);
-    const url = `${environment.pathToFuts}/ValueSet?system=${systemEncoded}`;
+    const url = `${environment.futsBaseUrl}/ValueSet?system=${systemEncoded}`;
     return this.httpClient.get<DemisCoding[]>(url, {
       headers: environment.futsHeaders,
     });
@@ -73,7 +73,7 @@ export class Ifsg61Service {
   }
 
   fetchFollowUpCode = (notificationCategory: string): Observable<CodeDisplay[]> => {
-    const path = `${environment.pathToFuts}/disease/6.1/followup/${notificationCategory}`;
+    const path = `${environment.pathToNotificationCategories6_1}/followup/${notificationCategory}`;
     return this.httpClient
       .get<CodeDisplay[]>(path, {
         headers: environment.futsHeaders,
@@ -230,21 +230,6 @@ function setFieldDefaults(configs: FormlyFieldConfig[]) {
   function recurse(fc: FormlyFieldConfig) {
     // Whenever the BE delivers, remove the next three lines of code
     // For the backend, providing Regexps seems more appropriate
-    if (typeof fc.key === 'string' && fc.key.endsWith('valueDate')) {
-      fc.wrappers = [];
-      fc.props = {
-        ...fc.props,
-        appearance: environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN ? 'outline' : 'fill', // TODO: Should not be necessary and be controlled by the form-field wrapper itself. Will be fixed with DEMIS-4007
-        allowedPrecisions: fc.props?.['allowedPrecisions'] ? fc.props['allowedPrecisions'] : ['day', 'month', 'year'],
-      };
-      // TODO: Remove this workaround in DEMIS-4098
-      if (fc.props['minDate']) {
-        delete fc.props['minDate'];
-      }
-      if (fc.props['maxDate']) {
-        delete fc.props['maxDate'];
-      }
-    }
 
     if (fc.type === 'input' && fc.defaultValue === undefined) {
       fc.defaultValue = '';
