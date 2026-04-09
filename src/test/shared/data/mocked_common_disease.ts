@@ -79,7 +79,6 @@ export const MOCK_KLINISCHE_ANGABE_QUESTIONS = {
               key: 'valueDate',
               type: 'input',
               props: {
-                placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                 label: 'Sterbedatum',
                 enableWhen: [
                   {
@@ -4265,7 +4264,6 @@ export const MOCK_KLINISCHE_ANGABE_QUESTIONS = {
                                     type: 'input',
                                     props: {
                                       required: true,
-                                      placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                                       label: 'Aufnahmedatum',
                                       importSpec: {
                                         importKey: 'C.hospitalized.start',
@@ -4285,7 +4283,6 @@ export const MOCK_KLINISCHE_ANGABE_QUESTIONS = {
                                     type: 'input',
                                     props: {
                                       required: false,
-                                      placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                                       label: 'Entlassdatum',
                                       importSpec: {
                                         importKey: 'C.hospitalized.end',
@@ -8193,7 +8190,6 @@ export const MOCK_KLINISCHE_ANGABE_QUESTIONS = {
                         key: 'valueDate',
                         type: 'input',
                         props: {
-                          placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                           label: 'Beginn',
                           enableWhen: [
                             {
@@ -8219,7 +8215,6 @@ export const MOCK_KLINISCHE_ANGABE_QUESTIONS = {
                         key: 'valueDate',
                         type: 'input',
                         props: {
-                          placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                           label: 'Ende',
                           enableWhen: [
                             {
@@ -11340,7 +11335,6 @@ export const MOCK_KLINISCHE_ANGABE_QUESTIONS = {
                         key: 'valueDate',
                         type: 'input',
                         props: {
-                          placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                           label: 'Beginn',
                           enableWhen: [
                             {
@@ -11366,7 +11360,6 @@ export const MOCK_KLINISCHE_ANGABE_QUESTIONS = {
                         key: 'valueDate',
                         type: 'input',
                         props: {
-                          placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                           label: 'Ende',
                           enableWhen: [
                             {

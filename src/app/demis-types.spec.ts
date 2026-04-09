@@ -27,7 +27,6 @@ describe('demis-types utilities', () => {
       featureFlags: {
         FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: false,
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: false,
-        FEATURE_FLAG_ANONYMOUS_NOTIFICATION: false,
       },
     } as any;
   });
@@ -49,13 +48,6 @@ describe('demis-types utilities', () => {
       const url = `http://localhost:4200/${allowedRoutes['nonNominal']}`;
       const result = getNotificationTypeByRouterUrl(url);
       expect(result).toBe(NotificationType.NonNominalNotification7_3);
-    });
-
-    it('should return AnonymousNotification7_3 when url includes anonymous route', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_ANONYMOUS_NOTIFICATION = true;
-      const url = `http://localhost:4200/${allowedRoutes['anonymous']}`;
-      const result = getNotificationTypeByRouterUrl(url);
-      expect(result).toBe(NotificationType.AnonymousNotification7_3);
     });
 
     it('should return NominalNotification6_1 for nominal route', () => {

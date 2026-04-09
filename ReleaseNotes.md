@@ -2,6 +2,14 @@
 
 # Release portal-disease
 
+## Release 1.6.2
+- Updated NGINX-Base-Image to 1.29.7 
+- Updated package name to @single-spa-community/angular
+- Removed 7.3 disease anonymous notification
+- Fixed a bug, where symptoms could not be selected properly for a chosen disease
+- Updated @gematik/demis-portal-core-library to 3.2.0
+- used datepicker with default placeholder
+
 ## Release 1.6.1
 - Used fixed version of formly-datepicker from portal-core 3.0.7 and removed obsolete code
 - Enabled BSNR validation for questionnaire fields

@@ -226,7 +226,6 @@ export const EXAMPLE_MSVD_SHORT = {
                                 type: 'input',
                                 props: {
                                   required: true,
-                                  placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                                   label: 'Datum der Impfung',
                                 },
                                 className: 'vaccinationDate',
@@ -264,7 +263,6 @@ export const EXAMPLE_MSVD_SHORT = {
               key: 'valueDate',
               type: 'input',
               props: {
-                placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                 label: 'Exanthembeginn',
               },
               wrappers: ['form-field'],
@@ -844,7 +842,6 @@ export const EXAMPLE_MSVD_SHORT = {
                   key: 'valueDate',
                   type: 'input',
                   props: {
-                    placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                     label: 'Sterbedatum',
                     enableWhen: [
                       {
@@ -1409,7 +1406,6 @@ export const EXAMPLE_MSVD_SHORT = {
                                         type: 'input',
                                         props: {
                                           required: true,
-                                          placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                                           label: 'Aufnahmedatum',
                                           importSpec: {
                                             importKey: 'C.hospitalized.start',
@@ -1429,7 +1425,6 @@ export const EXAMPLE_MSVD_SHORT = {
                                         type: 'input',
                                         props: {
                                           required: false,
-                                          placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                                           label: 'Entlassdatum',
                                           importSpec: {
                                             importKey: 'C.hospitalized.end',
@@ -2652,7 +2647,6 @@ export const EXAMPLE_MSVD_SHORT = {
                             key: 'valueDate',
                             type: 'input',
                             props: {
-                              placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                               label: 'Beginn',
                               enableWhen: [
                                 {
@@ -2678,7 +2672,6 @@ export const EXAMPLE_MSVD_SHORT = {
                             key: 'valueDate',
                             type: 'input',
                             props: {
-                              placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                               label: 'Ende',
                               enableWhen: [
                                 {
@@ -3075,7 +3068,6 @@ export const EXAMPLE_MSVD_SHORT = {
                             key: 'valueDate',
                             type: 'input',
                             props: {
-                              placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                               label: 'Beginn',
                               enableWhen: [
                                 {
@@ -3101,7 +3093,6 @@ export const EXAMPLE_MSVD_SHORT = {
                             key: 'valueDate',
                             type: 'input',
                             props: {
-                              placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                               label: 'Ende',
                               enableWhen: [
                                 {
@@ -3307,7 +3298,6 @@ export const EXAMPLE_MSVD_SHORT = {
               key: 'answer.valueDate',
               type: 'input',
               props: {
-                placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                 label: 'Datum Diagnosestellung',
                 importSpec: {
                   importKey: 'D.diagnosis',
@@ -3326,7 +3316,6 @@ export const EXAMPLE_MSVD_SHORT = {
               key: 'answer.valueDate',
               type: 'input',
               props: {
-                placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                 label: 'Erkrankungsbeginn',
                 importSpec: {
                   importKey: 'D.start',

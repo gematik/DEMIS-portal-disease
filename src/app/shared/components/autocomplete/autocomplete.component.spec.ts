@@ -265,7 +265,80 @@ describe('AutocompleteComponent', () => {
     expect(component.markAsTouched).toHaveBeenCalled();
   });
 
-  it('should handle onBlur for multi-select', () => {
+  it('should clear selectControl on close panel in multi mode', () => {
+    const multiFixture = MockRender(AutocompleteComponent, {
+      options: mockOptions,
+      formControl: new FormControl(),
+      clearable: true,
+      showCode: false,
+      multi: true,
+      key: 'test-key',
+    });
+    const multiComponent = multiFixture.point.componentInstance;
+
+    multiComponent.selectControl.setValue('filter text');
+    multiComponent.onClosePanel();
+    expect(multiComponent.selectControl.value).toBe('');
+  });
+
+  describe('onOptionSelected', () => {
+    it('should toggle selection, clear input and reopen panel in multi mode', () => {
+      const multiFixture = MockRender(AutocompleteComponent, {
+        options: mockOptions,
+        formControl: new FormControl(),
+        clearable: true,
+        showCode: false,
+        multi: true,
+        key: 'test-key',
+      });
+      const multiComponent = multiFixture.point.componentInstance;
+
+      const openPanelSpy = jasmine.createSpy('openPanel');
+      spyOn(multiComponent, 'autocomplete' as any).and.returnValue({ openPanel: openPanelSpy, updatePosition: jasmine.createSpy() });
+
+      const coding: DemisCoding = { code: 'test1', display: 'Test Option 1', system: 'test-system' };
+      const mockEvent = { option: { value: coding } } as any;
+
+      multiComponent.onOptionSelected(mockEvent);
+
+      expect(multiComponent.selectData.length).toBe(1);
+      expect(multiComponent.selectData[0]).toEqual(coding);
+      expect(multiComponent.selectControl.value).toBe('');
+    });
+
+    it('should not toggle selection in single mode', () => {
+      const coding: DemisCoding = { code: 'test1', display: 'Test Option 1', system: 'test-system' };
+      const mockEvent = { option: { value: coding } } as any;
+
+      component.onOptionSelected(mockEvent);
+
+      expect(component.selectData.length).toBe(0);
+    });
+
+    it('should deselect already selected option in multi mode', () => {
+      const multiFixture = MockRender(AutocompleteComponent, {
+        options: mockOptions,
+        formControl: new FormControl(),
+        clearable: true,
+        showCode: false,
+        multi: true,
+        key: 'test-key',
+      });
+      const multiComponent = multiFixture.point.componentInstance;
+
+      const coding: DemisCoding = { code: 'test1', display: 'Test Option 1', system: 'test-system', selected: true };
+      multiComponent.selectData = [coding];
+
+      const mockEvent = { option: { value: coding } } as any;
+      multiComponent.onOptionSelected(mockEvent);
+
+      expect(multiComponent.selectData.length).toBe(0);
+      expect(coding.selected).toBeFalsy();
+      expect(multiComponent.selectControl.value).toBe('');
+    });
+  });
+
+  it('should handle onBlur for multi-select when panel is closed', () => {
     // Create a new component instance with multi = true
     const multiFixture = MockRender(AutocompleteComponent, {
       options: mockOptions,
@@ -280,6 +353,23 @@ describe('AutocompleteComponent', () => {
     multiComponent.selectControl.setValue('test');
     multiComponent.onBlur();
     expect(multiComponent.selectControl.value).toBe('');
+  });
+
+  it('should not clear selectControl on blur when panel is open in multi mode', () => {
+    const multiFixture = MockRender(AutocompleteComponent, {
+      options: mockOptions,
+      formControl: new FormControl(),
+      clearable: true,
+      showCode: false,
+      multi: true,
+      key: 'test-key',
+    });
+    const multiComponent = multiFixture.point.componentInstance;
+
+    multiComponent.selectControl.setValue('filter text');
+    spyOn(multiComponent, 'autocomplete' as any).and.returnValue({ panelOpen: true });
+    multiComponent.onBlur();
+    expect(multiComponent.selectControl.value).toBe('filter text');
   });
 
   it('should handle getCurrentBreadcrumb', () => {
@@ -341,10 +431,43 @@ describe('AutocompleteComponent', () => {
     expect(component.autocompleteDisabled).toBeFalsy();
   });
 
-  it('should handle onInputFocus by clearing selectControl', () => {
+  it('should handle onInputFocus by clearing selectControl in single mode', () => {
     component.selectControl.setValue('test');
     component.onInputFocus();
     expect(component.selectControl.value).toBe('');
+  });
+
+  it('should not clear selectControl on focus in multi mode when panel is open', () => {
+    const multiFixture = MockRender(AutocompleteComponent, {
+      options: mockOptions,
+      formControl: new FormControl(),
+      clearable: true,
+      showCode: false,
+      multi: true,
+      key: 'test-key',
+    });
+    const multiComponent = multiFixture.point.componentInstance;
+
+    multiComponent.selectControl.setValue('filter text');
+    spyOn(multiComponent, 'autocomplete' as any).and.returnValue({ panelOpen: true });
+    multiComponent.onInputFocus();
+    expect(multiComponent.selectControl.value).toBe('filter text');
+  });
+
+  it('should clear selectControl on focus in multi mode when panel is closed', () => {
+    const multiFixture = MockRender(AutocompleteComponent, {
+      options: mockOptions,
+      formControl: new FormControl(),
+      clearable: true,
+      showCode: false,
+      multi: true,
+      key: 'test-key',
+    });
+    const multiComponent = multiFixture.point.componentInstance;
+
+    multiComponent.selectControl.setValue('filter text');
+    multiComponent.onInputFocus();
+    expect(multiComponent.selectControl.value).toBe('');
   });
 
   it('should not clear on onInputFocus when disabled', () => {
