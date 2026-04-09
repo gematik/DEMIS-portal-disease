@@ -111,7 +111,6 @@ export const FIELDS = [
                     key: 'valueDate',
                     type: 'datepicker',
                     props: {
-                      placeholder: 'dd.mm.yyyy',
                       label: 'Datum des Todes',
                       enableWhen: [
                         {
@@ -1049,7 +1048,6 @@ export const FIELDS = [
                           key: 'valueDate',
                           type: 'datepicker',
                           props: {
-                            placeholder: 'dd.mm.yyyy',
                             label: 'Beginn der Tätigkeit/Betreuung/Unterbringung',
                             enableWhen: [
                               {
@@ -1073,7 +1071,6 @@ export const FIELDS = [
                           key: 'valueDate',
                           type: 'datepicker',
                           props: {
-                            placeholder: 'dd.mm.yyyy',
                             label: 'Ende der Tätigkeit/Betreuung/Unterbringung',
                             enableWhen: [
                               {
@@ -1393,7 +1390,6 @@ export const FIELDS = [
                           key: 'valueDate',
                           type: 'datepicker',
                           props: {
-                            placeholder: 'dd.mm.yyyy',
                             label: 'Beginn des Aufenthalts am wahrscheinlichen Expositionsort/Datum des Aufenthalts',
                             enableWhen: [
                               {
@@ -1417,7 +1413,6 @@ export const FIELDS = [
                           key: 'valueDate',
                           type: 'datepicker',
                           props: {
-                            placeholder: 'dd.mm.yyyy',
                             label: 'Ende des Aufenthalts am wahrscheinlichen Expositionsort',
                             enableWhen: [
                               {

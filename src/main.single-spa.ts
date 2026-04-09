@@ -20,7 +20,7 @@ import { enableProdMode, NgZone, provideZoneChangeDetection } from '@angular/cor
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { NavigationStart, Router } from '@angular/router';
 
-import { getSingleSpaExtraProviders, singleSpaAngular } from 'single-spa-angular';
+import { getSingleSpaExtraProviders, singleSpaAngular } from '@single-spa-community/angular';
 
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
@@ -44,8 +44,7 @@ const lifecycles = singleSpaAngular({
     });
     if (
       environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION ||
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE ||
-      environment.diseaseConfig.featureFlags?.FEATURE_FLAG_ANONYMOUS_NOTIFICATION
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE
     ) {
       router = appRef.injector.get(Router);
       syncUrlWithRouter();

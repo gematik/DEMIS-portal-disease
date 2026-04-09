@@ -117,7 +117,6 @@ describe('test utils', () => {
                   key: 'valueDate',
                   type: 'input',
                   props: {
-                    placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                     label: 'Sterbedatum',
                     enableWhen: [
                       {
@@ -270,7 +269,6 @@ describe('test utils', () => {
                                         type: 'input',
                                         props: {
                                           required: true,
-                                          placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                                           label: 'Aufnahmedatum',
                                           importSpec: {
                                             importKey: 'C.hospitalized.start',
@@ -290,7 +288,6 @@ describe('test utils', () => {
                                         type: 'input',
                                         props: {
                                           required: false,
-                                          placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                                           label: 'Entlassdatum',
                                           importSpec: {
                                             importKey: 'C.hospitalized.end',

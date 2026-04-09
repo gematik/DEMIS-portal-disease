@@ -16,7 +16,7 @@
  */
 
 import { FormlyExtension } from '@ngx-formly/core';
-import { VALUE_DEFAULT_PLACEHOLDER, VALUE_DEFUALT_SELECT_PLACEHOLDER } from '../legacy/common-utils';
+import { VALUE_DEFAULT_PLACEHOLDER, VALUE_DEFAULT_SELECT_PLACEHOLDER } from '../legacy/common-utils';
 import { environment } from '../../environments/environment';
 
 export const defaultPlaceholderExtension: FormlyExtension = {
@@ -28,7 +28,7 @@ export const defaultPlaceholderExtension: FormlyExtension = {
     }
 
     if (field.type === 'select' || field.type === 'autocomplete' || field.type === 'autocomplete-multi-coding' || field.type === 'autocomplete-coding') {
-      placeholder = VALUE_DEFUALT_SELECT_PLACEHOLDER;
+      placeholder = VALUE_DEFAULT_SELECT_PLACEHOLDER;
     }
 
     field.props = {

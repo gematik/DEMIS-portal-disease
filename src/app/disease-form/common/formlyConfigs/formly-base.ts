@@ -19,6 +19,7 @@ import { FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core';
 import { Observable } from 'rxjs';
 import { FormlyConstants } from '../../../legacy/formly-constants';
 import { ZIP_GERMANY_MAX_LENGTH, ZIP_GERMANY_MIN_LENGTH, ZIP_INTERNATIONAL_MAX_LENGTH, ZIP_INTERNATIONAL_MIN_LENGTH } from '../../../legacy/common-utils';
+import { NotifiedPersonDisclaimer } from '../notified-person-disclaimer';
 
 export type FormlyExpressionType = {
   [property: string]: string | ((field: FormlyFieldConfig) => any) | Observable<any>;
@@ -70,7 +71,7 @@ export const infoOutline: FormlyFieldConfig = {
   className: 'col-sm-12',
   template: `<div class="info-notification-text">
                <span class="material-icons-outlined primary-color-icon">error_outline</span>
-               <span class="message">Grundsätzlich müssen Sie gemäß Infektionsschutzgesetz alle Ihnen vorliegenden Informationen im Meldeformular angeben, um die Meldepflicht zu erfüllen. Die Nachmeldung oder Korrektur von Angaben hat unverzüglich zu erfolgen.</span>
+               <span class="message">${NotifiedPersonDisclaimer.DEFAULT_DISCLAIMER}</span>
              </div>`,
   props: {
     safeHtml: true,

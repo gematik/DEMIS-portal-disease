@@ -15,25 +15,9 @@
     find details in the "Readme" file.
  */
 
-import { Routes } from '@angular/router';
-import { DiseaseFormComponent } from './disease-form/disease-form.component';
-import { allowedRoutes } from './demis-types';
-
-export const routes: Routes = [
-  {
-    path: allowedRoutes['nonNominal'],
-    component: DiseaseFormComponent,
-  },
-  {
-    path: allowedRoutes['nominal'],
-    component: DiseaseFormComponent,
-  },
-  {
-    path: allowedRoutes['followUp'],
-    component: DiseaseFormComponent,
-  },
-  {
-    path: '**',
-    component: DiseaseFormComponent,
-  },
-];
+export const NotifiedPersonDisclaimer = {
+  DEFAULT_DISCLAIMER:
+    'Grundsätzlich müssen Sie gemäß Infektionsschutzgesetz alle Ihnen vorliegenden Informationen im Meldeformular angeben, um die Meldepflicht zu erfüllen. Die Nachmeldung oder Korrektur von Angaben hat unverzüglich zu erfolgen.',
+  FOLLOW_UP_DISCLAIMER:
+    "Sie sind im Prozess des Absetzens einer Folgemeldung. Informationen zur betroffenen Person liegen dem zuständigen Gesundheitsamt bereits im Rahmen der getätigten Initialmeldung vor. Erneute Angaben zur betroffenen Person ermöglichen es dem Gesundheitsamt Plausibilitätschecks im Kontext des Zusammenführens der Meldungen durchzuführen. Bitte machen Sie daher, falls möglich, wiederholt Angaben zu 'Geschlecht' sowie 'Geburtsmonat/-jahr'",
+} as const;

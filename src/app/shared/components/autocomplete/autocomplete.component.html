@@ -62,6 +62,7 @@
     [displayWith]="displayFn"
     hideSingleSelectionIndicator="true"
     (optionActivated)="activateOption($event)"
+    (optionSelected)="onOptionSelected($event)"
     (closed)="onClosePanel()">
     @for (coding of filteredCodings | async; track coding.code) {
       @if (multi()) {

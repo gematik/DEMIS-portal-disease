@@ -19,7 +19,7 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { addressFormConfigFields, contactsFormConfigFields, formlyInputField, formlyRow, infoOutline } from './formly-base';
 import { FormlyConstants } from '../../../legacy/formly-constants';
 import { CURRENT_ADDRESS_TYPE_OPTION_LIST, GENDER_OPTION_LIST, RESIDENCE_ADDRESS_TYPE_OPTION_LIST } from '../../../legacy/formly-options-lists';
-import { TEXT_MAX_LENGTH, UI_DATE_FORMAT_GER } from '../../../legacy/common-utils';
+import { TEXT_MAX_LENGTH } from '../../../legacy/common-utils';
 import { AddressType } from '../../../../api/notification';
 
 const INFO_KEY = 'info';
@@ -34,10 +34,10 @@ function getDatePickerConfig(): FormlyFieldConfig {
     className: FormlyConstants.COLMD6,
     type: 'datepicker',
     props: {
-      placeholder: UI_DATE_FORMAT_GER,
       maxLength: 10,
       label: 'Geburtsdatum',
       required: false,
+      allowedPrecisions: ['day'],
       multiYear: true,
       minDate: new Date('1900-01-01'),
       maxDate: new Date(),

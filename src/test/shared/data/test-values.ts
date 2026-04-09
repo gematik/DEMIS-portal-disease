@@ -1206,7 +1206,6 @@ export const EXAMPLE_MSVD = {
                                 type: 'datepicker',
                                 props: {
                                   required: true,
-                                  placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                                   label: 'Datum der Impfung',
                                   minDate: '1900-01-01',
                                   maxDate: '2025-12-09',
@@ -1247,7 +1246,6 @@ export const EXAMPLE_MSVD = {
               type: 'datepicker',
               props: {
                 required: false,
-                placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                 label: 'Exanthembeginn',
                 allowedPrecisions: ['day', 'month'],
                 minDate: '1900-01-01',
@@ -1530,7 +1528,6 @@ export const EXAMPLE_MSVD = {
                   key: 'valueDate',
                   type: 'datepicker',
                   props: {
-                    placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                     label: 'Sterbedatum',
                     enableWhen: [
                       {
@@ -5644,7 +5641,6 @@ export const EXAMPLE_MSVD = {
                                         type: 'datepicker',
                                         props: {
                                           required: true,
-                                          placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                                           label: 'Aufnahmedatum',
                                           importSpec: {
                                             importKey: 'C.hospitalized.start',
@@ -5667,7 +5663,6 @@ export const EXAMPLE_MSVD = {
                                         type: 'datepicker',
                                         props: {
                                           required: false,
-                                          placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                                           label: 'Entlassdatum',
                                           importSpec: {
                                             importKey: 'C.hospitalized.end',
@@ -9631,7 +9626,6 @@ export const EXAMPLE_MSVD = {
                             key: 'valueDate',
                             type: 'datepicker',
                             props: {
-                              placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                               label: 'Beginn',
                               enableWhen: [
                                 {
@@ -9658,7 +9652,6 @@ export const EXAMPLE_MSVD = {
                             key: 'valueDate',
                             type: 'datepicker',
                             props: {
-                              placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                               label: 'Ende',
                               enableWhen: [
                                 {
@@ -12774,7 +12767,6 @@ export const EXAMPLE_MSVD = {
                             key: 'valueDate',
                             type: 'datepicker',
                             props: {
-                              placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                               label: 'Beginn',
                               enableWhen: [
                                 {
@@ -12801,7 +12793,6 @@ export const EXAMPLE_MSVD = {
                             key: 'valueDate',
                             type: 'datepicker',
                             props: {
-                              placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                               label: 'Ende',
                               enableWhen: [
                                 {
@@ -39941,7 +39932,6 @@ export const EXAMPLE_MSVD = {
               key: 'answer.valueDate',
               type: 'datepicker',
               props: {
-                placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                 label: 'Datum Diagnosestellung',
                 importSpec: {
                   importKey: 'D.diagnosis',
@@ -39962,7 +39952,6 @@ export const EXAMPLE_MSVD = {
               key: 'answer.valueDate',
               type: 'datepicker',
               props: {
-                placeholder: 'TT.MM.JJJJ | MM.JJJJ',
                 label: 'Erkrankungsbeginn',
                 importSpec: {
                   importKey: 'D.start',

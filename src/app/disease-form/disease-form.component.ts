@@ -62,6 +62,7 @@ import { createExpressions, findQuantityFieldsByProp, modifyFieldsByPredicate } 
 import { getDiseaseChoiceFields } from './common/formlyConfigs/disease-choice';
 import { notifiedPersonFormConfigFields } from './common/formlyConfigs/notified-person';
 import { notifierFacilityFormConfigFields } from './common/formlyConfigs/notifier';
+import { NotifiedPersonDisclaimer } from './common/notified-person-disclaimer';
 import { HexHexDummy } from './common/hexHexDummy';
 import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-service';
 import { ImportFieldValuesService, ImportTargetComponent } from './services/import-field-values.service';
@@ -143,8 +144,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
         return 'notification-type-followup-6-1';
       case NotificationType.NonNominalNotification7_3:
         return 'notification-type-non-nominal-7-3';
-      case NotificationType.AnonymousNotification7_3:
-        return 'notification-type-anonymous-7-3';
       case NotificationType.NominalNotification6_1:
       default:
         return 'notification-type-nominal-6-1';
@@ -273,9 +272,9 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   private getNotifiedPersonFields(notificationType: NotificationType): FormlyFieldConfig[] {
     switch (notificationType) {
       case NotificationType.FollowUpNotification6_1:
-        return notifiedPersonAnonymousConfigFields(this.countryCodeList, GENDER_OPTION_LIST);
+        return notifiedPersonAnonymousConfigFields(this.countryCodeList, GENDER_OPTION_LIST, NotifiedPersonDisclaimer.FOLLOW_UP_DISCLAIMER);
       case NotificationType.NonNominalNotification7_3:
-        return notifiedPersonNotByNameConfigFields(this.countryCodeList, GENDER_OPTION_LIST);
+        return notifiedPersonNotByNameConfigFields(this.countryCodeList, GENDER_OPTION_LIST, NotifiedPersonDisclaimer.DEFAULT_DISCLAIMER);
       default:
         return notifiedPersonFormConfigFields(true);
     }

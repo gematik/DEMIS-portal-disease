@@ -24,6 +24,8 @@ import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/cop
 import { getRadioGroup } from '../../shared/material-harness-utils';
 import { selectTab } from '../utils/disease-common-utils';
 import { buildMock, setupIntegrationTests } from './base';
+import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
+import { VALUE_DEFAULT_PLACEHOLDER } from '../../../app/legacy/common-utils';
 
 describe('DiseaseFormComponent integration tests for Notified Person Tab', () => {
   let component: DiseaseFormComponent;
@@ -59,6 +61,10 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
 
   it('should create', () => {
     expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+  });
+
+  it('should show the default disclaimer text', async () => {
+    expect(fixture.nativeElement.textContent).toContain(NotifiedPersonDisclaimer.DEFAULT_DISCLAIMER);
   });
 
   it('error if current address set to notifier-address but this is not available', async () => {
@@ -106,7 +112,7 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
 
     expect(birthDateField).toBeTruthy();
     expect(birthDateField.props?.label).toBe('Geburtsdatum');
-    expect(birthDateField.props?.placeholder).toBe('TT.MM.JJJJ');
+    expect(birthDateField.props?.placeholder).toBe(VALUE_DEFAULT_PLACEHOLDER);
     expect(birthDateField.props?.maxLength).toBe(10);
     expect(birthDateField.props?.required).toBeFalse();
   });

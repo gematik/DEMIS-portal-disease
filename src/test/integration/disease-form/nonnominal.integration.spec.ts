@@ -21,6 +21,7 @@ import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { getTabList } from '../../shared/material-harness-utils';
 import { NotificationType } from '../../../app/demis-types';
+import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
 
 describe('DiseaseFormComponent nonnominal integration tests', () => {
   let component: DiseaseFormComponent;
@@ -39,6 +40,10 @@ describe('DiseaseFormComponent nonnominal integration tests', () => {
 
   it('should create', () => {
     expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+  });
+
+  it('should show the non-nominal disclaimer text', async () => {
+    expect(fixture.nativeElement.textContent).toContain(NotifiedPersonDisclaimer.DEFAULT_DISCLAIMER);
   });
 
   it('should show new stepper heading with nonnominal routing', async () => {

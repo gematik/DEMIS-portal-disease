@@ -518,7 +518,6 @@ export const EXAMPLE_TOXP_SHORT = {
               key: 'answer.valueDate',
               type: 'input',
               props: {
-                placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                 label: 'Datum Diagnosestellung',
                 importSpec: {
                   importKey: 'D.diagnosis',
@@ -537,7 +536,6 @@ export const EXAMPLE_TOXP_SHORT = {
               key: 'answer.valueDate',
               type: 'input',
               props: {
-                placeholder: 'TT.MM.JJJJ | MM.JJJJ | JJJJ',
                 label: 'Erkrankungsbeginn',
                 importSpec: {
                   importKey: 'D.start',

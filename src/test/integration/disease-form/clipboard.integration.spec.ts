@@ -54,7 +54,7 @@ import { TestBed } from '@angular/core/testing';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { ImportFieldValuesService } from '../../../app/disease-form/services/import-field-values.service';
 import { ErrorMessage } from '../../../app/shared/error-message';
-import { VALUE_DEFUALT_SELECT_PLACEHOLDER } from 'src/app/legacy/common-utils';
+import { VALUE_DEFAULT_SELECT_PLACEHOLDER } from 'src/app/legacy/common-utils';
 
 describe('User fills in form through clipboard', () => {
   let component: DiseaseFormComponent;
@@ -82,12 +82,12 @@ describe('User fills in form through clipboard', () => {
 
       beforeEach(async () => {
         salutationSelect = await getSelect(loader, '#salutation');
-        expect(await salutationSelect.getValueText()).toBe(VALUE_DEFUALT_SELECT_PLACEHOLDER);
+        expect(await salutationSelect.getValueText()).toBe(VALUE_DEFAULT_SELECT_PLACEHOLDER);
       });
 
       it('should not set invalid salutation', async () => {
         await userImportsDataThroughClipboard('URL N.salutation=W');
-        expect(await salutationSelect.getValueText()).toBe(VALUE_DEFUALT_SELECT_PLACEHOLDER);
+        expect(await salutationSelect.getValueText()).toBe(VALUE_DEFAULT_SELECT_PLACEHOLDER);
       });
 
       it('should set valid female value from clipboard', async () => {

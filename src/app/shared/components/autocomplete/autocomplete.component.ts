@@ -17,7 +17,7 @@
 
 import { Component, forwardRef, Input, input, OnDestroy, OnInit, viewChild } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatAutocompleteActivatedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatAutocompleteActivatedEvent, MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { FieldTypeConfig } from '@ngx-formly/core';
 import { map, Observable, Subscription } from 'rxjs';
@@ -172,6 +172,18 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     this.activeOption = evt.option?.value;
   }
 
+  onOptionSelected(event: MatAutocompleteSelectedEvent): void {
+    if (this.multi()) {
+      const coding = event.option.value as DemisCoding;
+      this.toggleSelection(coding);
+      this.selectControl.setValue('');
+      setTimeout(() => {
+        this.autocomplete()?.openPanel();
+        setTimeout(() => this.autocomplete()?.updatePosition());
+      });
+    }
+  }
+
   displayFn = (coding: DemisCoding | undefined): string => {
     if (this.showCode()) {
       return coding ? `${coding.display} | ${coding.code}` : '';
@@ -254,6 +266,9 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
     if (!this.canToggleSelection()) {
       return;
     }
+    if (this.multi() && this.autocomplete()?.panelOpen) {
+      return;
+    }
     this.suppressPropagation = true;
     this.selectControl.setValue('');
     this.suppressPropagation = false;
@@ -261,12 +276,16 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
 
   onClosePanel() {
     this.activeOption = undefined;
-    this.populateLatestValidSelectionIfNothingHasBeenSelected();
+    if (this.multi()) {
+      this.selectControl.setValue('');
+    } else {
+      this.populateLatestValidSelectionIfNothingHasBeenSelected();
+    }
     this.markAsTouched();
   }
 
   onBlur() {
-    if (this.multi()) {
+    if (this.multi() && !this.autocomplete()?.panelOpen) {
       this.selectControl.setValue('');
     }
   }

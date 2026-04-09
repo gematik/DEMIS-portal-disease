@@ -31,6 +31,7 @@ import { getHtmlButtonElement } from '../../shared/html-element-utils';
 import { clickNextButton } from '../../shared/test-utils';
 import { lastValueFrom, of } from 'rxjs';
 import { selectIsHospitalizedYes, selectTab } from '../utils/disease-common-utils';
+import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
 
 describe('DiseaseFormComponent followUp integration tests', () => {
   let component: DiseaseFormComponent;
@@ -59,6 +60,11 @@ describe('DiseaseFormComponent followUp integration tests', () => {
 
   it('should create', () => {
     expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+  });
+
+  it('should show the follow-up disclaimer text', async () => {
+    await navigateTo(loader, 1);
+    expect(fixture.nativeElement.textContent).toContain(NotifiedPersonDisclaimer.FOLLOW_UP_DISCLAIMER);
   });
 
   it('should show follow up heading', async () => {

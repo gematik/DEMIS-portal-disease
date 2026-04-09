@@ -100,7 +100,6 @@ export const mainConfig = {
     FEATURE_FLAG_OUTLINE_DESIGN: true,
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
     FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
-    FEATURE_FLAG_ANONYMOUS_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_STRICT: true,
     FEATURE_FLAG_MIXED_FOLLOW_UP: true,
   },
@@ -121,9 +120,6 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
   } else if (notificationType === NotificationType.FollowUpNotification6_1) {
     ifsg61Service = overrides.Ifsg61Service;
     allowedRoutesMock = allowedRoutes['followUp'];
-  } else if (notificationType === NotificationType.AnonymousNotification7_3) {
-    ifsg61Service = overrides.Ifsg61Service;
-    allowedRoutesMock = allowedRoutes['anonymous'];
   } else {
     ifsg61Service = overrides.Ifsg61Service;
     allowedRoutesMock = allowedRoutes['nominal'];
