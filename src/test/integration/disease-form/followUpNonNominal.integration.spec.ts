@@ -23,7 +23,7 @@ import { NotificationType } from '../../../app/demis-types';
 import { TestBed } from '@angular/core/testing';
 import { FollowUpNotificationIdService, FollowUpMixedCodesService, MessageDialogService } from '@gematik/demis-portal-core-library';
 import { Ifsg61Service } from '../../../app/ifsg61.service';
-import { EXAMPLE_DISEASE_OPTIONS } from '../../shared/data/test-values';
+import { EXAMPLE_DISEASE_OPTIONS_NONNOMINAL } from '../../shared/data/test-values';
 import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
 import { getButton, getCheckBox, getInput, getSelect, navigateTo } from '../../shared/material-harness-utils';
 import { checkDescribingError } from '../../shared/assertion-utils';
@@ -33,7 +33,7 @@ import { lastValueFrom, of } from 'rxjs';
 import { selectIsHospitalizedYes, selectTab } from '../utils/disease-common-utils';
 import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
 
-describe('DiseaseFormComponent followUp integration tests', () => {
+describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
   let loader: HarnessLoader;
@@ -44,7 +44,7 @@ describe('DiseaseFormComponent followUp integration tests', () => {
   let followUpMixedCodesService: FollowUpMixedCodesService;
 
   // we need to have two beforeEach() steps, since a MockingComponent needs to be returned before working with it
-  beforeEach(() => buildMock(NotificationType.FollowUpNotification6_1));
+  beforeEach(() => buildMock(NotificationType.FollowUpNotification7_3));
 
   beforeEach(() => {
     const result = setupIntegrationTests();
@@ -64,7 +64,7 @@ describe('DiseaseFormComponent followUp integration tests', () => {
 
   it('should show the follow-up disclaimer text', async () => {
     await navigateTo(loader, 1);
-    expect(fixture.nativeElement.textContent).toContain(NotifiedPersonDisclaimer.FOLLOW_UP_DISCLAIMER);
+    expect(fixture.nativeElement.textContent).toContain(NotifiedPersonDisclaimer.NON_NOMINAL_FOLLOW_UP_DISCLAIMER);
   });
 
   it('should show follow up heading', async () => {
@@ -77,20 +77,20 @@ describe('DiseaseFormComponent followUp integration tests', () => {
     component.ngOnInit();
     expect(showFollowUpDialogSpy).toHaveBeenCalledWith({
       dialogData: {
-        routerLink: '/disease-notification/6.1',
-        linkTextContent: 'einer namentlichen Infektionskrankheit nach § 6 IfSG',
+        routerLink: '/disease-notification/7.3/non-nominal',
+        linkTextContent: 'einer nichtnamentlichen Infektionskrankheit nach § 7 Abs. 3 IfSG',
         pathToDestinationLookup: '/destination-lookup/v1',
         errorUnsupportedNotificationCategory:
-          'Aktuell sind Nichtnamentliche Folgemeldungen einer Infektionskrankheit gemäß § 6 Abs. 1 IfSG nur für eine § 6 Abs. 1 IfSG Initialmeldung möglich.',
+          'Diese Meldekategorie wird für diese Meldungsart nicht unterstützt. Bitte stellen Sie sicher, dass Sie auf eine Meldung nach § 7 Abs. 3 IfSG referenzieren.',
       },
-      notificationCategoryCodes: EXAMPLE_DISEASE_OPTIONS.map(option => option.code),
+      notificationCategoryCodes: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL.map(option => option.code),
     });
   });
 
   it('should populate disease choice when hasValidNotificationId$ emits true with valid disease code', async () => {
-    const mockDiseaseCode = EXAMPLE_DISEASE_OPTIONS[0].code;
+    const mockDiseaseCode = EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].code;
     const mockNotificationId = 'test-notification-id-123';
-    const mockFollowUpCode = [{ code: mockDiseaseCode, display: EXAMPLE_DISEASE_OPTIONS[0].display, designations: [] }];
+    const mockFollowUpCode = [{ code: mockDiseaseCode, display: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].display, designations: [] }];
 
     (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
     (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
@@ -111,9 +111,9 @@ describe('DiseaseFormComponent followUp integration tests', () => {
   });
 
   it('should set disease-choice and initialNotificationId values and keep them disabled after valid follow-up id emitted', async () => {
-    const mockDiseaseCode = EXAMPLE_DISEASE_OPTIONS[0].code;
+    const mockDiseaseCode = EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].code;
     const mockNotificationId = 'test-notification-id-999';
-    const mockFollowUpCode = [{ code: mockDiseaseCode, display: EXAMPLE_DISEASE_OPTIONS[0].display, designations: [] }];
+    const mockFollowUpCode = [{ code: mockDiseaseCode, display: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].display, designations: [] }];
 
     (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
     (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
@@ -230,37 +230,15 @@ describe('DiseaseFormComponent followUp integration tests', () => {
     });
   });
 
-  it('should hide hospitalized checkboxes', async () => {
-    const mockDiseaseCode = EXAMPLE_DISEASE_OPTIONS[0].code;
-    const mockNotificationId = 'test-notification-id-999';
-    const mockFollowUpCode = [{ code: mockDiseaseCode, display: EXAMPLE_DISEASE_OPTIONS[0].display, designations: [] }];
-
-    (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
-    (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
-    (ifsg61Service.fetchFollowUpCode as jasmine.Spy).and.returnValue(of(mockFollowUpCode));
-
-    component.ngOnInit();
-    await fixture.whenStable();
-
-    (followUpNotificationIdService.hasValidNotificationId$ as any).next(true);
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    await selectTab(fixture, loader, 5);
-    await selectIsHospitalizedYes(loader);
-    await expectAsync(getCheckBox(loader, '#copyNotifiedPersonCurrentAddress')).toBeRejectedWithError(/Failed[\s\S]*copyNotifiedPersonCurrentAddress/);
-    await expectAsync(getCheckBox(loader, '#copyNotifierContact')).toBeRejectedWithError(/Failed[\s\S]*copyNotifierContact/);
-  });
-
   describe('mixed follow-up notification', () => {
     it('should open mixed codes dialog when fetchFollowUpCode returns multiple codes', async () => {
-      const mockDiseaseCode = 'MYCP';
+      const mockDiseaseCode = 'chtd';
       const mockNotificationId = 'test-notification-id-mixed-123';
       const mockFollowUpCodes = [
-        { code: EXAMPLE_DISEASE_OPTIONS[0].code, display: EXAMPLE_DISEASE_OPTIONS[0].display, designations: [] },
-        { code: EXAMPLE_DISEASE_OPTIONS[1].code, display: EXAMPLE_DISEASE_OPTIONS[1].display, designations: [] },
+        { code: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].code, display: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].display, designations: [] },
+        { code: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[1].code, display: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[1].display, designations: [] },
       ];
-      const selectedCode = EXAMPLE_DISEASE_OPTIONS[0].code;
+      const selectedCode = EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].code;
 
       (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
       (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
@@ -274,7 +252,7 @@ describe('DiseaseFormComponent followUp integration tests', () => {
       await fixture.whenStable();
       fixture.detectChanges();
 
-      expect(ifsg61Service.fetchFollowUpCode).toHaveBeenCalledWith(mockDiseaseCode, NotificationType.FollowUpNotification6_1);
+      expect(ifsg61Service.fetchFollowUpCode).toHaveBeenCalledWith(mockDiseaseCode, NotificationType.FollowUpNotification7_3);
       expect(followUpNotificationIdService.closeDialog).toHaveBeenCalled();
       expect(followUpMixedCodesService.openDialog).toHaveBeenCalledWith(mockFollowUpCodes);
       expect(component.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding?.code).toBe(selectedCode);
@@ -282,9 +260,9 @@ describe('DiseaseFormComponent followUp integration tests', () => {
     });
 
     it('should use single code directly when fetchFollowUpCode returns one code', async () => {
-      const mockDiseaseCode = 'MYCP';
+      const mockDiseaseCode = 'chtd';
       const mockNotificationId = 'test-notification-id-single-456';
-      const mockFollowUpCode = [{ code: EXAMPLE_DISEASE_OPTIONS[0].code, display: EXAMPLE_DISEASE_OPTIONS[0].display, designations: [] }];
+      const mockFollowUpCode = [{ code: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].code, display: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].display, designations: [] }];
 
       (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
       (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
@@ -297,14 +275,14 @@ describe('DiseaseFormComponent followUp integration tests', () => {
       await fixture.whenStable();
       fixture.detectChanges();
 
-      expect(ifsg61Service.fetchFollowUpCode).toHaveBeenCalledWith(mockDiseaseCode, NotificationType.FollowUpNotification6_1);
+      expect(ifsg61Service.fetchFollowUpCode).toHaveBeenCalledWith(mockDiseaseCode, NotificationType.FollowUpNotification7_3);
       expect(followUpMixedCodesService.openDialog).not.toHaveBeenCalled();
       expect(component.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding?.code).toBe(mockFollowUpCode[0].code);
       expect(component.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer.valueString).toBe(mockNotificationId);
     });
 
     it('should not update model when fetchFollowUpCode returns empty array', async () => {
-      const mockDiseaseCode = 'MYCP';
+      const mockDiseaseCode = 'chtd';
       const mockNotificationId = 'test-notification-id-empty-789';
 
       (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
@@ -318,13 +296,13 @@ describe('DiseaseFormComponent followUp integration tests', () => {
       await fixture.whenStable();
       fixture.detectChanges();
 
-      expect(ifsg61Service.fetchFollowUpCode).toHaveBeenCalledWith(mockDiseaseCode, NotificationType.FollowUpNotification6_1);
+      expect(ifsg61Service.fetchFollowUpCode).toHaveBeenCalledWith(mockDiseaseCode, NotificationType.FollowUpNotification7_3);
       expect(followUpMixedCodesService.openDialog).not.toHaveBeenCalled();
       expect(component.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding).toBeNull();
     });
 
     it('should not update model when fetchFollowUpCode returns null', async () => {
-      const mockDiseaseCode = 'MYCP';
+      const mockDiseaseCode = 'chtd';
       const mockNotificationId = 'test-notification-id-null-012';
 
       (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
@@ -338,7 +316,7 @@ describe('DiseaseFormComponent followUp integration tests', () => {
       await fixture.whenStable();
       fixture.detectChanges();
 
-      expect(ifsg61Service.fetchFollowUpCode).toHaveBeenCalledWith(mockDiseaseCode, NotificationType.FollowUpNotification6_1);
+      expect(ifsg61Service.fetchFollowUpCode).toHaveBeenCalledWith(mockDiseaseCode, NotificationType.FollowUpNotification7_3);
       expect(followUpMixedCodesService.openDialog).not.toHaveBeenCalled();
       expect(component.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding).toBeNull();
     });

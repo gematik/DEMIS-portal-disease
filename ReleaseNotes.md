@@ -2,13 +2,20 @@
 
 # Release portal-disease
 
+## Release 1.7.0
+- Added § 7.3 follow-up notification (FEATURE_FLAG_FOLLOW_UP_7_3)
+- Updated NGINX-Base-Image to 1.30.0
+- Removed FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE
+- Used datepicker with default placeholder
+- Updated @gematik/demis-portal-core-library to 3.2.1
+- Added filtering of validation errors in the dialog after submitting a notification (FEATURE_FLAG_PORTAL_ERROR_DIALOG_FILTERING)
+
 ## Release 1.6.2
 - Updated NGINX-Base-Image to 1.29.7 
 - Updated package name to @single-spa-community/angular
 - Removed 7.3 disease anonymous notification
 - Fixed a bug, where symptoms could not be selected properly for a chosen disease
 - Updated @gematik/demis-portal-core-library to 3.2.0
-- used datepicker with default placeholder
 
 ## Release 1.6.1
 - Used fixed version of formly-datepicker from portal-core 3.0.7 and removed obsolete code

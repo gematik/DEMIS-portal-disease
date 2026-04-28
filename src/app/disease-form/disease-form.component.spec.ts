@@ -110,7 +110,6 @@ describe('DiseaseFormComponent unit tests', () => {
       },
       featureFlags: {
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
-        FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
       },
       ngxLoggerConfig: {
         level: 5,
@@ -279,7 +278,6 @@ describe('DiseaseFormComponent unit tests', () => {
 
   describe('notification type initialization', () => {
     it('should set notificationType to FollowUpNotification6_1 when follow-up flag is enabled and url matches', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE = true;
       Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['followUp'], configurable: true });
 
       component.ngOnInit();
@@ -297,7 +295,6 @@ describe('DiseaseFormComponent unit tests', () => {
     });
 
     it('should set notificationType to NominalNotification6_1 when flags are enabled but url is nominal', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE = true;
       Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['nominal'], configurable: true });
 
       component.ngOnInit();
@@ -306,9 +303,8 @@ describe('DiseaseFormComponent unit tests', () => {
     });
 
     it('should keep default NominalNotification6_1 when feature flags are disabled', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE = false;
       environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION = false;
-      Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['followUp'], configurable: true });
+      Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['nonNominal'], configurable: true });
 
       component.ngOnInit();
 
@@ -316,7 +312,6 @@ describe('DiseaseFormComponent unit tests', () => {
     });
 
     it('should call getDiseaseOptions with correct notification type', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE = true;
       Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['followUp'], configurable: true });
 
       component.ngOnInit();

@@ -51,12 +51,12 @@ $form-footer-top: calc($paste-top + 300px);
 
 
   //temporary fix to prevent overlapping bug, should be fixed with new side navigation component
-  .disease-form-root.notification-type-non-nominal-7-3 .mat-mdc-tab-label-container {
-    padding-top: calc($tab-top + 5px);
-  }
-
-  .disease-form-root.notification-type-followup-6-1 .mat-mdc-tab-label-container {
-    padding-top: calc($tab-top + 30px);
+  .disease-form-root.notification-type-non-nominal-7-3,
+  .disease-form-root.notification-type-followup-6-1,
+  .disease-form-root.notification-type-non-nominal-7-3-follow-up {
+    .mat-mdc-tab-label-container {
+      padding-top: calc($tab-top + 30px);
+    }
   }
 
   .mat-mdc-outlined-button {

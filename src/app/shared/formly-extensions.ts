@@ -42,12 +42,7 @@ export const defaultAppearanceExtension: FormlyExtension = {
   prePopulate(field): void {
     //TODO can be removed after FEATURE_FLAG_OUTLINE_DESIGN is removed
     //overwrites appearance for datepicker in notifiedPersonAnonymous from core
-    if (
-      !environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN &&
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE &&
-      field.key === 'info.birthDate' &&
-      field.type === 'datepicker'
-    ) {
+    if (!environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN && field.key === 'info.birthDate' && field.type === 'datepicker') {
       field.props = {
         ...field.props,
         appearance: 'fill',

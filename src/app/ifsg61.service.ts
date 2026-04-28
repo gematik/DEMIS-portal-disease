@@ -25,7 +25,7 @@ import { NGXLogger } from 'ngx-logger';
 import { FileService } from './legacy/file.service';
 import { CodeDisplay, DiseaseNotification, ValidationError } from '../api/notification';
 import { infoOutline } from './disease-form/common/formlyConfigs/formly-base';
-import { MessageDialogService, SubmitDialogProps } from '@gematik/demis-portal-core-library';
+import { ErrorMessage, MessageDialogService, SubmitDialogProps } from '@gematik/demis-portal-core-library';
 
 const PREFFERED_LANGUAGES = [/de-DE/, /de.*/];
 
@@ -39,6 +39,10 @@ export class Ifsg61Service {
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly ngZone = inject(NgZone); // ensure we can force change detection
 
+  private isNonNominal(notificationType: NotificationType): boolean {
+    return notificationType === NotificationType.NonNominalNotification7_3 || notificationType === NotificationType.FollowUpNotification7_3;
+  }
+
   // TODO würde eigentlich in core-lib reingehören, die gibt es aber nicht mehr
   getCodeValueSet(system: string): Observable<DemisCoding[]> {
     const systemEncoded: string = encodeURIComponent(system);
@@ -48,16 +52,16 @@ export class Ifsg61Service {
     });
   }
 
-  getDiseaseOptions(type: NotificationType): Observable<DemisCoding[]> {
-    let url = type === NotificationType.NonNominalNotification7_3 ? environment.pathToNotificationCategories7_3 : environment.pathToNotificationCategories6_1;
+  getDiseaseOptions(notificationType: NotificationType): Observable<DemisCoding[]> {
+    let url = this.isNonNominal(notificationType) ? environment.pathToNotificationCategories7_3 : environment.pathToNotificationCategories6_1;
     if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
       url = environment.pathToDisease;
     }
     return this.httpClient.get<DemisCoding[]>(url, { headers: environment.futsHeaders });
   }
 
-  getQuestionnaire(questionnaireName: string, type: NotificationType): Observable<QuestionnaireDescriptor> {
-    let basePath = type === NotificationType.NonNominalNotification7_3 ? environment.pathToDiseaseQuestionnaire7_3 : environment.pathToDiseaseQuestionnaire6_1;
+  getQuestionnaire(questionnaireName: string, notificationType: NotificationType): Observable<QuestionnaireDescriptor> {
+    let basePath = this.isNonNominal(notificationType) ? environment.pathToDiseaseQuestionnaire7_3 : environment.pathToDiseaseQuestionnaire6_1;
     if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
       basePath = environment.pathToDiseaseQuestionnaire;
     }
@@ -72,8 +76,11 @@ export class Ifsg61Service {
     );
   }
 
-  fetchFollowUpCode = (notificationCategory: string): Observable<CodeDisplay[]> => {
-    const path = `${environment.pathToNotificationCategories6_1}/followup/${notificationCategory}`;
+  fetchFollowUpCode = (notificationCategory: string, notificationType: NotificationType): Observable<CodeDisplay[]> => {
+    const isFollowUp6_1 = notificationType === NotificationType.FollowUpNotification6_1;
+    const basePath = isFollowUp6_1 ? environment.pathToNotificationCategories6_1 : environment.pathToNotificationCategories7_3;
+    const path = `${basePath}/followup/${notificationCategory}`;
+
     return this.httpClient
       .get<CodeDisplay[]>(path, {
         headers: environment.futsHeaders,
@@ -81,11 +88,14 @@ export class Ifsg61Service {
       .pipe(
         catchError(error => {
           this.logger.error('Error fetching follow up code', error);
+          const errorText = isFollowUp6_1
+            ? 'Diese Meldekategorie wird für diese Meldungsart nicht unterstützt. Bitte stellen Sie sicher, dass Sie auf eine Meldung nach § 6 Abs. 1 IfSG referenzieren.'
+            : 'Diese Meldekategorie wird für diese Meldungsart nicht unterstützt. Bitte stellen Sie sicher, dass Sie auf eine Meldung nach § 7 Abs. 3 IfSG referenzieren.';
           this.messageDialogService.showErrorDialog({
             errorTitle: 'Fehler',
             errors: [
               {
-                text: 'Für diese Meldekategorie nach § 7 Abs. 1 IfSG gibt es keine entsprechende Meldekategorie nach § 6 Abs. 1 IfSG. Daher besteht hier nicht die Möglichkeit einer Folgemeldung.',
+                text: errorText,
               },
             ],
             redirectToHome: true,
@@ -123,6 +133,7 @@ export class Ifsg61Service {
             this.messageDialogService.showErrorDialog({
               errorTitle: 'Meldung konnte nicht zugestellt werden!',
               errors,
+              logFilteringEnabled: environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG_FILTERING,
             });
           });
         },
@@ -130,8 +141,7 @@ export class Ifsg61Service {
   }
 
   private getFullUrl(notificationType: NotificationType): string {
-    let fullUrl =
-      notificationType === NotificationType.NonNominalNotification7_3 ? environment.pathToGatewayDiseaseNonNominal : environment.pathToGatewayDisease;
+    let fullUrl = this.isNonNominal(notificationType) ? environment.pathToGatewayDiseaseNonNominal : environment.pathToGatewayDisease;
     if (!environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION) {
       fullUrl = environment.pathToGatewayDisease;
     }
@@ -150,7 +160,7 @@ export class Ifsg61Service {
     };
   }
 
-  private extractErrorDetails(err: any): { text: string; queryString: string }[] {
+  private extractErrorDetails(err: any): ErrorMessage[] {
     const response = err?.error ?? err;
     const errorMessage = this.messageDialogService.extractMessageFromError(response);
     const validationErrors = response?.validationErrors || [];
@@ -158,6 +168,7 @@ export class Ifsg61Service {
       return validationErrors.map((ve: ValidationError) => ({
         text: ve.message,
         queryString: ve.message || '',
+        severity: ve.severity,
       }));
     } else {
       return [
