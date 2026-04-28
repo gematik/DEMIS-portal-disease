@@ -122,7 +122,6 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       featureFlags: {
         FEATURE_FLAG_OUTLINE_DESIGN: true,
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
-        FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
         FEATURE_FLAG_DISEASE_STRICT: true,
       },
       ngxLoggerConfig: {

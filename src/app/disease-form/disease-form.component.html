@@ -32,17 +32,23 @@
     </div>
   </form>
     <div class="stepper-heading">
-      @if (notificationType === NotificationType.NominalNotification6_1) {
-        <h1>Krankheitsmeldung (§ 6.1)</h1>
-      }
-      @if (notificationType === NotificationType.NonNominalNotification7_3) {
-        <h1>Krankheit</h1>
-        <h4 #notificationSubheader class="notification-subheader">Meldung einer Krankheit gemäß § 7 Abs. 3 IfSG</h4>
-      }
-      @if (notificationType === NotificationType.FollowUpNotification6_1) {
-        <h1>Folgemeldung</h1>
-        <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG ohne Angaben von
-          Personendaten</h4>
+      @switch (notificationType) {
+        @case (NotificationType.NominalNotification6_1) {
+          <h1>Krankheitsmeldung (§ 6.1)</h1>
+        }
+        @case (NotificationType.NonNominalNotification7_3) {
+          <h1>Krankheit</h1>
+          <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 7 Abs. 3 IfSG ohne Angaben von Personendaten</h4>
+        }
+        @case (NotificationType.FollowUpNotification6_1) {
+          <h1>Folgemeldung</h1>
+          <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG ohne Angaben von
+            Personendaten</h4>
+        }
+        @case (NotificationType.FollowUpNotification7_3) {
+          <h1>Folgemeldung</h1>
+          <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 7 Abs. 3 IfSG ohne Angaben von Personendaten</h4>
+        }
       }
     </div>
     <app-hexhexbutton (paste)="hexHex()"></app-hexhexbutton>

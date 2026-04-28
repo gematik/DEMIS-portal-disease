@@ -25,7 +25,6 @@ describe('demis-types utilities', () => {
     originalDiseaseConfig = environment.diseaseConfig;
     environment.diseaseConfig = {
       featureFlags: {
-        FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: false,
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: false,
       },
     } as any;
@@ -37,7 +36,6 @@ describe('demis-types utilities', () => {
 
   describe('getNotificationTypeByRouterUrl', () => {
     it('should return FollowUpNotification6_1 when url includes follow-up route', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE = true;
       const url = `http://localhost:4200/${allowedRoutes['followUp']}`;
       const result = getNotificationTypeByRouterUrl(url);
       expect(result).toBe(NotificationType.FollowUpNotification6_1);
@@ -63,7 +61,6 @@ describe('demis-types utilities', () => {
     });
 
     it('should prioritize non-nominal over follow-up when both are in url', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE = true;
       environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION = true;
       const url = `http://localhost:4200/${allowedRoutes['nonNominal']}/${allowedRoutes['followUp']}`;
       const result = getNotificationTypeByRouterUrl(url);

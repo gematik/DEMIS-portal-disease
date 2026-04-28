@@ -70,6 +70,7 @@ const overridesNonNominal = {
       getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
       getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS_NONNOMINAL)),
       getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_TOXP_SHORT)),
+      fetchFollowUpCode: jasmine.createSpy('fetchFollowUpCode').and.returnValue(of([])),
     } as Partial<Ifsg61Service>;
   },
 };
@@ -99,9 +100,9 @@ export const mainConfig = {
   featureFlags: {
     FEATURE_FLAG_OUTLINE_DESIGN: true,
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
-    FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE: true,
     FEATURE_FLAG_DISEASE_STRICT: true,
     FEATURE_FLAG_MIXED_FOLLOW_UP: true,
+    FEATURE_FLAG_FOLLOW_UP_7_3: true,
   },
   ngxLoggerConfig: {
     level: 5,
@@ -120,6 +121,9 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
   } else if (notificationType === NotificationType.FollowUpNotification6_1) {
     ifsg61Service = overrides.Ifsg61Service;
     allowedRoutesMock = allowedRoutes['followUp'];
+  } else if (notificationType === NotificationType.FollowUpNotification7_3) {
+    ifsg61Service = overridesNonNominal.Ifsg61Service;
+    allowedRoutesMock = allowedRoutes['followUpNonNominal'];
   } else {
     ifsg61Service = overrides.Ifsg61Service;
     allowedRoutesMock = allowedRoutes['nominal'];

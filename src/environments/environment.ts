@@ -102,7 +102,6 @@ export class Environment {
   public get pathToNotificationCategories6_1(): string {
     return this.pathToDisease + this.config.futsPaths?.['notificationCategories_6_1'];
   }
-
   /**
    * Meldetatbestände §7.3 (nichtnamentlich)
    */

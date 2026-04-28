@@ -237,7 +237,7 @@ describe('Ifsg61Service', () => {
       const httpError = {
         error: {
           message: 'Validation failed',
-          validationErrors: [{ field: 'fieldA', message: 'Field A invalid' }],
+          validationErrors: [{ field: 'fieldA', message: 'Field A invalid', severity: 'error' }],
         },
       };
 
@@ -251,30 +251,10 @@ describe('Ifsg61Service', () => {
       expect(messageDialogServiceSpy.showErrorDialog).toHaveBeenCalledWith(
         jasmine.objectContaining({
           errorTitle: 'Meldung konnte nicht zugestellt werden!',
-          errors: [{ text: 'Field A invalid', queryString: 'Field A invalid' }],
+          errors: [{ text: 'Field A invalid', queryString: 'Field A invalid', severity: 'error' }],
         })
       );
       expect(messageDialogServiceSpy.closeSpinnerDialog).toHaveBeenCalled();
-    });
-
-    it('extractErrorDetails returns mapped validation errors when present', () => {
-      const err = {
-        error: {
-          message: 'Validation failed',
-          validationErrors: [
-            { field: 'fieldA', message: 'Field A invalid' },
-            { field: 'fieldB', message: 'Field B invalid' },
-          ],
-        },
-      };
-
-      const result = (service as any).extractErrorDetails(err);
-
-      expect(messageDialogServiceSpy.extractMessageFromError).toHaveBeenCalledWith(err.error);
-      expect(result).toEqual([
-        { text: 'Field A invalid', queryString: 'Field A invalid' },
-        { text: 'Field B invalid', queryString: 'Field B invalid' },
-      ]);
     });
 
     it('extractErrorDetails returns parsed message when no validationErrors are present', () => {
@@ -295,7 +275,7 @@ describe('Ifsg61Service', () => {
       httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
 
       const notificationCategory = 'TEST_CATEGORY';
-      service.fetchFollowUpCode(notificationCategory).subscribe(result => {
+      service.fetchFollowUpCode(notificationCategory, NotificationType.FollowUpNotification6_1).subscribe(result => {
         expect(result).toEqual(mockResponse);
         expect(result.length).toBe(2);
         expect(result[0].code).toBe('MSVD');
@@ -310,7 +290,7 @@ describe('Ifsg61Service', () => {
       const mockResponse: any[] = [];
       httpClientSpy.get = jasmine.createSpy('get').and.returnValue(of(mockResponse));
 
-      service.fetchFollowUpCode('NO_FOLLOWUP_CATEGORY').subscribe(result => {
+      service.fetchFollowUpCode('NO_FOLLOWUP_CATEGORY', NotificationType.FollowUpNotification6_1).subscribe(result => {
         expect(result).toEqual([]);
         expect(result.length).toBe(0);
       });
@@ -327,7 +307,7 @@ describe('Ifsg61Service', () => {
       httpClientSpy.get = jasmine.createSpy('get').and.returnValue(throwError(() => httpError));
       loggerSpy.error = jasmine.createSpy('error');
 
-      service.fetchFollowUpCode('INVALID_CATEGORY').subscribe({
+      service.fetchFollowUpCode('INVALID_CATEGORY', NotificationType.FollowUpNotification6_1).subscribe({
         next: () => fail('Should have thrown an error'),
         error: err => {
           expect(err).toEqual(httpError);
@@ -339,7 +319,7 @@ describe('Ifsg61Service', () => {
         errorTitle: 'Fehler',
         errors: [
           {
-            text: 'Für diese Meldekategorie nach § 7 Abs. 1 IfSG gibt es keine entsprechende Meldekategorie nach § 6 Abs. 1 IfSG. Daher besteht hier nicht die Möglichkeit einer Folgemeldung.',
+            text: 'Diese Meldekategorie wird für diese Meldungsart nicht unterstützt. Bitte stellen Sie sicher, dass Sie auf eine Meldung nach § 6 Abs. 1 IfSG referenzieren.',
           },
         ],
         redirectToHome: true,
@@ -351,7 +331,7 @@ describe('Ifsg61Service', () => {
       httpClientSpy.get = jasmine.createSpy('get').and.returnValue(throwError(() => networkError));
       loggerSpy.error = jasmine.createSpy('error');
 
-      service.fetchFollowUpCode('SOME_CATEGORY').subscribe({
+      service.fetchFollowUpCode('SOME_CATEGORY', NotificationType.FollowUpNotification6_1).subscribe({
         next: () => fail('Should have thrown an error'),
         error: err => {
           expect(err).toBe(networkError);

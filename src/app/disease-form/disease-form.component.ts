@@ -67,8 +67,8 @@ import { HexHexDummy } from './common/hexHexDummy';
 import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-service';
 import { ImportFieldValuesService, ImportTargetComponent } from './services/import-field-values.service';
 import { ProcessFormService } from './services/process-form-service';
-import StatusEnum = DiseaseStatus.StatusEnum;
 import { findCodeDisplayByCodeValue } from '../legacy/common-utils';
+import StatusEnum = DiseaseStatus.StatusEnum;
 
 const IFSG61_NOTIFIER = 'IFSG61_NOTIFIER'; // key into local storage
 
@@ -144,6 +144,8 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
         return 'notification-type-followup-6-1';
       case NotificationType.NonNominalNotification7_3:
         return 'notification-type-non-nominal-7-3';
+      case NotificationType.FollowUpNotification7_3:
+        return 'notification-type-non-nominal-7-3-follow-up';
       case NotificationType.NominalNotification6_1:
       default:
         return 'notification-type-nominal-6-1';
@@ -237,6 +239,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
           this.countryCodeList = countryCodes;
         },
       });
+
     this.getDiseaseCodeDisplaysAndOpenDialogIfFollowUp(data?.redirect);
 
     this.ifsg61Service
@@ -264,8 +267,8 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
           this.isLoading.set(false);
         },
       });
-    if (this.isFollowUpNotification6_1()) {
-      this.handleFollowUpNotifications6_1();
+    if (this.isFollowUpNotification()) {
+      this.handleFollowUpNotifications();
     }
   }
 
@@ -273,6 +276,8 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     switch (notificationType) {
       case NotificationType.FollowUpNotification6_1:
         return notifiedPersonAnonymousConfigFields(this.countryCodeList, GENDER_OPTION_LIST, NotifiedPersonDisclaimer.FOLLOW_UP_DISCLAIMER);
+      case NotificationType.FollowUpNotification7_3:
+        return notifiedPersonAnonymousConfigFields(this.countryCodeList, GENDER_OPTION_LIST, NotifiedPersonDisclaimer.NON_NOMINAL_FOLLOW_UP_DISCLAIMER);
       case NotificationType.NonNominalNotification7_3:
         return notifiedPersonNotByNameConfigFields(this.countryCodeList, GENDER_OPTION_LIST, NotifiedPersonDisclaimer.DEFAULT_DISCLAIMER);
       default:
@@ -300,6 +305,14 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     return this.notificationType === NotificationType.FollowUpNotification6_1;
   }
 
+  public isFollowUpNotification7_3(): boolean {
+    return this.notificationType === NotificationType.FollowUpNotification7_3;
+  }
+
+  public isFollowUpNotification(): boolean {
+    return this.isFollowUpNotification7_3() || this.isFollowUpNotification6_1();
+  }
+
   public getDiseaseCodeDisplaysAndOpenDialogIfFollowUp(isRedirect: boolean = false): void {
     this.ifsg61Service
       .getDiseaseOptions(this.notificationType)
@@ -319,6 +332,18 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
               },
               notificationCategoryCodes: this.diseaseCodeDisplays.map(codeDisplay => codeDisplay.code),
             });
+          } else if (this.isFollowUpNotification7_3() && !isRedirect) {
+            this.followUpNotificationIdService.isMixedCodesActive = this.FEATURE_FLAG_MIXED_FOLLOW_UP;
+            this.followUpNotificationIdService.openDialog({
+              dialogData: {
+                routerLink: '/' + allowedRoutes['nonNominal'],
+                linkTextContent: 'einer nichtnamentlichen Infektionskrankheit nach § 7 Abs. 3 IfSG',
+                pathToDestinationLookup: environment.pathToDestinationLookup,
+                errorUnsupportedNotificationCategory:
+                  'Diese Meldekategorie wird für diese Meldungsart nicht unterstützt. Bitte stellen Sie sicher, dass Sie auf eine Meldung nach § 7 Abs. 3 IfSG referenzieren.',
+              },
+              notificationCategoryCodes: this.diseaseCodeDisplays.map(codeDisplay => codeDisplay.code),
+            });
           }
         },
         error: (err: any) => {
@@ -327,7 +352,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       });
   }
 
-  private handleFollowUpNotifications6_1() {
+  private handleFollowUpNotifications() {
     this.followUpNotificationIdService.hasValidNotificationId$
       .pipe(
         takeUntil(this.unsubscriber),
@@ -371,7 +396,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
 
   private handleFollowUpMixedCodes(diseaseCode: string) {
     let diseaseCodeDisplay: CodeDisplay | undefined;
-    this.ifsg61Service.fetchFollowUpCode(diseaseCode).subscribe(response => {
+    this.ifsg61Service.fetchFollowUpCode(diseaseCode, this.notificationType).subscribe(response => {
       if (response) {
         if (response.length > 1) {
           this.followUpNotificationIdService.closeDialog();
@@ -422,7 +447,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       this.diseaseCommonFields,
       this.form,
       this.model,
-      this.isFollowUpNotification6_1()
+      this.isFollowUpNotification()
     );
 
     this.fields = [
@@ -630,7 +655,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
           this.diseaseCommonFields = !this.isFullQuestionnaire() ? [] : descriptor.commonConfig;
           this.combineFields();
           this.changeDetector.detectChanges();
-          if (!this.isFollowUpNotification6_1()) {
+          if (!this.isFollowUpNotification()) {
             this.chooseTabAfterChoosing();
           }
         })
@@ -717,9 +742,8 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     try {
       window.focus();
       const keyValuePairs: string[][] = [...(keyValuePairsFromClipboard ?? [])];
-      const isFollowUp = this.notificationType === NotificationType.FollowUpNotification6_1;
-      const personRules = isFollowUp ? ANONYMOUS_PERSON_RULES : NOMINAL_PERSON_RULES;
-      const personAddressRules = isFollowUp ? {} : NOMINAL_PERSON_ADDRESS_RULES;
+      const personRules = this.isFollowUpNotification() ? ANONYMOUS_PERSON_RULES : NOMINAL_PERSON_RULES;
+      const personAddressRules = this.isFollowUpNotification() ? {} : NOMINAL_PERSON_ADDRESS_RULES;
 
       const problems: ErrorMessage[] = await this.importFieldValuesService.fillModelFromKVs(
         this,

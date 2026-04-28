@@ -46,6 +46,7 @@ export enum NotificationType {
   NominalNotification6_1,
   NonNominalNotification7_3,
   FollowUpNotification6_1,
+  FollowUpNotification7_3,
 }
 
 interface AllowedRoutes {
@@ -56,14 +57,21 @@ export const allowedRoutes: AllowedRoutes = {
   nominal: 'disease-notification/6.1',
   nonNominal: 'disease-notification/7.3/non-nominal',
   followUp: 'disease-notification/6.1/follow-up',
+  followUpNonNominal: 'disease-notification/7.3/follow-up',
   main: 'disease-notification',
 };
 
 export const getNotificationTypeByRouterUrl = (url: string): NotificationType => {
   if (url.includes(allowedRoutes['nonNominal']) && environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION === true) {
     return NotificationType.NonNominalNotification7_3;
-  } else if (url.includes(allowedRoutes['followUp']) && environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE === true) {
+  } else if (url.includes(allowedRoutes['followUp'])) {
     return NotificationType.FollowUpNotification6_1;
+  } else if (
+    url.includes(allowedRoutes['followUpNonNominal']) &&
+    environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION === true &&
+    environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOLLOW_UP_7_3 === true
+  ) {
+    return NotificationType.FollowUpNotification7_3;
   } else {
     return NotificationType.NominalNotification6_1;
   }

@@ -76,6 +76,7 @@ export class ProcessFormService {
   private transformNotifiedPerson(model: any, notificationType: NotificationType): Partial<DiseaseNotification> {
     switch (notificationType) {
       case NotificationType.FollowUpNotification6_1:
+      case NotificationType.FollowUpNotification7_3:
         return this.transformAnonymousPerson(model);
       case NotificationType.NonNominalNotification7_3:
         return this.transformNotifiedPersonNotByName(model);

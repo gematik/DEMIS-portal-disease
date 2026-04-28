@@ -29,7 +29,11 @@ export class FileService {
   constructor() {}
 
   public getFileNameByNotificationType(notificationId: string, notificationType: NotificationType, notification: DiseaseNotification): string {
-    if (notificationType === NotificationType.NonNominalNotification7_3 || notificationType === NotificationType.FollowUpNotification6_1) {
+    if (
+      notificationType === NotificationType.NonNominalNotification7_3 ||
+      notificationType === NotificationType.FollowUpNotification7_3 ||
+      notificationType === NotificationType.FollowUpNotification6_1
+    ) {
       return this.convertFileNameForNonNominal(notificationId);
     }
     return this.convertFileNameForPerson(notification.notifiedPerson?.info!);

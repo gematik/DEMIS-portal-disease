@@ -22,8 +22,8 @@ import { CodeDisplay, DiseaseStatus } from '../../../../api/notification';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
 export function getDiseaseChoiceFields(diseaseOptions: CodeDisplay[], notificationType: NotificationType): FormlyFieldConfig[] {
-  const isNonNominal = notificationType === NotificationType.NonNominalNotification7_3;
-  const isFollowUp = notificationType === NotificationType.FollowUpNotification6_1;
+  const isNonNominal = notificationType === NotificationType.NonNominalNotification7_3 || notificationType === NotificationType.FollowUpNotification7_3;
+  const isFollowUp = notificationType === NotificationType.FollowUpNotification6_1 || notificationType === NotificationType.FollowUpNotification7_3;
 
   return [
     infoOutline,

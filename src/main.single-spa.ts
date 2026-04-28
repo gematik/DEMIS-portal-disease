@@ -28,6 +28,7 @@ import { singleSpaPropsSubject } from './single-spa/single-spa-props';
 import { AppProps } from 'single-spa';
 import { setPublicPath } from 'systemjs-webpack-interop';
 import { allowedRoutes } from './app/demis-types';
+import { platformBrowser } from '@angular/platform-browser';
 
 const appId = 'notification-portal-mf-disease';
 let router: Router;
@@ -39,17 +40,13 @@ if (environment.isProduction) {
 const lifecycles = singleSpaAngular({
   bootstrapFunction: async singleSpaProps => {
     singleSpaPropsSubject.next(singleSpaProps);
-    const appRef = await platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule, {
+    const appRef = await platformBrowser(getSingleSpaExtraProviders()).bootstrapModule(AppModule, {
       applicationProviders: [provideZoneChangeDetection()],
     });
-    if (
-      environment.diseaseConfig.featureFlags?.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION ||
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE
-    ) {
-      router = appRef.injector.get(Router);
-      syncUrlWithRouter();
-      setupRouterSync();
-    }
+    router = appRef.injector.get(Router);
+    syncUrlWithRouter();
+    setupRouterSync();
+
     return appRef;
   },
   template: '<app-disease-root />',
