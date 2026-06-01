@@ -17,13 +17,12 @@
 
 import { FormlyExtension } from '@ngx-formly/core';
 import { VALUE_DEFAULT_PLACEHOLDER, VALUE_DEFAULT_SELECT_PLACEHOLDER } from '../legacy/common-utils';
-import { environment } from '../../environments/environment';
 
 export const defaultPlaceholderExtension: FormlyExtension = {
   prePopulate(field): void {
     let placeholder: string = VALUE_DEFAULT_PLACEHOLDER;
 
-    if (field.props?.placeholder || !environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN) {
+    if (field.props?.placeholder) {
       return;
     }
 
@@ -40,15 +39,7 @@ export const defaultPlaceholderExtension: FormlyExtension = {
 
 export const defaultAppearanceExtension: FormlyExtension = {
   prePopulate(field): void {
-    //TODO can be removed after FEATURE_FLAG_OUTLINE_DESIGN is removed
-    //overwrites appearance for datepicker in notifiedPersonAnonymous from core
-    if (!environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN && field.key === 'info.birthDate' && field.type === 'datepicker') {
-      field.props = {
-        ...field.props,
-        appearance: 'fill',
-      };
-    }
-    if (field.props?.['appearance'] || !environment.diseaseConfig.featureFlags.FEATURE_FLAG_OUTLINE_DESIGN) {
+    if (field.props?.['appearance']) {
       return;
     }
 

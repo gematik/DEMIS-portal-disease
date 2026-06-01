@@ -17,7 +17,6 @@
 
 import { RadioButtonCodingComponent } from './radio-button-coding.component';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { AppModule } from '../../../../app.module';
 
 //@todo Component needs many formly-inputs, disabled -> need to fix initialization
 xdescribe('RadioButtonCodingComponent', () => {
@@ -29,7 +28,7 @@ xdescribe('RadioButtonCodingComponent', () => {
     component = fixture.point.componentInstance;
   };
 
-  beforeEach(() => MockBuilder(RadioButtonCodingComponent, AppModule));
+  beforeEach(() => MockBuilder(RadioButtonCodingComponent));
 
   it('should create', () => {
     createComponent();

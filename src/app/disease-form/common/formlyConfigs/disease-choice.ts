@@ -19,6 +19,7 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { infoOutline } from './formly-base';
 import { NotificationType } from '../../../demis-types';
 import { CodeDisplay, DiseaseStatus } from '../../../../api/notification';
+import { environment } from '../../../../environments/environment';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
 export function getDiseaseChoiceFields(diseaseOptions: CodeDisplay[], notificationType: NotificationType): FormlyFieldConfig[] {
@@ -36,15 +37,20 @@ export function getDiseaseChoiceFields(diseaseOptions: CodeDisplay[], notificati
       },
     },
     {
-      template: '<div class="question-title">Erkrankung *</div>',
-      className: 'question-title',
-    },
-    {
-      id: 'disease-choice',
+      id: environment.featureFlags?.FEATURE_FLAG_DISEASE_AUTOCOMPLETE ? 'disease-choice-input' : 'disease-choice',
       className: 'LinkId_diseaseChoice',
       key: 'diseaseChoice.answer.valueCoding',
-      type: 'autocomplete-coding',
+      type: environment.featureFlags?.FEATURE_FLAG_DISEASE_AUTOCOMPLETE ? 'filterable-select' : 'autocomplete-coding',
       props: {
+        ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_AUTOCOMPLETE
+          ? {
+              label: 'Erkrankung',
+              placeholder: 'Bitte auswählen',
+              optionValueKey: 'code',
+              optionLabelKey: 'display',
+              optionDescriptionKey: 'breadcrumb',
+            }
+          : {}),
         options: diseaseOptions,
         required: true,
         clearable: !isFollowUp,
@@ -57,16 +63,21 @@ export function getDiseaseChoiceFields(diseaseOptions: CodeDisplay[], notificati
         validation: ['isCodeChoosen'],
       },
     },
-    {
-      template: '<div class="question-title">Status *</div>',
-      className: 'diseaseStatus',
-    },
+    ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_AUTOCOMPLETE
+      ? []
+      : [
+          {
+            template: '<div class="question-title">Status *</div>',
+            className: 'diseaseStatus',
+          },
+        ]),
     {
       id: 'clinical-status',
       className: 'clinical-status',
       type: 'radio',
       key: 'clinicalStatus.answer.valueString',
       props: {
+        ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_AUTOCOMPLETE ? { label: 'Status' } : {}),
         options: [
           { value: StatusEnum.Final, label: 'Endgültig' },
           { value: StatusEnum.Preliminary, label: 'Vorläufig/Verdacht' },

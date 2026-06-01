@@ -3,7 +3,7 @@
     @for (select of selectData; track select.code) {
       <mat-chip-row class="cardinal-colors" (removed)="removeChip(select)">
         <span>{{ select.display }}</span>
-        <button matChipRemove>
+        <button type="button" matChipRemove>
           <mat-icon>cancel</mat-icon>
         </button>
       </mat-chip-row>
@@ -46,6 +46,7 @@
   @if (clearable() && selectControl.value) {
     <span style="position: absolute; left: calc(100% - 30px); top: +5px">
       <button
+        type="button"
         matSuffix
         mat-icon-button
         aria-label="Clear"

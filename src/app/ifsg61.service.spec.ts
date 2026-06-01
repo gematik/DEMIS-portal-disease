@@ -51,10 +51,7 @@ export const mainConfig = {
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_STRICT: false,
   },
-  ngxLoggerConfig: {
-    level: 1,
-    disableConsoleLogging: false,
-  },
+  ngxLoggerConfig: environment.defaultLoggerConfiguration,
 };
 
 describe('Ifsg61Service', () => {

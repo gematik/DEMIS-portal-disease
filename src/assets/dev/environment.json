@@ -6,7 +6,7 @@
     "disease_7_3_non_nominal": "/7.3/non_nominal"
   },
   "futsPaths": {
-    "baseUrl": "/translation/ui-data-model/v6/fhir",
+    "baseUrl": "/translation/ui-data-model/disease/v6/fhir",
     "diseaseBase": "/disease",
     "notificationCategories_6_1": "/6.1",
     "disease_7_3": "/7.3/non_nominal",
@@ -18,15 +18,12 @@
   "pathToDestinationLookup": "/destination-lookup/v1",
   "featureFlags": {
     "FEATURE_FLAG_NON_NOMINAL_NOTIFICATION": true,
-    "FEATURE_FLAG_OUTLINE_DESIGN": true,
-    "FEATURE_FLAG_PORTAL_PAGE_STRUCTURE": true,
     "FEATURE_FLAG_DISEASE_STRICT": true,
     "FEATURE_FLAG_PORTAL_HEADER_FOOTER": true,
     "FEATURE_FLAG_PORTAL_ACCESSIBILITY": true,
-    "FEATURE_FLAG_MIXED_FOLLOW_UP": true,
     "FEATURE_FLAG_FOOTER_LINKS_CORRECTION": true,
-    "FEATURE_FLAG_PORTAL_ERROR_DIALOG_FILTERING": true,
-    "FEATURE_FLAG_FOLLOW_UP_7_3": true
+    "FEATURE_FLAG_FOLLOW_UP_7_3": true,
+    "FEATURE_FLAG_DISEASE_AUTOCOMPLETE": true
   },
   "ngxLoggerConfig": {
     "level": 1,

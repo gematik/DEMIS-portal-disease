@@ -16,15 +16,16 @@
  */
 
 import { Component, ElementRef, OnInit, ViewChild, ViewContainerRef, inject } from '@angular/core';
-import { FieldWrapper } from '@ngx-formly/core';
+import { FieldWrapper, FormlyModule } from '@ngx-formly/core';
 import { FocusMonitor } from '@angular/cdk/a11y';
 import { Subject } from 'rxjs';
+import { MatError } from '@angular/material/input';
 
 @Component({
   selector: 'app-validation-wrapper',
   templateUrl: './validation-wrapper.component.html',
   styleUrls: ['./validation-wrapper.component.scss'],
-  standalone: false,
+  imports: [MatError, FormlyModule],
 })
 export class ValidationWrapperComponent extends FieldWrapper implements OnInit {
   private focusMonitor = inject(FocusMonitor);

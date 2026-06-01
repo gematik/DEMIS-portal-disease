@@ -5,7 +5,7 @@
     </div>
   }
   @else {
-    <form id="disease-form" [formGroup]="form" (ngSubmit)="submitForm()" appCheckLabelLength>
+    <form id="disease-form" [formGroup]="form" appCheckLabelLength>
     <formly-form [model]="model" [fields]="fields" [form]="form" [options]="formOptions"></formly-form>
     <div id="disease-form-action-bar-wrapper" class="action-bar-wrapper">
       <div class="action-bar">
@@ -17,13 +17,15 @@
           </button>
         </div>
         <div class="button-group">
-          <button mat-button id="forward-button" class="btn navigate--color style forward" [disabled]="!canGoForward()"
-                  type="button"
-                  (click)="goForward()">
-            <span>Weiter</span>
-            <mat-icon iconPositionEnd fontIcon="arrow_forward_ios"></mat-icon>
-          </button>
-          <button mat-button id="send-button" class="btn style dark--color" [disabled]="!form.valid" type="submit">
+          @if (canGoForward()) {
+            <button mat-button id="forward-button" class="btn navigate--color style forward"
+                    type="button"
+                    (click)="goForward()">
+              <span>Weiter</span>
+              <mat-icon iconPositionEnd fontIcon="arrow_forward_ios"></mat-icon>
+            </button>
+          }
+          <button mat-button id="send-button" class="btn style dark--color" [disabled]="!form.valid" type="submit" (click)="submitForm()">
             <span>Abschicken</span>
             <mat-icon class="btn__icon margin--left rotate" iconPositionEnd fontIcon="send"></mat-icon>
           </button>

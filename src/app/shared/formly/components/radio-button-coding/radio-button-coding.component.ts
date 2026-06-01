@@ -16,16 +16,18 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { FieldTypeConfig } from '@ngx-formly/core';
+import { FieldTypeConfig, FormlyModule } from '@ngx-formly/core';
 import { FieldType } from '@ngx-formly/material';
 import { Subscription } from 'rxjs';
 import { DemisCoding } from '../../../../demis-types';
+import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-radio-button-coding',
   templateUrl: './radio-button-coding.component.html',
   styleUrls: ['./radio-button-coding.component.scss'],
-  standalone: false,
+  imports: [MatRadioGroup, ReactiveFormsModule, FormlyModule, MatRadioButton],
 })
 export class RadioButtonCodingComponent extends FieldType<FieldTypeConfig> implements OnInit {
   codings: DemisCoding[] = [];

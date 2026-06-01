@@ -52,8 +52,6 @@ describe('AutocompleteMultiCodingComponent', () => {
             },
           ],
         }),
-      ],
-      declarations: [
         MockComponent,
         AutocompleteComponent,
         AutocompleteMultiCodingComponent, // Declare your custom component
@@ -182,7 +180,7 @@ describe('AutocompleteMultiCodingComponent', () => {
       <formly-form [fields]="fields" [form]="form" [model]="model"></formly-form>
     </form>
   `,
-  standalone: false,
+  imports: [MatAutocompleteModule, MatFormFieldModule, MatInputModule, MatChipsModule, MatIconModule, MatCheckboxModule, ReactiveFormsModule, FormlyModule],
 })
 class MockComponent {
   form = new FormGroup({});

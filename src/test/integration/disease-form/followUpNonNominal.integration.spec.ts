@@ -80,10 +80,7 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
         routerLink: '/disease-notification/7.3/non-nominal',
         linkTextContent: 'einer nichtnamentlichen Infektionskrankheit nach § 7 Abs. 3 IfSG',
         pathToDestinationLookup: '/destination-lookup/v1',
-        errorUnsupportedNotificationCategory:
-          'Diese Meldekategorie wird für diese Meldungsart nicht unterstützt. Bitte stellen Sie sicher, dass Sie auf eine Meldung nach § 7 Abs. 3 IfSG referenzieren.',
       },
-      notificationCategoryCodes: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL.map(option => option.code),
     });
   });
 
@@ -138,47 +135,6 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
     expect(initialNotificationIdField?.props?.disabled).toBeTrue();
   });
 
-  it('should show error dialog when hasValidNotificationId$ emits true but disease code is invalid', async () => {
-    // Use custom config with FEATURE_FLAG_MIXED_FOLLOW_UP disabled to test non-mixed path
-    const customConfig = {
-      ...mainConfig,
-      featureFlags: {
-        ...mainConfig.featureFlags,
-        FEATURE_FLAG_MIXED_FOLLOW_UP: false,
-      },
-    };
-    const result = setupIntegrationTests(customConfig);
-    fixture = result.fixture;
-    component = result.component;
-    loader = result.loader;
-
-    const mockInvalidDiseaseCode = '';
-    const mockNotificationId = 'test-notification-id-456';
-
-    (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockInvalidDiseaseCode);
-    (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
-
-    const showErrorDialogSpy = spyOn(messageDialogService, 'showErrorDialog');
-
-    component.ngOnInit();
-
-    await fixture.whenStable();
-
-    (followUpNotificationIdService.hasValidNotificationId$ as any).next(true);
-
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(showErrorDialogSpy).toHaveBeenCalledWith({
-      errorTitle: 'Fehler',
-      errors: jasmine.arrayContaining([
-        jasmine.objectContaining({
-          text: jasmine.stringContaining('wird für die §6.1er Meldungen nicht unterstützt'),
-        }),
-      ]),
-      redirectToHome: true,
-    });
-  });
   describe('validate notified person anonymous input fields', () => {
     TEST_PARAMETER_VALIDATION.notifiedPersonAnonymous.forEach(parameter => {
       it(`for the '${parameter.field}', the value: '${parameter.value}' should throw the error: '${parameter.expectedResult}'`, async () => {

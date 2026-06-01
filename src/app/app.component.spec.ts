@@ -17,7 +17,6 @@
 
 import { AppComponent } from './app.component';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { AppModule } from './app.module';
 
 describe('AppComponent', () => {
   let fixture: MockedComponentFixture<AppComponent>;
@@ -28,7 +27,7 @@ describe('AppComponent', () => {
     component = fixture.point.componentInstance;
   };
 
-  beforeEach(() => MockBuilder(AppComponent, AppModule));
+  beforeEach(() => MockBuilder(AppComponent));
 
   it('should create the app', () => {
     createComponent();

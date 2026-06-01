@@ -15,7 +15,7 @@
     find details in the "Readme" file.
  */
 
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -29,6 +29,7 @@ import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { DemisCoding } from '../../../demis-types';
 import { AddBreadcrumbDirective } from '../../formly/components/autocomplete-coding/add-breadcrumb.directive';
 import { AutocompleteComponent } from './autocomplete.component';
+import { FormlyModule } from '@ngx-formly/core';
 
 describe('AutocompleteComponent', () => {
   let component: AutocompleteComponent;
@@ -44,13 +45,16 @@ describe('AutocompleteComponent', () => {
     return MockBuilder(AutocompleteComponent)
       .keep(ReactiveFormsModule)
       .keep(NoopAnimationsModule)
-      .mock(MatAutocompleteModule)
-      .mock(MatFormFieldModule)
-      .mock(MatInputModule)
-      .mock(MatIconModule)
-      .mock(MatButtonModule)
-      .mock(MatChipsModule)
-      .mock(MatCheckboxModule)
+      .keep(FormlyModule)
+      .keep(FormsModule)
+      .keep(MatFormFieldModule)
+      .keep(MatInputModule)
+      .keep(MatAutocompleteModule)
+      .keep(MatChipsModule)
+      .keep(MatIconModule)
+      .keep(MatButtonModule)
+      .keep(MatCheckboxModule)
+      .keep(NG_VALUE_ACCESSOR)
       .mock(AddBreadcrumbDirective);
   });
 

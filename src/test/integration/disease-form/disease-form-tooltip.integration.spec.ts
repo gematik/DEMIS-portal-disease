@@ -15,29 +15,50 @@
     find details in the "Readme" file.
  */
 
+import { FORMLY_CONFIG, FormlyModule, provideFormlyCore } from '@ngx-formly/core';
+/*
+    Copyright (c) 2026 gematik GmbH
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
+    European Commission – subsequent versions of the EUPL (the "Licence").
+    You may not use this work except in compliance with the Licence.
+    You find a copy of the Licence in the "Licence" file or at
+    https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
+    In case of changes by gematik find details in the "Readme" file.
+    See the Licence for the specific language governing permissions and limitations under the Licence.
+    *******
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
+ */
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ChangeDetectorRef } from '@angular/core';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
-import { FollowUpNotificationIdService, PasteBoxComponent } from '@gematik/demis-portal-core-library';
-import { FORMLY_CONFIG } from '@ngx-formly/core';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
+import { FollowUpNotificationIdService, PasteBoxComponent, withDemisFormlyCore } from '@gematik/demis-portal-core-library';
+import { withFormlyMaterial } from '@ngx-formly/material';
+import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
-import { AppModule } from '../../../app/app.module';
 import { allowedRoutes } from '../../../app/demis-types';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { Ifsg61Service } from '../../../app/ifsg61.service';
 import { FormlyConstants } from '../../../app/legacy/formly-constants';
+import { NotificationFormValidationModule } from '../../../app/legacy/notification-form-validation-module';
 import { registerValueSetExtension } from '../../../app/legacy/value-set.extension';
 import { ValueSetService } from '../../../app/legacy/value-set.service';
 import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
+import { TabsNavigationComponent } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.component';
+import { RepeatSectionComponent } from '../../../app/shared/formly/components/repeat-section/repeat-section.component';
+import { APP_FORMLY_CONFIG } from '../../../app/shared/formly/formly-app-config';
 import { HelpersService } from '../../../app/shared/helpers.service';
 import { environment } from '../../../environments/environment';
-import { EXAMPLE_CODESYSTEM_VERSIONS } from '../../shared/data/test-codesystem-versions';
 import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_VALUE_SET, QUESTIONNAIRE_WITH_TOOLTIP } from '../../shared/data/test-values';
 import { navigateTo } from '../../shared/material-harness-utils';
+import { NGXLogger } from 'ngx-logger';
 
 describe('DiseaseFormComponent tooltip integration tests', () => {
   let component: DiseaseFormComponent;
@@ -72,14 +93,21 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
     };
 
     await MockBuilder(DiseaseFormComponent)
-      .keep(AppModule)
       .keep(NoopAnimationsModule)
       .keep(MatIconTestingModule)
+      .keep(FormlyModule)
+      .keep(FormlyMatDatepickerModule)
+      .keep(NotificationFormValidationModule)
       .keep(PasteBoxComponent)
+      .keep(TabsNavigationComponent)
+      .keep(RepeatSectionComponent)
+      .provide(provideRouter([]))
+      .provide(provideFormlyCore([APP_FORMLY_CONFIG, ...withFormlyMaterial(), ...withDemisFormlyCore()]))
       .mock(Ifsg61Service, ifsg61ServiceMock as any)
       .mock(ValueSetService, valueSetServiceMock as any)
       .mock(ChangeDetectorRef)
       .provide(TabsNavigationService)
+      .mock(NGXLogger)
       .mock(HelpersService)
       .provide({
         provide: FollowUpNotificationIdService,
@@ -97,6 +125,10 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
           url: allowedRoutes['nominal'],
           routerState: { root: {} },
         }),
+      })
+      .provide({
+        provide: ActivatedRoute,
+        useValue: { snapshot: { params: {} }, queryParams: of({}) },
       });
   });
 
@@ -120,14 +152,10 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       },
       pathToDestinationLookup: '/destination-lookup/v1',
       featureFlags: {
-        FEATURE_FLAG_OUTLINE_DESIGN: true,
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
         FEATURE_FLAG_DISEASE_STRICT: true,
       },
-      ngxLoggerConfig: {
-        level: 1,
-        disableConsoleLogging: false,
-      },
+      ngxLoggerConfig: environment.defaultLoggerConfiguration,
     };
 
     fixture = MockRender(DiseaseFormComponent);

@@ -26,7 +26,7 @@ describe('ValidationWrapperComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ValidationWrapperComponent],
+      imports: [ValidationWrapperComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
   }));
@@ -34,6 +34,7 @@ describe('ValidationWrapperComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ValidationWrapperComponent);
     component = fixture.componentInstance;
+    component.field = { formControl: { statusChanges: { subscribe: () => {} } } } as any;
     fixture.detectChanges();
   });
 

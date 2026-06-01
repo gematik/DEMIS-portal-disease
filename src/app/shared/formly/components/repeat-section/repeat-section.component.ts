@@ -16,13 +16,16 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { FieldArrayType, FieldTypeConfig } from '@ngx-formly/core';
+import { FieldArrayType, FieldTypeConfig, FormlyModule } from '@ngx-formly/core';
+import { MatLabel } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-repeat-section',
   templateUrl: './repeat-section.component.html',
   styleUrls: ['./repeat-section.component.scss'],
-  standalone: false,
+  imports: [MatLabel, FormlyModule, MatIconButton, MatIcon],
 })
 export class RepeatSectionComponent extends FieldArrayType<FieldTypeConfig> implements OnInit {
   itemName: string = '';

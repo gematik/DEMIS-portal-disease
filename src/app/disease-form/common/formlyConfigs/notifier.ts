@@ -27,6 +27,7 @@ import {
   personalDataWillBeStoredInLocalStorageOutline,
 } from './formly-base';
 import { ExtendedSalutationEnum } from '../../../legacy/common-utils';
+import { environment } from 'src/environments/environment';
 
 export const existsBsnrFormlyFieldConfig: FormlyFieldConfig = {
   id: 'existsBsnr',
@@ -117,14 +118,22 @@ export interface PractitionerInfoAsModel {
 }
 
 function notifierFacilityOrgaTypeFormlyFieldConfig(orgaTypeOptions: DemisCoding[]): FormlyFieldConfig {
+  const FEATURE_FLAG_DISEASE_AUTOCOMPLETE = environment.featureFlags?.FEATURE_FLAG_DISEASE_AUTOCOMPLETE;
   return {
     id: 'organizationType',
     // note: key suffix answer.valueCoding is required for the clipboard functionality to work
     key: 'organizationType.answer.valueCoding',
-    type: 'autocomplete-coding',
+    type: FEATURE_FLAG_DISEASE_AUTOCOMPLETE ? 'filterable-select' : 'autocomplete-coding',
     className: 'id_organizationType col-md-12',
     defaultValue: '',
     props: {
+      ...(FEATURE_FLAG_DISEASE_AUTOCOMPLETE
+        ? {
+            optionValueKey: 'code',
+            optionLabelKey: 'display',
+            optionDescriptionKey: 'breadcrumb',
+          }
+        : {}),
       options: orgaTypeOptions,
       required: true,
       clearable: true,

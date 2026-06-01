@@ -16,23 +16,54 @@
  */
 
 import { TabsNavigationComponent } from './tabs-navigation.component';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { AppComponent } from '../../../../app.component';
-import { AppModule } from '../../../../app.module';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component } from '@angular/core';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
+import { LoggerTestingModule } from 'ngx-logger/testing';
 
 describe('TabsNavigationComponent', () => {
-  let fixture: MockedComponentFixture<TabsNavigationComponent>;
-  let component: AppComponent;
+  let fixture: ComponentFixture<MockComponent>;
+  let component: TabsNavigationComponent;
 
-  const createComponent = () => {
-    fixture = MockRender(TabsNavigationComponent);
-    component = fixture.point.componentInstance;
-  };
-
-  beforeEach(() => MockBuilder(AppComponent, AppModule));
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        ReactiveFormsModule,
+        LoggerTestingModule,
+        FormlyModule.forRoot({
+          types: [{ name: 'tabs-navigation', component: TabsNavigationComponent }],
+        }),
+        TabsNavigationComponent,
+        MockComponent,
+      ],
+    });
+    fixture = TestBed.createComponent(MockComponent);
+    fixture.detectChanges();
+  });
 
   it('should create', () => {
-    createComponent();
-    expect(component).withContext('component was not created').toBeTruthy();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });
+
+@Component({
+  selector: 'app-test-form',
+  template: `
+    <form [formGroup]="form">
+      <formly-form [fields]="fields" [form]="form" [model]="model"></formly-form>
+    </form>
+  `,
+  imports: [ReactiveFormsModule, FormlyModule],
+})
+class MockComponent {
+  form = new FormGroup({});
+  model = {};
+  fields: FormlyFieldConfig[] = [
+    {
+      key: 'test',
+      type: 'tabs-navigation',
+      fieldGroup: [],
+    },
+  ];
+}

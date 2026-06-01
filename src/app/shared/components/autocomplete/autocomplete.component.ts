@@ -16,13 +16,26 @@
  */
 
 import { Component, forwardRef, Input, input, OnDestroy, OnInit, viewChild } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatAutocompleteActivatedEvent, MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import {
+  MatAutocompleteActivatedEvent,
+  MatAutocompleteSelectedEvent,
+  MatAutocompleteTrigger,
+  MatAutocomplete,
+  MatOption,
+} from '@angular/material/autocomplete';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { FieldTypeConfig } from '@ngx-formly/core';
+import { FieldTypeConfig, FormlyModule } from '@ngx-formly/core';
 import { map, Observable, Subscription } from 'rxjs';
 import { distinctUntilChanged, startWith } from 'rxjs/operators';
 import { DemisCoding } from '../../../demis-types';
+import { NgClass, AsyncPipe } from '@angular/common';
+import { MatChipGrid, MatChipRow, MatChipRemove, MatChipInput } from '@angular/material/chips';
+import { MatIcon } from '@angular/material/icon';
+import { AddBreadcrumbDirective } from '../../formly/components/autocomplete-coding/add-breadcrumb.directive';
+import { MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-autocomplete',
@@ -35,7 +48,25 @@ import { DemisCoding } from '../../../demis-types';
       multi: true,
     },
   ],
-  standalone: false,
+  imports: [
+    NgClass,
+    MatChipGrid,
+    MatChipRow,
+    MatChipRemove,
+    MatIcon,
+    AddBreadcrumbDirective,
+    MatInput,
+    MatAutocompleteTrigger,
+    MatChipInput,
+    ReactiveFormsModule,
+    FormlyModule,
+    MatIconButton,
+    MatSuffix,
+    MatAutocomplete,
+    MatOption,
+    MatCheckbox,
+    AsyncPipe,
+  ],
 })
 export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAccessor {
   readonly formControl = input<FormControl>(new FormControl());

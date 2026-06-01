@@ -16,8 +16,9 @@
  */
 
 import { HttpHeaders } from '@angular/common/http';
-import { NgxLoggerLevel } from 'ngx-logger';
 import { assetUrl } from '../single-spa/asset-url';
+import { isDevMode } from '@angular/core';
+import { LOGGER_CONFIG_FOR_DEV, LOGGER_CONFIG_FOR_PROD } from '@gematik/demis-portal-core-library';
 
 interface NgxLoggerConfig {
   level: number;
@@ -63,16 +64,24 @@ export class Environment {
     return !!this.config?.production;
   }
 
-  public get ngxLoggerConfig(): NgxLoggerConfig {
-    return this.config?.ngxLoggerConfig ? this.config?.ngxLoggerConfig : this.defaultNgxLoggerConfig;
+  public get defaultLoggerConfiguration() {
+    return isDevMode() ? LOGGER_CONFIG_FOR_DEV : LOGGER_CONFIG_FOR_PROD;
   }
 
-  public get defaultNgxLoggerConfig(): NgxLoggerConfig {
-    return {
-      level: NgxLoggerLevel.OFF,
-      disableConsoleLogging: true,
-      serverLogLevel: NgxLoggerLevel.OFF,
-    };
+  /**
+   * Logger is by default disabled (values.yaml)
+   * Locally it is by default enabled (environment.json)
+   *
+   * If values yaml & environment.json do not provide a logger configuration, the default configuration is used,
+   * which is disabled for production and enabled for development.
+   *
+   * To enable or disable it differently on a specific environment, it must be changed via config maps
+   *
+   * Logger config hierarchy:
+   * values.yaml > environment.json > defaultConfig
+   */
+  public get ngxLoggerConfig(): NgxLoggerConfig {
+    return this.config?.ngxLoggerConfig ? this.config?.ngxLoggerConfig : this.defaultLoggerConfiguration;
   }
 
   // remove all unused none-paragraph paths with FEATURE_FLAG_NON_NOMINAL_NOTIFICATION
@@ -89,6 +98,8 @@ export class Environment {
   }
 
   public get futsBaseUrl(): string {
+    // in case that FEATURE_FLAG_FHIR_CORE_SPLIT ist disabled (project flag from demis-cluster-deployment), use
+    // "pathToFuts": "/translation/ui-data-model/v6/fhir",
     return this.config?.futsPaths?.['baseUrl'];
   }
 
@@ -102,6 +113,7 @@ export class Environment {
   public get pathToNotificationCategories6_1(): string {
     return this.pathToDisease + this.config.futsPaths?.['notificationCategories_6_1'];
   }
+
   /**
    * Meldetatbestände §7.3 (nichtnamentlich)
    */

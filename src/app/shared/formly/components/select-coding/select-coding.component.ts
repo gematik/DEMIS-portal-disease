@@ -16,16 +16,20 @@
  */
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FieldTypeConfig } from '@ngx-formly/core';
+import { FieldTypeConfig, FormlyModule } from '@ngx-formly/core';
 import { FieldType } from '@ngx-formly/material';
 import { Subscription } from 'rxjs';
 import { DemisCoding } from '../../../../demis-types';
+import { MatFormField, MatHint } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatOption } from '@angular/material/autocomplete';
 
 @Component({
   selector: 'app-select-coding',
   templateUrl: './select-coding.component.html',
   styleUrls: ['./select-coding.component.scss'],
-  standalone: false,
+  imports: [MatFormField, MatSelect, ReactiveFormsModule, FormlyModule, MatOption, MatHint],
 })
 export class SelectCodingComponent extends FieldType<FieldTypeConfig> implements OnInit, OnDestroy {
   codings: DemisCoding[] = [];

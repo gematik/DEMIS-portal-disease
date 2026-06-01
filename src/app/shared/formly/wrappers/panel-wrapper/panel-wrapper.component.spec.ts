@@ -18,7 +18,6 @@
 import { PanelWrapperComponent } from './panel-wrapper.component';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { AppComponent } from '../../../../app.component';
-import { AppModule } from '../../../../app.module';
 
 //@todo Component needs many formly-inputs, disabled -> need to fix initialization
 xdescribe('PanelWrapperComponent', () => {
@@ -30,7 +29,7 @@ xdescribe('PanelWrapperComponent', () => {
     component = fixture.point.componentInstance;
   };
 
-  beforeEach(() => MockBuilder(PanelWrapperComponent, AppModule));
+  beforeEach(() => MockBuilder(PanelWrapperComponent));
 
   it('should create', () => {
     createComponent();

@@ -18,10 +18,7 @@
 import { ChangeDetectorRef, Directive, ElementRef, OnChanges, OnDestroy, OnInit, Renderer2, SimpleChanges, inject, input } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-@Directive({
-  selector: '[appAddBreadcrumb]',
-  standalone: false,
-})
+@Directive({ selector: '[appAddBreadcrumb]' })
 export class AddBreadcrumbDirective implements OnInit, OnDestroy, OnChanges {
   private el = inject(ElementRef);
   private renderer = inject(Renderer2);
