@@ -19,12 +19,14 @@ import { Component, OnInit } from '@angular/core';
 import { FieldTypeConfig } from '@ngx-formly/core';
 import { FieldType } from '@ngx-formly/material';
 import { DemisCoding } from '../../../../demis-types';
+import { AutocompleteComponent } from '../../../components/autocomplete/autocomplete.component';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-autocomplete-coding',
   templateUrl: './autocomplete-coding.component.html',
   styleUrls: ['./autocomplete-coding.component.scss'],
-  standalone: false,
+  imports: [AutocompleteComponent, ReactiveFormsModule],
 })
 export class AutocompleteCodingComponent extends FieldType<FieldTypeConfig> implements OnInit {
   codings: DemisCoding[] = [];

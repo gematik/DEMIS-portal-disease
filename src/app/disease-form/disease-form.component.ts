@@ -32,25 +32,28 @@ import {
   ViewChild,
   WritableSignal,
 } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   cloneObject,
   customCodeDisplay,
   FollowUpMixedCodesService,
   FollowUpNotificationIdService,
+  FormsFooterComponent,
+  MaxHeightContentContainerComponent,
   MessageDialogService,
   notifiedPersonAnonymousConfigFields,
   notifiedPersonNotByNameConfigFields,
+  PasteBoxComponent,
 } from '@gematik/demis-portal-core-library';
-import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
+import { FormlyFieldConfig, FormlyFormOptions, FormlyModule } from '@ngx-formly/core';
 import { FormlyFieldProps } from '@ngx-formly/material/form-field';
 import { NGXLogger } from 'ngx-logger';
-import { distinctUntilChanged, filter, lastValueFrom, Subject, take, takeUntil, tap } from 'rxjs';
+import { catchError, distinctUntilChanged, filter, forkJoin, lastValueFrom, Subject, take, takeUntil, tap, throwError } from 'rxjs';
 import { CodeDisplay, DiseaseStatus } from '../../api/notification';
 import { environment } from '../../environments/environment';
 import { ANONYMOUS_PERSON_RULES, FACILITY_RULES, NOMINAL_PERSON_ADDRESS_RULES, NOMINAL_PERSON_RULES } from '../data-transfer/functionRules';
-import { allowedRoutes, DemisCoding, getNotificationTypeByRouterUrl, NotificationType, QuestionnaireDescriptor } from '../demis-types';
+import { allowedRoutes, getNotificationTypeByRouterUrl, NotificationType, QuestionnaireDescriptor } from '../demis-types';
 import { makeFieldSequence, sortItems } from '../format-items';
 import { Ifsg61Service } from '../ifsg61.service';
 import { FormlyConstants } from '../legacy/formly-constants';
@@ -68,6 +71,10 @@ import { CopyAndKeepInSyncService } from './services/copy-and-keep-in-sync-servi
 import { ImportFieldValuesService, ImportTargetComponent } from './services/import-field-values.service';
 import { ProcessFormService } from './services/process-form-service';
 import { findCodeDisplayByCodeValue } from '../legacy/common-utils';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { HexhexbuttonComponent } from '../shared/components/hexhexbutton/hexhexbutton.component';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
 const IFSG61_NOTIFIER = 'IFSG61_NOTIFIER'; // key into local storage
@@ -94,11 +101,21 @@ const NO_DISEASE_CHOOSEN: FormlyFieldConfig[] = [
   selector: 'app-disease-form',
   templateUrl: './disease-form.component.html',
   styleUrls: ['./disease-form.component.scss'],
-  standalone: false,
+  imports: [
+    MaxHeightContentContainerComponent,
+    MatProgressSpinner,
+    ReactiveFormsModule,
+    FormlyModule,
+    MatButton,
+    MatIcon,
+    HexhexbuttonComponent,
+    PasteBoxComponent,
+    FormsFooterComponent,
+  ],
 })
 export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTargetComponent, OnDestroy {
   @ViewChild('notificationSubheader', { read: ElementRef })
-  private notificationSubheader?: ElementRef<HTMLElement>;
+  private readonly notificationSubheader?: ElementRef<HTMLElement>;
 
   @HostBinding('style.--subheader-offset')
   subheaderOffset: string = '0px';
@@ -239,34 +256,42 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
           this.countryCodeList = countryCodes;
         },
       });
+    forkJoin({
+      diseaseOptions: this.ifsg61Service.getDiseaseOptions(this.notificationType).pipe(
+        take(1),
+        catchError(err => throwError(() => ({ cause: err, message: 'Meldetatbestände nicht verfügbar' })))
+      ),
+      typeOptions: this.ifsg61Service.getCodeValueSet(VALUE_SET_ORGANIZATION_TYPE).pipe(
+        take(1),
+        catchError(err => throwError(() => ({ cause: err, message: 'Typen nicht abrufbar' })))
+      ),
+    }).subscribe({
+      next: ({ diseaseOptions, typeOptions }) => {
+        this.diseaseCodeDisplays = diseaseOptions;
+        if (!data?.redirect) {
+          this.openDialogIfFollowUp();
+        }
 
-    this.getDiseaseCodeDisplaysAndOpenDialogIfFollowUp(data?.redirect);
-
-    this.ifsg61Service
-      .getCodeValueSet(VALUE_SET_ORGANIZATION_TYPE)
-      .pipe(take(1))
-      .subscribe({
-        next: (typeOptions: DemisCoding[]) => {
-          this.notifierFields = [
-            {
-              hooks: {
-                onInit: this.initHook,
-              },
+        this.notifierFields = [
+          {
+            hooks: {
+              onInit: this.initHook,
             },
-            ...notifierFacilityFormConfigFields(typeOptions),
-          ];
+          },
+          ...notifierFacilityFormConfigFields(typeOptions),
+        ];
 
-          this.notifiedPersonFields = this.getNotifiedPersonFields(this.notificationType);
+        this.notifiedPersonFields = this.getNotifiedPersonFields(this.notificationType);
 
-          this.diseaseChoiceFields = getDiseaseChoiceFields(this.diseaseCodeDisplays, this.notificationType);
-          this.combineFields();
-          this.isLoading.set(false);
-        },
-        error: (err: any) => {
-          this.handleError(err, 'Typen nicht abrufbar');
-          this.isLoading.set(false);
-        },
-      });
+        this.diseaseChoiceFields = getDiseaseChoiceFields(this.diseaseCodeDisplays, this.notificationType);
+        this.combineFields();
+        this.isLoading.set(false);
+      },
+      error: ({ cause, message }: { cause: unknown; message: string }) => {
+        this.handleError(cause, message);
+        this.isLoading.set(false);
+      },
+    });
     if (this.isFollowUpNotification()) {
       this.handleFollowUpNotifications();
     }
@@ -293,10 +318,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ACCESSIBILITY;
   }
 
-  public get FEATURE_FLAG_MIXED_FOLLOW_UP(): boolean {
-    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_MIXED_FOLLOW_UP;
-  }
-
   public get FEATURE_FLAG_FOOTER_LINKS_CORRECTION(): boolean {
     return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOOTER_LINKS_CORRECTION ?? false;
   }
@@ -313,43 +334,24 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     return this.isFollowUpNotification7_3() || this.isFollowUpNotification6_1();
   }
 
-  public getDiseaseCodeDisplaysAndOpenDialogIfFollowUp(isRedirect: boolean = false): void {
-    this.ifsg61Service
-      .getDiseaseOptions(this.notificationType)
-      .pipe(take(1))
-      .subscribe({
-        next: (diseaseOptions: CodeDisplay[]) => {
-          this.diseaseCodeDisplays = diseaseOptions;
-          if (this.isFollowUpNotification6_1() && !isRedirect) {
-            this.followUpNotificationIdService.isMixedCodesActive = this.FEATURE_FLAG_MIXED_FOLLOW_UP;
-            this.followUpNotificationIdService.openDialog({
-              dialogData: {
-                routerLink: '/' + allowedRoutes['nominal'],
-                linkTextContent: 'einer namentlichen Infektionskrankheit nach § 6 IfSG',
-                pathToDestinationLookup: environment.pathToDestinationLookup,
-                errorUnsupportedNotificationCategory:
-                  'Aktuell sind Nichtnamentliche Folgemeldungen einer Infektionskrankheit gemäß § 6 Abs. 1 IfSG nur für eine § 6 Abs. 1 IfSG Initialmeldung möglich.',
-              },
-              notificationCategoryCodes: this.diseaseCodeDisplays.map(codeDisplay => codeDisplay.code),
-            });
-          } else if (this.isFollowUpNotification7_3() && !isRedirect) {
-            this.followUpNotificationIdService.isMixedCodesActive = this.FEATURE_FLAG_MIXED_FOLLOW_UP;
-            this.followUpNotificationIdService.openDialog({
-              dialogData: {
-                routerLink: '/' + allowedRoutes['nonNominal'],
-                linkTextContent: 'einer nichtnamentlichen Infektionskrankheit nach § 7 Abs. 3 IfSG',
-                pathToDestinationLookup: environment.pathToDestinationLookup,
-                errorUnsupportedNotificationCategory:
-                  'Diese Meldekategorie wird für diese Meldungsart nicht unterstützt. Bitte stellen Sie sicher, dass Sie auf eine Meldung nach § 7 Abs. 3 IfSG referenzieren.',
-              },
-              notificationCategoryCodes: this.diseaseCodeDisplays.map(codeDisplay => codeDisplay.code),
-            });
-          }
-        },
-        error: (err: any) => {
-          this.handleError(err, 'Meldetatbestände nicht verfügbar');
+  private openDialogIfFollowUp(): void {
+    if (this.isFollowUpNotification6_1()) {
+      this.followUpNotificationIdService.openDialog({
+        dialogData: {
+          routerLink: '/' + allowedRoutes['nominal'],
+          linkTextContent: 'einer namentlichen Infektionskrankheit nach § 6 IfSG',
+          pathToDestinationLookup: environment.pathToDestinationLookup,
         },
       });
+    } else if (this.isFollowUpNotification7_3()) {
+      this.followUpNotificationIdService.openDialog({
+        dialogData: {
+          routerLink: '/' + allowedRoutes['nonNominal'],
+          linkTextContent: 'einer nichtnamentlichen Infektionskrankheit nach § 7 Abs. 3 IfSG',
+          pathToDestinationLookup: environment.pathToDestinationLookup,
+        },
+      });
+    }
   }
 
   private handleFollowUpNotifications() {
@@ -361,37 +363,8 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       )
       .subscribe(() => {
         const diseaseCode = this.followUpNotificationIdService.followUpNotificationCategory()!;
-        if (this.FEATURE_FLAG_MIXED_FOLLOW_UP) {
-          this.handleFollowUpMixedCodes(diseaseCode);
-        }
-        //TODO can be removed when FEATURE_FLAG_MIXED_FOLLOW_UP is removed
-        else {
-          this.handleFollowUp(diseaseCode);
-        }
+        this.handleFollowUpMixedCodes(diseaseCode);
       });
-  }
-
-  private handleFollowUp(diseaseCode: string) {
-    let diseaseCodeDisplay: CodeDisplay | undefined;
-    diseaseCodeDisplay = findCodeDisplayByCodeValue(this.diseaseCodeDisplays, diseaseCode);
-    if (diseaseCode) {
-      this.updateDiseaseChoiceModel(diseaseCodeDisplay!);
-    } else {
-      this.messageDialogService.showErrorDialog({
-        errorTitle: 'Fehler',
-        errors: [
-          {
-            text:
-              'Der gespeicherte Erreger ' +
-              this.followUpNotificationIdService.followUpNotificationCategory() +
-              ' für die ID ' +
-              this.followUpNotificationIdService.validatedNotificationId +
-              ' wird für die §6.1er Meldungen nicht unterstützt.',
-          },
-        ],
-        redirectToHome: true,
-      });
-    }
   }
 
   private handleFollowUpMixedCodes(diseaseCode: string) {
@@ -620,7 +593,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       this.copyAndKeepInSyncService.subscribeToCurrentAddressTypeChanges(e.field, e.value, this.notifiedPersonFields, this.form, this.model);
     }
 
-    if (e.field?.id === 'disease-choice' && e.type === 'valueChanges') {
+    if ((e.field?.id === 'disease-choice' || e.field?.id === 'disease-choice-input') && e.type === 'valueChanges') {
       this.handleDiseaseSelectionChange(e.value.code);
     }
   }
@@ -655,7 +628,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
           this.diseaseCommonFields = !this.isFullQuestionnaire() ? [] : descriptor.commonConfig;
           this.combineFields();
           this.changeDetector.detectChanges();
-          if (!this.isFollowUpNotification()) {
+          if (!this.isFollowUpNotification() && !this.isFollowUpNotification7_3()) {
             this.chooseTabAfterChoosing();
           }
         })
@@ -691,19 +664,18 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   async hexHex() {
     const dummy = new HexHexDummy();
     const dummyData = dummy.getDummy(this.notificationType);
-
-    if (!this.isFollowUpNotification6_1) {
-      const diseaseCode = dummyData.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code;
-      await this.loadQuestionnaire(diseaseCode);
-    }
     const j = JSON.stringify(dummyData);
-    setTimeout(() => {
+
+    if (!this.isFollowUpNotification6_1() && !this.isFollowUpNotification7_3()) {
+      const diseaseCode = dummyData.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code;
+      this.loadQuestionnaire(diseaseCode).then(() => {
+        this.model = JSON.parse(j);
+      });
+    } else {
       this.model = JSON.parse(j);
-      if (this.isFollowUpNotification6_1()) {
-        const validatedNotificationId = this.followUpNotificationIdService.validatedNotificationId();
-        this.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId = { answer: { valueString: validatedNotificationId } };
-      }
-    }, 10);
+      const validatedNotificationId = this.followUpNotificationIdService.validatedNotificationId();
+      this.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId = { answer: { valueString: validatedNotificationId } };
+    }
   }
 
   private navigateToTab(i: number) {

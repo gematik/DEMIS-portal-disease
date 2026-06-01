@@ -67,7 +67,7 @@ describe('DiseaseFormComponent example integration tests', () => {
 
   it('should switch to betroffene person when navigating to it', async () => {
     await navigateTo(loader, 1);
-    const span = getHtmlSpanElement(fixture.nativeElement, '.section-title');
+    const span = getHtmlSpanElement(fixture.nativeElement, '.section-header-title');
 
     expect(span).toBeTruthy();
     expect(span.textContent).toBe('Betroffene Person');
@@ -75,19 +75,19 @@ describe('DiseaseFormComponent example integration tests', () => {
 
   it('should switch between sections when navigating', async () => {
     await navigateTo(loader, 5);
-    expect(getHtmlSpanElement(fixture.nativeElement, '.section-title').textContent).toBe('Spezifische Angaben');
+    expect(getHtmlSpanElement(fixture.nativeElement, '.section-header-title').textContent).toBe('Spezifische Angaben');
 
     await navigateTo(loader, 0);
-    expect(getHtmlSpanElement(fixture.nativeElement, '.section-title').textContent).toBe('Meldende Person');
+    expect(getHtmlSpanElement(fixture.nativeElement, '.section-header-title').textContent).toBe('Meldende Person');
 
     await navigateTo(loader, 2);
-    expect(getHtmlSpanElement(fixture.nativeElement, '.section-title').textContent).toBe('Meldetatbestand');
+    expect(getHtmlSpanElement(fixture.nativeElement, '.section-header-title').textContent).toBe('Meldetatbestand');
 
     await navigateTo(loader, 2);
-    expect(getHtmlSpanElement(fixture.nativeElement, '.section-title').textContent).toBe('Meldetatbestand');
+    expect(getHtmlSpanElement(fixture.nativeElement, '.section-header-title').textContent).toBe('Meldetatbestand');
 
     await navigateTo(loader, 1);
-    expect(getHtmlSpanElement(fixture.nativeElement, '.section-title').textContent).toBe('Betroffene Person');
+    expect(getHtmlSpanElement(fixture.nativeElement, '.section-header-title').textContent).toBe('Betroffene Person');
   });
 
   it("navigation should throw an error when tab doesn't exist", async () => {

@@ -27,12 +27,14 @@ import {
   WritableSignal,
   inject,
 } from '@angular/core';
-import { MatTabGroup } from '@angular/material/tabs';
-import { FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
+import { MatTabGroup, MatTab, MatTabLabel } from '@angular/material/tabs';
+import { FieldTypeConfig, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FieldType } from '@ngx-formly/material';
 import { Subject, takeUntil } from 'rxjs';
 import { TabsNavigationService } from './tabs-navigation.service';
-import { environment } from '../../../../../environments/environment';
+import { NgClass } from '@angular/common';
+import { MatIcon } from '@angular/material/icon';
+import { SectionHeaderComponent, MaxHeightContentContainerComponent } from '@gematik/demis-portal-core-library';
 
 /*
  * If we ever need more than one TabsNavigationComponent on a page, we could give em names
@@ -43,7 +45,7 @@ import { environment } from '../../../../../environments/environment';
   templateUrl: './tabs-navigation.component.html',
   styleUrls: ['./tabs-navigation.component.scss'],
   changeDetection: ChangeDetectionStrategy.Default,
-  standalone: false,
+  imports: [MatTabGroup, MatTab, MatTabLabel, NgClass, MatIcon, SectionHeaderComponent, MaxHeightContentContainerComponent, FormlyModule],
 })
 export class TabsNavigationComponent extends FieldType<FieldTypeConfig> implements OnInit, AfterViewInit, OnDestroy {
   private tabsNavigationService = inject(TabsNavigationService);
@@ -90,11 +92,6 @@ export class TabsNavigationComponent extends FieldType<FieldTypeConfig> implemen
   //     firstInputOrSelect?.focus()
   //   }, 600)
   // }
-
-  // TODO: Remove once FEATURE_FLAG_PORTAL_PAGE_STRUCTURE will be removed
-  public get FEATURE_FLAG_PORTAL_PAGE_STRUCTURE(): boolean {
-    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_PAGE_STRUCTURE;
-  }
 
   override ngOnDestroy() {
     this.tabsNavigationService.unregister(this);

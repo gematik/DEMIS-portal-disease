@@ -217,7 +217,9 @@ export class ImportFieldValuesService {
       const diseaseCode = keyValuePairs.find(kvp => kvp[0] === 'D.code');
       if (diseaseCode) {
         //get formly config of disease code form field
-        const fc: FormlyFieldConfig = pasteTarget.formlyConfigFields[0].fieldGroup![2].fieldGroup!.find(g => g.id === 'disease-choice')!;
+        const fc: FormlyFieldConfig = pasteTarget.formlyConfigFields[0].fieldGroup![2].fieldGroup!.find(
+          g => g.id === 'disease-choice' || g.id === 'disease-choice-input'
+        )!;
         fc.props![FORMLY_PATH_PROPERTY_NAME] = 'tabDiseaseChoice.diseaseChoice.answer.valueCoding';
         try {
           await this.executeAction(pasteTarget, diseaseCode[0], diseaseCode[1], fc);

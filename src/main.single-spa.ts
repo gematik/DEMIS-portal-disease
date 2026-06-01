@@ -15,20 +15,35 @@
     find details in the "Readme" file.
  */
 
-import { enableProdMode, NgZone, provideZoneChangeDetection } from '@angular/core';
+import { enableProdMode, NgZone, provideAppInitializer, inject, importProvidersFrom } from '@angular/core';
 
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { NavigationStart, Router } from '@angular/router';
+import { NavigationStart, Router, provideRouter, withHashLocation } from '@angular/router';
 
 import { getSingleSpaExtraProviders, singleSpaAngular } from '@single-spa-community/angular';
 
-import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 import { singleSpaPropsSubject } from './single-spa/single-spa-props';
 import { AppProps } from 'single-spa';
 import { setPublicPath } from 'systemjs-webpack-interop';
 import { allowedRoutes } from './app/demis-types';
-import { platformBrowser } from '@angular/platform-browser';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { IconLoaderService } from './app/legacy/icon-loader.service';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { AuthInterceptor } from './app/auth.interceptor';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
+import { MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/radio';
+import { FORMLY_CONFIG, provideFormlyCore } from '@ngx-formly/core';
+import { registerValueSetExtension } from './app/legacy/value-set.extension';
+import { ValueSetService } from './app/legacy/value-set.service';
+import { withFormlyMaterial } from '@ngx-formly/material';
+import { LoggerModule } from 'ngx-logger';
+import { NotificationFormValidationModule } from './app/legacy/notification-form-validation-module';
+import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
+import { routes } from './app/app.routes';
+import { AppComponent } from './app/app.component';
+import { APP_FORMLY_CONFIG } from './app/shared/formly/formly-app-config';
+import { withDemisFormlyCore } from '@gematik/demis-portal-core-library';
 
 const appId = 'notification-portal-mf-disease';
 let router: Router;
@@ -40,8 +55,39 @@ if (environment.isProduction) {
 const lifecycles = singleSpaAngular({
   bootstrapFunction: async singleSpaProps => {
     singleSpaPropsSubject.next(singleSpaProps);
-    const appRef = await platformBrowser(getSingleSpaExtraProviders()).bootstrapModule(AppModule, {
-      applicationProviders: [provideZoneChangeDetection()],
+    const appRef = await bootstrapApplication(AppComponent, {
+      providers: [
+        importProvidersFrom(LoggerModule.forRoot(environment.ngxLoggerConfig), NotificationFormValidationModule, FormlyMatDatepickerModule),
+        provideAnimationsAsync(),
+        provideNativeDateAdapter(),
+        provideRouter(routes, withHashLocation()),
+        provideAppInitializer(() => {
+          const initializerFn = initIconLoaderService(inject(IconLoaderService));
+          return initializerFn();
+        }),
+        {
+          provide: HTTP_INTERCEPTORS,
+          useClass: AuthInterceptor,
+          multi: true,
+        },
+        {
+          provide: MAT_DATE_LOCALE,
+          useValue: 'de-DE',
+        },
+        {
+          provide: MAT_RADIO_DEFAULT_OPTIONS,
+          useValue: { color: 'primary' },
+        },
+        {
+          provide: FORMLY_CONFIG,
+          multi: true,
+          useFactory: registerValueSetExtension,
+          deps: [ValueSetService],
+        },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideFormlyCore([APP_FORMLY_CONFIG, ...withFormlyMaterial(), ...withDemisFormlyCore()]),
+        getSingleSpaExtraProviders(),
+      ],
     });
     router = appRef.injector.get(Router);
     syncUrlWithRouter();
@@ -126,6 +172,12 @@ function setupRouterSync() {
   window.addEventListener('popstate', () => {
     syncUrlWithRouter();
   });
+}
+
+function initIconLoaderService(iconLoaderService: IconLoaderService) {
+  return (): Promise<void> => {
+    return iconLoaderService.init();
+  };
 }
 
 export const bootstrap = bootstrapFn;

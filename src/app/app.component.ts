@@ -16,11 +16,12 @@
  */
 
 import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-disease-root',
   template: `<router-outlet></router-outlet>`,
   styleUrls: ['./app.component.scss'],
-  standalone: false,
+  imports: [RouterOutlet],
 })
 export class AppComponent {}

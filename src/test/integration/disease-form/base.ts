@@ -20,12 +20,14 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ChangeDetectorRef } from '@angular/core';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
-import { FollowUpMixedCodesService, FollowUpNotificationIdService, PasteBoxComponent } from '@gematik/demis-portal-core-library';
-import { FORMLY_CONFIG } from '@ngx-formly/core';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
+import { FollowUpMixedCodesService, FollowUpNotificationIdService, PasteBoxComponent, withDemisFormlyCore } from '@gematik/demis-portal-core-library';
+import { FORMLY_CONFIG, FormlyModule, provideFormlyCore } from '@ngx-formly/core';
+import { FormlyMaterialModule, withFormlyMaterial } from '@ngx-formly/material';
+import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
+import { NotificationFormValidationModule } from '../../../app/legacy/notification-form-validation-module';
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
-import { AppModule } from '../../../app/app.module';
 import { allowedRoutes, NotificationType } from '../../../app/demis-types';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { Ifsg61Service } from '../../../app/ifsg61.service';
@@ -33,11 +35,17 @@ import { FormlyConstants } from '../../../app/legacy/formly-constants';
 import { registerValueSetExtension } from '../../../app/legacy/value-set.extension';
 import { ValueSetService } from '../../../app/legacy/value-set.service';
 import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
+import { TabsNavigationComponent } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.component';
+import { RepeatSectionComponent } from '../../../app/shared/formly/components/repeat-section/repeat-section.component';
+import { APP_FORMLY_CONFIG } from '../../../app/shared/formly/formly-app-config';
 import { HelpersService } from '../../../app/shared/helpers.service';
 import { environment } from '../../../environments/environment';
 import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_DISEASE_OPTIONS_NONNOMINAL, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
 import { EXAMPLE_TOXP_SHORT } from '../../shared/data/test-values-nonnominal';
 import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
+import { NGXLogger } from 'ngx-logger';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButton, MatButtonModule } from '@angular/material/button';
 
 const overrides = {
   get Ifsg61Service() {
@@ -98,16 +106,11 @@ export const mainConfig = {
   },
   pathToDestinationLookup: '/destination-lookup/v1',
   featureFlags: {
-    FEATURE_FLAG_OUTLINE_DESIGN: true,
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_STRICT: true,
-    FEATURE_FLAG_MIXED_FOLLOW_UP: true,
     FEATURE_FLAG_FOLLOW_UP_7_3: true,
   },
-  ngxLoggerConfig: {
-    level: 5,
-    disableConsoleLogging: false,
-  },
+  ngxLoggerConfig: environment.defaultLoggerConfiguration,
 };
 
 export function buildMock(notificationType = NotificationType.NominalNotification6_1) {
@@ -143,14 +146,25 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
   } as any;
 
   return MockBuilder(DiseaseFormComponent)
-    .keep(AppModule)
     .keep(NoopAnimationsModule)
     .keep(MatIconTestingModule)
     .keep(PasteBoxComponent)
+    .keep(TabsNavigationComponent)
+    .keep(RepeatSectionComponent)
+    .keep(FormlyMaterialModule)
+    .keep(FormlyMatDatepickerModule)
+    .keep(FormlyModule.forRoot(APP_FORMLY_CONFIG))
+    .keep(NotificationFormValidationModule)
+    .keep(ReactiveFormsModule)
+    .keep(MatButtonModule)
+    .keep(MatButton)
+    .provide(provideRouter([]))
+    .provide(provideFormlyCore([APP_FORMLY_CONFIG, ...withFormlyMaterial(), ...withDemisFormlyCore()]))
     .provide(MockProvider(Ifsg61Service, ifsg61Service))
     .provide(MockProvider(ValueSetService, valueSetService))
     .provide(MockProvider(ChangeDetectorRef))
     .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
+    .mock(NGXLogger)
     .provide(MockProvider(HelpersService))
     .provide({
       provide: FollowUpNotificationIdService,
@@ -172,6 +186,10 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
         url: allowedRoutesMock,
         routerState: { root: {} },
       }),
+    })
+    .provide({
+      provide: ActivatedRoute,
+      useValue: { snapshot: { params: {} }, queryParams: of({}) },
     });
 }
 

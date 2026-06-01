@@ -17,11 +17,12 @@
 
 import { Component } from '@angular/core';
 import { FieldWrapper } from '@ngx-formly/core';
+import { LabelInfoIconComponent } from '../../../components/label-info-icon/label-info-icon.component';
 
 @Component({
   selector: 'app-panel-wrapper',
   templateUrl: './panel-wrapper.component.html',
   styleUrl: './panel-wrapper.component.scss',
-  standalone: false,
+  imports: [LabelInfoIconComponent],
 })
 export class PanelWrapperComponent extends FieldWrapper {}

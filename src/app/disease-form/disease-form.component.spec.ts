@@ -19,7 +19,6 @@ import { DiseaseFormComponent } from './disease-form.component';
 import { Ifsg61Service } from '../ifsg61.service';
 import { of, throwError } from 'rxjs';
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
-import { AppModule } from '../app.module';
 import { ImportFieldValuesService } from './services/import-field-values.service';
 import { HelpersService } from '../shared/helpers.service';
 import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
@@ -33,9 +32,10 @@ import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { EXAMPLE_COUNTRY_CODES, EXAMPLE_DISEASE_OPTIONS, EXAMPLE_MSVD, EXAMPLE_VALUE_SET } from '../../test/shared/data/test-values';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { fakeAsync, TestBed } from '@angular/core/testing';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
-import { NavigationStart, Router } from '@angular/router';
+import { FollowUpNotificationIdService, MessageDialogService } from '@gematik/demis-portal-core-library';
+import { NavigationStart, Router, provideRouter } from '@angular/router';
 import { allowedRoutes, NotificationType } from '../demis-types';
+import { NGXLogger } from 'ngx-logger';
 
 const overrides = {
   get Ifsg61Service() {
@@ -65,10 +65,11 @@ describe('DiseaseFormComponent unit tests', () => {
   };
 
   beforeEach(() =>
-    MockBuilder([DiseaseFormComponent, AppModule, NoopAnimationsModule])
+    MockBuilder([DiseaseFormComponent, NoopAnimationsModule])
       .provide(MockProvider(Ifsg61Service, overrides.Ifsg61Service))
       .provide(MockProvider(ChangeDetectorRef))
       .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
+      .mock(NGXLogger)
       .provide(MockProvider(HelpersService, helpersServiceSpy))
       .provide(MockProvider(ValueSetService, overrides.ValueSetService))
       .provide(MockProvider(ImportFieldValuesService))
@@ -80,6 +81,7 @@ describe('DiseaseFormComponent unit tests', () => {
         useFactory: registerValueSetExtension,
         deps: [ValueSetService],
       })
+      .provide(provideRouter([]))
       .provide({
         provide: Router,
         useValue: jasmine.createSpyObj('Router', ['navigate', 'currentNavigation'], {
@@ -111,10 +113,7 @@ describe('DiseaseFormComponent unit tests', () => {
       featureFlags: {
         FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
       },
-      ngxLoggerConfig: {
-        level: 5,
-        disableConsoleLogging: false,
-      },
+      ngxLoggerConfig: environment.defaultLoggerConfiguration,
     };
     fixture = MockRender(DiseaseFormComponent);
     component = fixture.point.componentInstance;
@@ -317,6 +316,56 @@ describe('DiseaseFormComponent unit tests', () => {
       component.ngOnInit();
 
       expect(getDiseaseOptionsSpy).toHaveBeenCalledWith(NotificationType.FollowUpNotification6_1);
+    });
+  });
+
+  describe('openDialogIfFollowUp via ngOnInit', () => {
+    let openDialogSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      const followUpService = TestBed.inject(FollowUpNotificationIdService);
+      openDialogSpy = spyOn(followUpService, 'openDialog');
+    });
+
+    it('should open the follow-up dialog for FollowUpNotification6_1 with the §6 link text', () => {
+      Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['followUp'], configurable: true });
+
+      component.ngOnInit();
+
+      expect(openDialogSpy).toHaveBeenCalledTimes(1);
+      const dialogArg = openDialogSpy.calls.mostRecent().args[0];
+      expect(dialogArg.dialogData.routerLink).toBe('/' + allowedRoutes['nominal']);
+      expect(dialogArg.dialogData.linkTextContent).toContain('§ 6 IfSG');
+    });
+
+    it('should open the follow-up dialog for FollowUpNotification7_3 with the §7 Abs. 3 link text', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION = true;
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_FOLLOW_UP_7_3 = true;
+      Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['followUpNonNominal'], configurable: true });
+
+      component.ngOnInit();
+
+      expect(openDialogSpy).toHaveBeenCalledTimes(1);
+      const dialogArg = openDialogSpy.calls.mostRecent().args[0];
+      expect(dialogArg.dialogData.routerLink).toBe('/' + allowedRoutes['nonNominal']);
+      expect(dialogArg.dialogData.linkTextContent).toContain('§ 7 Abs. 3 IfSG');
+    });
+
+    it('should not open the follow-up dialog when navigation state has redirect=true', () => {
+      Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['followUp'], configurable: true });
+      (routerSpy.currentNavigation as jasmine.Spy).and.returnValue({ extras: { state: { redirect: true } } });
+
+      component.ngOnInit();
+
+      expect(openDialogSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not open the follow-up dialog for non follow-up notification types', () => {
+      Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['nominal'], configurable: true });
+
+      component.ngOnInit();
+
+      expect(openDialogSpy).not.toHaveBeenCalled();
     });
   });
 

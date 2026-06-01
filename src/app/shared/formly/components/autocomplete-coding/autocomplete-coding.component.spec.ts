@@ -16,23 +16,53 @@
  */
 
 import { AutocompleteCodingComponent } from './autocomplete-coding.component';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { AppComponent } from '../../../../app.component';
-import { AppModule } from '../../../../app.module';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component } from '@angular/core';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 
 describe('AutocompleteCodingComponent', () => {
-  let fixture: MockedComponentFixture<AutocompleteCodingComponent>;
-  let component: AppComponent;
+  let fixture: ComponentFixture<MockComponent>;
+  let component: AutocompleteCodingComponent;
 
-  const createComponent = () => {
-    fixture = MockRender(AutocompleteCodingComponent);
-    component = fixture.point.componentInstance;
-  };
-
-  beforeEach(() => MockBuilder(AppComponent, AppModule));
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        ReactiveFormsModule,
+        FormlyModule.forRoot({
+          types: [{ name: 'autocomplete-coding', component: AutocompleteCodingComponent }],
+        }),
+        AutocompleteCodingComponent,
+        MockComponent,
+      ],
+    });
+    fixture = TestBed.createComponent(MockComponent);
+    fixture.detectChanges();
+    component = fixture.debugElement.children[0].query(el => el.name === 'app-autocomplete-coding')?.componentInstance;
+  });
 
   it('should create', () => {
-    createComponent();
-    expect(component).withContext('component was not created').toBeTruthy();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });
+
+@Component({
+  selector: 'app-test-form',
+  template: `
+    <form [formGroup]="form">
+      <formly-form [fields]="fields" [form]="form" [model]="model"></formly-form>
+    </form>
+  `,
+  imports: [ReactiveFormsModule, FormlyModule],
+})
+class MockComponent {
+  form = new FormGroup({});
+  model = {};
+  fields: FormlyFieldConfig[] = [
+    {
+      key: 'test',
+      type: 'autocomplete-coding',
+      props: { options: [] },
+    },
+  ];
+}

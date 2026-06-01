@@ -239,12 +239,12 @@ export async function selectNotifiedPersonCurrentAddressSubmittingFacility(loade
 
 export async function moveFromNotifiedPersonToKlinischeAngaben(fixture: MockedComponentFixture, loader: HarnessLoader) {
   await selectTab(fixture, loader, 3);
-  expect(fixture.nativeElement.querySelector('.section-title').textContent).toBe('Meldetatbestand');
+  expect(fixture.nativeElement.querySelector('.section-header-title').textContent).toBe('Meldetatbestand');
   const inputField = await getInput(loader, '#disease-choice-input');
   await inputField.setValue('Cholera');
   await inputField.blur();
   await selectTab(fixture, loader, 5);
-  expect(fixture.nativeElement.querySelector('.section-title').textContent).toBe('Klinische und epidemiologische Angaben');
+  expect(fixture.nativeElement.querySelector('.section-header-title').textContent).toBe('Klinische und epidemiologische Angaben');
   fixture.detectChanges();
 }
 
@@ -255,7 +255,7 @@ export async function verifySelectedMeldetatbestand(fixture: MockedComponentFixt
 }
 
 export function getStepHeader(fixture: ComponentFixture<any>): string {
-  return fixture.nativeElement.querySelector('.section-title').textContent;
+  return fixture.nativeElement.querySelector('.section-header-title').textContent;
 }
 
 export async function selectDisease(loader: HarnessLoader, fixture: MockedComponentFixture<any>, display: RegExp) {

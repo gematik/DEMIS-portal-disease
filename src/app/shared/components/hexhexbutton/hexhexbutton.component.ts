@@ -22,7 +22,7 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-hexhexbutton',
   templateUrl: './hexhexbutton.component.html',
   styleUrls: ['./hexhexbutton.component.scss'],
-  standalone: false,
+  imports: [],
 })
 export class HexhexbuttonComponent {
   private targetElement = inject(ElementRef);

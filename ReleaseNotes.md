@@ -2,7 +2,24 @@
 
 # Release portal-disease
 
+## Release 1.8.0
+
+- Removed forward button when on last page
+- Updated form submission handling
+- Removed @angular/platform-browser-dynamic
+- Migrated components to standalone
+- Removed FEATURE_FLAG_MIXED_FOLLOW_UP
+- Removed FEATURE_FLAG_PORTAL_ERROR_DIALOG_FILTERING
+- Updated @gematik/demis-portal-core-library to 4.2.2
+- Added correctly configurable logging
+- Used generic filter select from portal-core for disease choice and type of institution (FEATURE_FLAG_DISEASE_AUTOCOMPLETE)
+- Updated NGINX-Base-Image to 1.31.0
+- Removed FEATURE_FLAG_OUTLINE_DESIGN
+- Added unit test for knowledge database link
+- Removed feature flag FEATURE_FLAG_PORTAL_PAGE_STRUCTURE
+
 ## Release 1.7.0
+
 - Added § 7.3 follow-up notification (FEATURE_FLAG_FOLLOW_UP_7_3)
 - Updated NGINX-Base-Image to 1.30.0
 - Removed FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE
@@ -11,13 +28,15 @@
 - Added filtering of validation errors in the dialog after submitting a notification (FEATURE_FLAG_PORTAL_ERROR_DIALOG_FILTERING)
 
 ## Release 1.6.2
-- Updated NGINX-Base-Image to 1.29.7 
+
+- Updated NGINX-Base-Image to 1.29.7
 - Updated package name to @single-spa-community/angular
 - Removed 7.3 disease anonymous notification
 - Fixed a bug, where symptoms could not be selected properly for a chosen disease
 - Updated @gematik/demis-portal-core-library to 3.2.0
 
 ## Release 1.6.1
+
 - Used fixed version of formly-datepicker from portal-core 3.0.7 and removed obsolete code
 - Enabled BSNR validation for questionnaire fields
 - Updated @gematik/demis-portal-core-library to 3.0.8
@@ -26,6 +45,7 @@
 - Simplified FUTS configuration
 
 ## Release 1.6.0
+
 - Updated Angular to v21
 - Updated @gematik/demis-portal-core-library to 3.0.5
 - Added accessibility statement footer link (FEATURE_FLAG_PORTAL_ACCESSIBILITY)
@@ -39,6 +59,7 @@
 - Fixed change detection bug with questionnaires
 
 ## Release 1.5.3
+
 - hide hospitalization copy checkboxes for follow up notification
 - Updated @gematik/demis-portal-core-library to 2.3.9
 - Updated Angular dependencies to version 19.2.18 and 19.2.19
@@ -47,6 +68,7 @@
 - Added systemVersion parameter to formly input and gateway output FHIR codings
 
 ## Release 1.5.2
+
 - Updated @gematik/demis-portal-core-library to 2.3.8
 - Removed FEATURE_FLAG_DISEASE_DATEPICKER
 - Enabled formly fields to have tooltips aside their labels
@@ -59,6 +81,7 @@
 - Added loading-spinner
 
 ## Release 1.5.1
+
 - Removed FEATURE_FLAG_PORTAL_ERROR_DIALOG
 - Updated @gematik/demis-portal-core-library to 2.3.6
 - Updated Angular dependencies to version 19.2.17
@@ -67,6 +90,7 @@
 - Fixed hospitalization checkbox sync in questionnaires with current address change
 
 ## Release 1.5.0
+
 - Fixed form and pdf issues with §6.1 follow-up notifications
 - Disease-Notification now entails versions of code systems
 - Implemented notifiedPersonNotByName config from Portal-Core
@@ -74,6 +98,7 @@
 - Fixed pdf naming issue for 7.3 notification
 
 ## Release 1.4.3
+
 - Added FEATURE_FLAG_DISEASE_STRICT for strict §6.1 coming with FHIR profile 7.x
 - Removed FEATURE_FLAG_PORTAL_SUBMIT and FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT
 - Switch to SectionHeader from Portal-Core (FEATURE_FLAG_PORTAL_PAGE_STRUCTURE)
@@ -85,15 +110,17 @@
 - Implement §6.1 follow-up notification (FEATURE_FLAG_FOLLOW_UP_NOTIFICATION_PORTAL_DISEASE)
 
 ## Release 1.4.2
+
 - Removed FEATURE_FLAG_PORTAL_REPEAT
 - Add quantity validation for number type input fields
 - add configmap checksum as annotation to force pod restart on configmap change
 - Updated openapi-generator-cli to 2.23.3
 - Update @angular-devkit/build-angular to 19.2.17
-- Fix change detection issue for 7.3 notification 
+- Fix change detection issue for 7.3 notification
 - Update @gematik/demis-portal-core-library to 2.2.3
 
 ## Release 1.4.1
+
 - Fix background block for submit dialog
 - Upgraded dependencies
 - Added test:coverage npm script to run a single test run with coverage report
@@ -103,32 +130,41 @@
 - Use submit- and spinner-dialog from Portal-Core (FEATURE_FLAG_PORTAL_SUBMIT)
 
 ## Release 1.4.0
+
 - Switch to errorDialog from CoreLibrary for submit (FEATURE_FLAG_PORTAL_ERROR_DIALOG_ON_SUBMIT)
 - add new API endpoints activated by feature flag FEATURE_FLAG_NEW_API_ENDPOINTS
 - add fhir-profile header for futs requests
 
 ## Release 1.3.7
+
 - Upgraded to Angular 19
 
 ## Release 1.3.6
+
 - Added hotfix for submit dialog
 
 ## Release 1.3.5
+
 - Implementation of §7.3 notification (non nominal)
 
 ## Release 1.3.4
+
 - Updated Readme license disclaimer
 - Move paste box to core lib
 - Update design of input fields
 
 ## Release 1.3.3
+
 - changed inputs to outline style
 
 ## Release 1.3.2
+
 - Updated ospo-resources for adding additional notes and disclaimer
 
 ## Release 1.3.1
+
 - Add new font and background color
 
 ## Release 1.3.0
+
 - First official GitHub-Release

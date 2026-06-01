@@ -17,6 +17,8 @@
 
 import { Component } from '@angular/core';
 import { FieldWrapper } from '@ngx-formly/core';
+import { MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { LabelInfoIconComponent } from '../../../components/label-info-icon/label-info-icon.component';
 
 @Component({
   selector: 'app-formly-expansion-panel',
@@ -46,6 +48,6 @@ import { FieldWrapper } from '@ngx-formly/core';
       </div>
     </div>
   `,
-  standalone: false,
+  imports: [MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, LabelInfoIconComponent],
 })
 export class ExpansionPanelWrapperComponent extends FieldWrapper {}

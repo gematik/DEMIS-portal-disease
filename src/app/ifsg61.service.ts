@@ -133,7 +133,6 @@ export class Ifsg61Service {
             this.messageDialogService.showErrorDialog({
               errorTitle: 'Meldung konnte nicht zugestellt werden!',
               errors,
-              logFilteringEnabled: environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ERROR_DIALOG_FILTERING,
             });
           });
         },

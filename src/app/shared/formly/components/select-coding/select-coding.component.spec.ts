@@ -17,7 +17,6 @@
 
 import { SelectCodingComponent } from './select-coding.component';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { AppModule } from '../../../../app.module';
 
 //@todo Component needs many formly-inputs, disabled -> need to fix initialization
 xdescribe('SelectCodingComponent', () => {
@@ -29,7 +28,7 @@ xdescribe('SelectCodingComponent', () => {
     component = fixture.point.componentInstance;
   };
 
-  beforeEach(() => MockBuilder(SelectCodingComponent, AppModule));
+  beforeEach(() => MockBuilder(SelectCodingComponent));
 
   it('should create', () => {
     createComponent();
