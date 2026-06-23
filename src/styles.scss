@@ -32,11 +32,6 @@ mat-error {
   font-weight: bold;
 }
 
-//TODO: cleanup
-h1.platzhalter {
-  margin: 10em 16em;
-}
-
 #clinical-status {
   flex-direction: row;
 }
@@ -51,9 +46,13 @@ h1.platzhalter {
   z-index: -1;
 }
 
+//TODO: should be a h2 like all the headings in not-generated pages
 .QUESTIONNAIRE-TITLE div {
-  font-size: 150%;
-  padding-bottom: 1.0rem;
+  font-size: 20px;
+  line-height: 25px;
+  letter-spacing: 0;
+  color: var(--color-primary);
+  margin: 0 0 16px;
 }
 
 .tabs-navigation > div {

@@ -51,13 +51,23 @@ export class SelectCodingComponent extends FieldType<FieldTypeConfig> implements
     this.codings = this.props['options'] as DemisCoding[];
 
     const defaultCode: string | undefined = this.props['defaultCode'];
-    if (defaultCode) {
+    if (defaultCode && this.isFormControlEmpty()) {
+      // Only apply the default code if the form control hasn't already been
+      // populated (e.g. by clipboard import / model preload). Otherwise the
+      // default would overwrite a valid imported value when this field is
+      // created lazily inside a repeat-section (ngOnInit runs AFTER the
+      // importer has written to the model).
       const defaultCoding = this.codings.find(coding => coding.code === defaultCode);
       if (defaultCoding) {
         this.formControl.setValue(defaultCoding);
         this.currentSelectionBreadcrumb = defaultCoding.breadcrumb;
       }
     }
+  }
+
+  private isFormControlEmpty(): boolean {
+    const v = this.formControl.value;
+    return v === null || v === undefined || v === '';
   }
 
   override ngOnDestroy() {

@@ -124,6 +124,10 @@ describe('AutocompleteMultiCodingComponent', () => {
 
     describe("with default value other than NASK'", () => {
       beforeEach(() => {
+        // Reset the form control so the component behaves like a freshly
+        // initialized one
+        underTest.formControl.reset();
+
         // Modify the MockComponent to set the defaultCode to 'ASKU'
         fixture.componentInstance.fields = [
           {
@@ -139,6 +143,10 @@ describe('AutocompleteMultiCodingComponent', () => {
           },
         ];
         fixture.detectChanges();
+
+        // Re-resolve the component reference since formly may have rebuilt it.
+        const debugElement = fixture.debugElement.query(By.directive(AutocompleteMultiCodingComponent));
+        underTest = debugElement.componentInstance;
       });
 
       it('Only default value NASK is removed', () => {

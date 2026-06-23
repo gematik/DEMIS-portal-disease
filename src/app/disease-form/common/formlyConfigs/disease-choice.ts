@@ -78,9 +78,17 @@ export function getDiseaseChoiceFields(diseaseOptions: CodeDisplay[], notificati
       key: 'clinicalStatus.answer.valueString',
       props: {
         ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_AUTOCOMPLETE ? { label: 'Status' } : {}),
+        ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT ? { required: true } : {}),
         options: [
-          { value: StatusEnum.Final, label: 'Endgültig' },
-          { value: StatusEnum.Preliminary, label: 'Vorläufig/Verdacht' },
+          ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT
+            ? [
+                { value: StatusEnum.Preliminary, label: 'Vorläufig/Verdacht' },
+                { value: StatusEnum.Final, label: 'Endgültig' },
+              ]
+            : [
+                { value: StatusEnum.Final, label: 'Endgültig' },
+                { value: StatusEnum.Preliminary, label: 'Vorläufig/Verdacht' },
+              ]),
           { value: StatusEnum.Amended, label: 'Ergänzung oder Korrektur' },
           { value: StatusEnum.Refuted, label: 'Verdacht nicht bestätigt' },
           { value: StatusEnum.Error, label: 'Irrtümliche Meldung revidieren' },

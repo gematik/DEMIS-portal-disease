@@ -33,11 +33,21 @@ export class AutocompleteCodingComponent extends FieldType<FieldTypeConfig> impl
 
   ngOnInit() {
     this.codings = this.props['options'] as DemisCoding[];
-    if (this.props['defaultCode']) {
+    if (this.props['defaultCode'] && this.isFormControlEmpty()) {
+      // Only apply the default code if the form control hasn't already been
+      // populated (e.g. by clipboard import / model preload). Otherwise the
+      // default would overwrite a valid imported value when this field is
+      // created lazily (inside a repeat-section the field's ngOnInit runs
+      // AFTER the importer has written to the model).
       this.formControl.setValue(this.codings.find(coding => coding.code === this.props['defaultCode']));
     }
     if (this.props['disabled']) {
       this.formControl.disable({ emitEvent: false });
     }
+  }
+
+  private isFormControlEmpty(): boolean {
+    const v = this.formControl.value;
+    return v === null || v === undefined || v === '';
   }
 }

@@ -15,13 +15,13 @@
     find details in the "Readme" file.
  */
 
-import { Component, forwardRef, Input, input, OnDestroy, OnInit, viewChild } from '@angular/core';
+import { Component, effect, forwardRef, Input, input, OnDestroy, OnInit, viewChild } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import {
+  MatAutocomplete,
   MatAutocompleteActivatedEvent,
   MatAutocompleteSelectedEvent,
   MatAutocompleteTrigger,
-  MatAutocomplete,
   MatOption,
 } from '@angular/material/autocomplete';
 import { ErrorStateMatcher } from '@angular/material/core';
@@ -29,8 +29,8 @@ import { FieldTypeConfig, FormlyModule } from '@ngx-formly/core';
 import { map, Observable, Subscription } from 'rxjs';
 import { distinctUntilChanged, startWith } from 'rxjs/operators';
 import { DemisCoding } from '../../../demis-types';
-import { NgClass, AsyncPipe } from '@angular/common';
-import { MatChipGrid, MatChipRow, MatChipRemove, MatChipInput } from '@angular/material/chips';
+import { AsyncPipe, NgClass } from '@angular/common';
+import { MatChipGrid, MatChipInput, MatChipRemove, MatChipRow } from '@angular/material/chips';
 import { MatIcon } from '@angular/material/icon';
 import { AddBreadcrumbDirective } from '../../formly/components/autocomplete-coding/add-breadcrumb.directive';
 import { MatInput, MatSuffix } from '@angular/material/input';
@@ -93,6 +93,23 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
   private statusSubscription?: Subscription;
   autocompleteDisabled = false;
   private suppressPropagation = false;
+
+  constructor() {
+    // Sync `selected` flags on options reactively. This is required because
+    // `writeValue()` may run BEFORE the `[options]` signal input has been
+    // populated (race during dynamic Formly field initialization, e.g. when
+    // pasting from clipboard right after a questionnaire has been loaded).
+    // Relying on `this.options()` inside `writeValue` would then silently
+    // produce no selection. The effect re-runs as soon as options arrive.
+    effect(() => {
+      const opts = this.options();
+      if (!opts?.length) return;
+      const selected = this.selectData ?? [];
+      opts.forEach(opt => {
+        opt.selected = selected.some(item => item.code === opt.code);
+      });
+    });
+  }
 
   ngOnInit() {
     this.initialPlaceholder = this.placeholder;
@@ -228,16 +245,25 @@ export class AutocompleteComponent implements OnInit, OnDestroy, ControlValueAcc
   writeValue(obj: any): void {
     if (obj === undefined || obj === null) {
       this.selectControl.reset();
+      this.selectData = [];
       return;
     }
 
     const multi = this.multi();
     if (multi && Array.isArray(obj)) {
-      this.options().forEach(opt => {
-        opt.selected = obj.some(item => item.code === opt.code);
-      });
-
       this.selectData = obj;
+      // Do NOT depend on `this.options()` here: the signal input may not be
+      // populated yet at the moment writeValue runs (race with dynamic
+      // Formly field setup). The constructor's effect() syncs the
+      // `selected` flags as soon as options become available. We still
+      // attempt an immediate sync in case options are already there so the
+      // panel reflects the selection without waiting for the next tick.
+      const opts = this.options();
+      if (opts?.length) {
+        opts.forEach(opt => {
+          opt.selected = obj.some(item => item.code === opt.code);
+        });
+      }
       return;
     }
 

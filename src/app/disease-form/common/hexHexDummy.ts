@@ -133,7 +133,6 @@ export class HexHexDummy {
           phoneNumbers: [
             {
               contactType: 'phone',
-              usage: 'work',
               value: '01234567',
             },
           ],
@@ -317,6 +316,23 @@ export class HexHexDummy {
                         valueString: 'Laborstadt',
                       },
                     },
+                    ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT && {
+                      country: {
+                        answer: {
+                          valueCoding: {
+                            code: 'DE',
+                            display: 'Deutschland',
+                            designations: [
+                              {
+                                language: 'de-DE',
+                                value: 'Deutschland',
+                              },
+                            ],
+                            system: 'urn:iso:std:iso:3166',
+                          },
+                        },
+                      },
+                    }),
                   },
                   contact: {
                     name: {
@@ -404,6 +420,16 @@ export class HexHexDummy {
                                     valueString: 'Südhospizstraße 23',
                                   },
                                 },
+                                street: {
+                                  answer: {
+                                    valueString: 'Südhospizstraße',
+                                  },
+                                },
+                                houseNumber: {
+                                  answer: {
+                                    valueString: '23',
+                                  },
+                                },
                                 postalCode: {
                                   answer: {
                                     valueString: '21482',
@@ -414,6 +440,23 @@ export class HexHexDummy {
                                     valueString: 'Riedlingen',
                                   },
                                 },
+                                ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT && {
+                                  country: {
+                                    answer: {
+                                      valueCoding: {
+                                        code: 'DE',
+                                        display: 'Deutschland',
+                                        designations: [
+                                          {
+                                            language: 'de-DE',
+                                            value: 'Deutschland',
+                                          },
+                                        ],
+                                        system: 'urn:iso:std:iso:3166',
+                                      },
+                                    },
+                                  },
+                                }),
                               },
                               contact: {
                                 name: {
@@ -547,6 +590,23 @@ export class HexHexDummy {
                               valueString: 'Riedlingen-Nord',
                             },
                           },
+                          ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT && {
+                            country: {
+                              answer: {
+                                valueCoding: {
+                                  code: 'DE',
+                                  display: 'Deutschland',
+                                  designations: [
+                                    {
+                                      language: 'de-DE',
+                                      value: 'Deutschland',
+                                    },
+                                  ],
+                                  system: 'urn:iso:std:iso:3166',
+                                },
+                              },
+                            },
+                          }),
                         },
                         contact: {
                           name: {
@@ -1051,7 +1111,12 @@ export class HexHexDummy {
                         valueCoding: {
                           code: 'DE',
                           display: 'Deutschland',
-                          designations: null,
+                          designations: [
+                            {
+                              language: 'de-DE',
+                              value: 'Deutschland',
+                            },
+                          ],
                           system: 'urn:iso:std:iso:3166',
                         },
                       },
@@ -1250,12 +1315,12 @@ export class HexHexDummy {
                           },
                           postalCode: {
                             answer: {
-                              valueString: '',
+                              valueString: '21482',
                             },
                           },
                           city: {
                             answer: {
-                              valueString: '',
+                              valueString: 'Riedlingen',
                             },
                           },
                           country: {
@@ -1263,6 +1328,23 @@ export class HexHexDummy {
                               valueCoding: null,
                             },
                           },
+                          ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT && {
+                            country: {
+                              answer: {
+                                valueCoding: {
+                                  code: 'DE',
+                                  display: 'Deutschland',
+                                  designations: [
+                                    {
+                                      language: 'de-DE',
+                                      value: 'Deutschland',
+                                    },
+                                  ],
+                                  system: 'urn:iso:std:iso:3166',
+                                },
+                              },
+                            },
+                          }),
                         },
                         contact: {
                           name: {

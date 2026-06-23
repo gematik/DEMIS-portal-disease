@@ -2,6 +2,16 @@
 
 # Release portal-disease
 
+## Release 1.9.0
+
+- Added address-toggle field type for switchable addresses in questionnaires
+- Changed order of clinical status options and removed default value for it (FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT)
+- Removed usage parameter from contact (FEATURE_FLAG_WITHOUT_CONTACT_POINT_USE)
+- Fixed styling errors for different spacings and diversity problems
+- Updated @gematik/demis-portal-core-library to 4.2.5
+- Fixed a bug on clearing the disease choice, that lead to a crash of the microfrontend
+- Fixed clipboard import overwriting pasted coding values with the default NASK in follow-up notifications (§ 6.1) and dynamically loaded repeat sections
+
 ## Release 1.8.0
 
 - Removed forward button when on last page

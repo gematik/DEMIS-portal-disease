@@ -369,6 +369,24 @@ describe('DiseaseFormComponent unit tests', () => {
     });
   });
 
+  describe('model initialization with FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT', () => {
+    it('should initialize clinicalStatus.answer.valueString to null when the flag is enabled', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT = true;
+
+      component.ngOnInit();
+
+      expect(component.model.tabDiseaseChoice.clinicalStatus.answer.valueString).toBeNull();
+    });
+
+    it('should initialize clinicalStatus.answer.valueString to StatusEnum.Final when the flag is disabled', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT = false;
+
+      component.ngOnInit();
+
+      expect(component.model.tabDiseaseChoice.clinicalStatus.answer.valueString).toBe('final');
+    });
+  });
+
   describe('form footer rendering via feature flag', () => {
     it('should render gem-demis-forms-footer when FEATURE_FLAG_PORTAL_HEADER_FOOTER is true', () => {
       environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_HEADER_FOOTER = true;

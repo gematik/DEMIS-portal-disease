@@ -20,6 +20,7 @@ import { Observable } from 'rxjs';
 import { FormlyConstants } from '../../../legacy/formly-constants';
 import { ZIP_GERMANY_MAX_LENGTH, ZIP_GERMANY_MIN_LENGTH, ZIP_INTERNATIONAL_MAX_LENGTH, ZIP_INTERNATIONAL_MIN_LENGTH } from '../../../legacy/common-utils';
 import { NotifiedPersonDisclaimer } from '../notified-person-disclaimer';
+import { environment } from 'src/environments/environment';
 
 export type FormlyExpressionType = {
   [property: string]: string | ((field: FormlyFieldConfig) => any) | Observable<any>;
@@ -192,10 +193,14 @@ export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPe
               key: 'contactType',
               defaultValue: 'phone',
             },
-            {
-              key: 'usage',
-              defaultValue: needsContact ? 'work' : undefined,
-            },
+            ...(environment.featureFlags?.FEATURE_FLAG_WITHOUT_CONTACT_POINT_USE
+              ? [{}]
+              : [
+                  {
+                    key: 'usage',
+                    defaultValue: needsContact ? 'work' : undefined,
+                  },
+                ]),
             {
               className: 'flex-grow-1',
               type: 'input',
@@ -274,7 +279,8 @@ export interface ContactsAsModel {
   }[];
   phoneNumbers: {
     contactType: string;
-    usage: string;
+    //TODO remove usage when FEATURE_FLAG_WITHOUT_CONTACT_POINT_USE is removed
+    usage?: string;
     value: string;
   }[];
 }
