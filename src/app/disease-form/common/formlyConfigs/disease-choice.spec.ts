@@ -18,7 +18,7 @@
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { getDiseaseChoiceFields } from './disease-choice';
 import { NotificationType } from '../../../demis-types';
-import { CodeDisplay } from '../../../../api/notification';
+import { CodeDisplay, DiseaseStatus } from '../../../../api/notification';
 import { environment } from '../../../../environments/environment';
 
 function findFieldById(fields: FormlyFieldConfig[], id: string): FormlyFieldConfig | undefined {
@@ -116,6 +116,50 @@ describe('getDiseaseChoiceFields', () => {
 
       expect(diseaseChoice?.props?.['disabled']).toBeTrue();
       expect(diseaseChoice?.props?.['clearable']).toBeFalse();
+    });
+  });
+
+  describe('when FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT is enabled', () => {
+    beforeEach(() => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT = true;
+    });
+
+    it('should mark the clinical-status field as required', () => {
+      const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
+      const clinicalStatus = findFieldById(fields, 'clinical-status');
+
+      expect(clinicalStatus?.props?.['required']).toBeTrue();
+    });
+
+    it('should list Preliminary before Final in the clinical-status options', () => {
+      const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
+      const clinicalStatus = findFieldById(fields, 'clinical-status');
+      const options = clinicalStatus?.props?.['options'] as { value: string; label: string }[];
+
+      expect(options[0].value).toBe(DiseaseStatus.StatusEnum.Preliminary);
+      expect(options[1].value).toBe(DiseaseStatus.StatusEnum.Final);
+    });
+  });
+
+  describe('when FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT is disabled', () => {
+    beforeEach(() => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT = false;
+    });
+
+    it('should not mark the clinical-status field as required', () => {
+      const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
+      const clinicalStatus = findFieldById(fields, 'clinical-status');
+
+      expect(clinicalStatus?.props?.['required']).toBeFalsy();
+    });
+
+    it('should list Final before Preliminary in the clinical-status options', () => {
+      const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
+      const clinicalStatus = findFieldById(fields, 'clinical-status');
+      const options = clinicalStatus?.props?.['options'] as { value: string; label: string }[];
+
+      expect(options[0].value).toBe(DiseaseStatus.StatusEnum.Final);
+      expect(options[1].value).toBe(DiseaseStatus.StatusEnum.Preliminary);
     });
   });
 });

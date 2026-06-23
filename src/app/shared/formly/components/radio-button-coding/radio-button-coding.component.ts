@@ -20,7 +20,7 @@ import { FieldTypeConfig, FormlyModule } from '@ngx-formly/core';
 import { FieldType } from '@ngx-formly/material';
 import { Subscription } from 'rxjs';
 import { DemisCoding } from '../../../../demis-types';
-import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
+import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -45,12 +45,22 @@ export class RadioButtonCodingComponent extends FieldType<FieldTypeConfig> imple
     });
 
     const defaultCode: string | undefined = this.props['defaultCode'];
-    if (defaultCode) {
+    if (defaultCode && this.isFormControlEmpty()) {
+      // Only apply the default code if the form control hasn't already been
+      // populated (e.g. by clipboard import / model preload). Otherwise the
+      // default would overwrite a valid imported value when this field is
+      // created lazily inside a repeat-section (ngOnInit runs AFTER the
+      // importer has written to the model).
       const defaultCoding = this.codings.find(coding => coding.code === defaultCode);
       if (defaultCoding) {
         this.formControl.setValue(defaultCoding);
       }
     }
+  }
+
+  private isFormControlEmpty(): boolean {
+    const v = this.formControl.value;
+    return v === null || v === undefined || v === '';
   }
 
   override ngOnDestroy() {

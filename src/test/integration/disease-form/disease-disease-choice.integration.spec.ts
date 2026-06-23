@@ -81,4 +81,76 @@ describe('DiseaseFormComponent integration tests for Disease Choice Tab', () => 
       });
     });
   });
+
+  describe('disease choice value change flow', () => {
+    it('should load questionnaire when a disease is selected', async () => {
+      await selectTab(fixture, loader, 3);
+
+      const diseaseChoiceControl = component.form.get('tabDiseaseChoice.diseaseChoice.answer.valueCoding') as unknown as FormControl;
+      diseaseChoiceControl?.setValue({
+        code: 'cvdd',
+        display: 'Coronavirus-Krankheit-2019 (COVID-19)',
+        designations: [],
+      });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(getQuestionnaireSpy).toHaveBeenCalledTimes(1);
+      expect(getQuestionnaireSpy).toHaveBeenCalledWith('cvdd', component.notificationType);
+    });
+
+    it('should not load questionnaire again when disease selection is cleared', async () => {
+      await selectTab(fixture, loader, 3);
+
+      const diseaseChoiceControl = component.form.get('tabDiseaseChoice.diseaseChoice.answer.valueCoding') as unknown as FormControl;
+      diseaseChoiceControl?.setValue({
+        code: 'cvdd',
+        display: 'Coronavirus-Krankheit-2019 (COVID-19)',
+        designations: [],
+      });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(getQuestionnaireSpy).toHaveBeenCalledTimes(1);
+
+      diseaseChoiceControl?.setValue(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(getQuestionnaireSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should load questionnaire for another disease after selection is cleared', async () => {
+      await selectTab(fixture, loader, 3);
+
+      const diseaseChoiceControl = component.form.get('tabDiseaseChoice.diseaseChoice.answer.valueCoding') as unknown as FormControl;
+      diseaseChoiceControl?.setValue({
+        code: 'cvdd',
+        display: 'Coronavirus-Krankheit-2019 (COVID-19)',
+        designations: [],
+      });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(getQuestionnaireSpy).toHaveBeenCalledTimes(1);
+      expect(getQuestionnaireSpy).toHaveBeenCalledWith('cvdd', component.notificationType);
+
+      diseaseChoiceControl?.setValue(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(getQuestionnaireSpy).toHaveBeenCalledTimes(1);
+
+      diseaseChoiceControl?.setValue({
+        code: 'toxp',
+        display: 'Toxoplasmose',
+        designations: [],
+      });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(getQuestionnaireSpy).toHaveBeenCalledTimes(2);
+      expect(getQuestionnaireSpy).toHaveBeenCalledWith('toxp', component.notificationType);
+    });
+  });
 });

@@ -241,7 +241,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
 
     this.model.tabDiseaseChoice = {
       diseaseChoice: { answer: { valueCoding: null } },
-      clinicalStatus: { answer: { valueString: StatusEnum.Final } },
+      clinicalStatus: { answer: { valueString: environment.featureFlags?.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT ? null : StatusEnum.Final } },
       statusNoteGroup: {
         statusNote: { answer: { valueString: '' } },
         initialNotificationId: { answer: { valueString: '' } },
@@ -593,7 +593,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       this.copyAndKeepInSyncService.subscribeToCurrentAddressTypeChanges(e.field, e.value, this.notifiedPersonFields, this.form, this.model);
     }
 
-    if ((e.field?.id === 'disease-choice' || e.field?.id === 'disease-choice-input') && e.type === 'valueChanges') {
+    if ((e.field?.id === 'disease-choice' || e.field?.id === 'disease-choice-input') && e.type === 'valueChanges' && e.value?.code) {
       this.handleDiseaseSelectionChange(e.value.code);
     }
   }

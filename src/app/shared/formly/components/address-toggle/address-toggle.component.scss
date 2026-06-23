@@ -1,0 +1,23 @@
+.address-toggle-wrapper {
+  margin-bottom: 1rem;
+  margin-left: 3rem;
+}
+
+.toggle-button-wrapper {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  
+  .toggle-label {
+    margin-right: 0.5rem;
+  }
+}
+
+.address-fields-wrapper {
+  padding: 0;
+  margin: 0;
+
+  &-visible {
+    margin-left: 3rem;
+  }
+}

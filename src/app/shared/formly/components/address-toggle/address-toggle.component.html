@@ -1,0 +1,34 @@
+@let addAddressLabel = 'Adresse hinzufügen';
+@let removeAddressLabel = 'Adresse entfernen';
+
+<div [attr.id]="field.key + '-address-toggle-wrapper'" class="address-toggle-wrapper">
+  <div [attr.id]="field.key + '-address-toggle-wrapper'" class="toggle-button-wrapper">
+    <button
+      mat-button
+      type="button"
+      [attr.id]="field.key + '-address-toggle-button'"
+      (click)="toggle()"
+      class="add-button"
+      [attr.aria-expanded]="addressVisible()"
+      [attr.aria-controls]="field.key + '-address-fields'">
+      <mat-icon [attr.id]="field.key + '-address-toggle-icon'" aria-hidden="true">
+        {{ addressVisible() ? 'remove_circle' : 'add_circle' }}
+      </mat-icon>
+      <span
+        [attr.id]="field.key + '-address-toggle-label'"
+        class="toggle-label">
+        {{ addressVisible() ? removeAddressLabel : addAddressLabel }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Child fields use Formly expressions for hide - Formly handles rendering -->
+  <div
+    [attr.id]="field.key + '-address-fields'"
+    class="address-fields-wrapper"
+    [class.address-fields-wrapper-visible]="addressVisible()">
+    @for (childField of field.fieldGroup; track childField.key) {
+    <formly-field [field]="childField"></formly-field>
+    }
+  </div>
+</div>

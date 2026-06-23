@@ -17,6 +17,7 @@
 
 import { ConfigOption } from '@ngx-formly/core';
 import { defaultAppearanceExtension, defaultPlaceholderExtension } from '../formly-extensions';
+import { AddressToggleComponent } from './components/address-toggle/address-toggle.component';
 import { AutocompleteCodingComponent } from './components/autocomplete-coding/autocomplete-coding.component';
 import { AutocompleteMultiCodingComponent } from './components/autocomplete-multi-coding/autocomplete-multi-coding.component';
 import { RadioButtonCodingComponent } from './components/radio-button-coding/radio-button-coding.component';
@@ -37,6 +38,7 @@ import { PanelWrapperComponent } from './wrappers/panel-wrapper/panel-wrapper.co
  */
 export const APP_FORMLY_CONFIG: ConfigOption = {
   types: [
+    { name: 'address-toggle', component: AddressToggleComponent },
     { name: 'repeat-section', component: RepeatSectionComponent },
     { name: 'autocomplete-coding', component: AutocompleteCodingComponent, wrappers: ['form-field'] },
     { name: 'autocomplete-multi-coding', component: AutocompleteMultiCodingComponent, wrappers: ['form-field'] },

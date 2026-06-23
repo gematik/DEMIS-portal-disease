@@ -70,7 +70,7 @@ export const NOTIFIER_FACILITY = {
       { contactType: 'email', value: 't.person@gmail.com' },
       { contactType: 'email', value: 'test.person@kh-rie.de' },
     ],
-    phoneNumbers: [{ contactType: 'phone', usage: 'work', value: '01234567' }],
+    phoneNumbers: [{ contactType: 'phone', value: '01234567' }],
   },
 };
 
