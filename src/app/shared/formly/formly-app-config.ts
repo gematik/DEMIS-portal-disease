@@ -27,6 +27,7 @@ import { TabsNavigationComponent } from './components/tabs-navigation/tabs-navig
 import { ExpansionPanelWrapperComponent } from './wrappers/expansion-panel-wrapper/expansion-panel.wrapper';
 import { FormFieldWithTooltipWrapperComponent } from './wrappers/form-field-with-tooltip-wrapper/form-field-with-tooltip-wrapper.component';
 import { PanelWrapperComponent } from './wrappers/panel-wrapper/panel-wrapper.component';
+import { DemisIndentGroupWrapperComponent } from './wrappers/demis-indent-group-wrapper/demis-indent-group-wrapper.component';
 
 /**
  * Shared Formly config (types/wrappers/extensions/validation messages)
@@ -50,6 +51,7 @@ export const APP_FORMLY_CONFIG: ConfigOption = {
     { name: 'panel', component: PanelWrapperComponent },
     { name: 'expansion-panel', component: ExpansionPanelWrapperComponent },
     { name: 'form-field-with-tooltip', component: FormFieldWithTooltipWrapperComponent },
+    { name: 'demis-indent-group', component: DemisIndentGroupWrapperComponent },
   ],
   validators: [],
   validationMessages: [],

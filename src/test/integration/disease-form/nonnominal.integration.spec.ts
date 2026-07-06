@@ -21,7 +21,7 @@ import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { getTabList } from '../../shared/material-harness-utils';
 import { NotificationType } from '../../../app/demis-types';
-import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
+import { selectTab } from 'src/test/integration/utils/disease-common-utils';
 
 describe('DiseaseFormComponent nonnominal integration tests', () => {
   let component: DiseaseFormComponent;
@@ -42,14 +42,17 @@ describe('DiseaseFormComponent nonnominal integration tests', () => {
     expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
   });
 
-  it('should show the non-nominal disclaimer text', async () => {
-    expect(fixture.nativeElement.textContent).toContain(NotifiedPersonDisclaimer.DEFAULT_DISCLAIMER);
-  });
-
   it('should show new stepper heading with nonnominal routing', async () => {
     let textContent = fixture.nativeElement.textContent;
     expect(textContent.includes('Krankheit')).toBeTruthy();
     expect(textContent.includes('Krankheitsmeldung')).toBeFalsy();
+  });
+
+  it('should show the non-nominal notfied person disclaimer text', async () => {
+    await selectTab(fixture, loader, 2);
+    expect(fixture.nativeElement.textContent).toContain(
+      'Sie möchten eine nichtnamentliche Meldung nach § 7 Abs. 3 IfSG absetzen. Die hier erforderlichen Angaben zur betroffenen Person werden ausschließlich zur Bildung des Pseudonyms verwendet und nach der Pseudonymisierung verworfen. Das Pseudonym dient der Zuordnung zusammengehöriger Meldungen. Benutzen Sie bitte korrekte Personendaten, um dies zu gewährleisten. Mehr Informationen finden Sie hier.'
+    );
   });
 
   it('should not show epidemiologische Angaben', async () => {

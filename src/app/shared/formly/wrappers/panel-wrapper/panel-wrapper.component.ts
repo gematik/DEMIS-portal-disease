@@ -16,7 +16,7 @@
  */
 
 import { Component } from '@angular/core';
-import { FieldWrapper } from '@ngx-formly/core';
+import { FieldWrapper, FormlyFieldConfig } from '@ngx-formly/core';
 import { LabelInfoIconComponent } from '../../../components/label-info-icon/label-info-icon.component';
 
 @Component({
@@ -25,4 +25,28 @@ import { LabelInfoIconComponent } from '../../../components/label-info-icon/labe
   styleUrl: './panel-wrapper.component.scss',
   imports: [LabelInfoIconComponent],
 })
-export class PanelWrapperComponent extends FieldWrapper {}
+export class PanelWrapperComponent extends FieldWrapper {
+  protected get useIndentation(): boolean {
+    return !this.hasItemGroupInSubtree(this.field);
+  }
+
+  private hasItemGroupInSubtree(field?: FormlyFieldConfig): boolean {
+    if (!field) {
+      return false;
+    }
+
+    if (this.hasItemGroupClass(field.className) || this.hasItemGroupClass(field.fieldGroupClassName)) {
+      return true;
+    }
+
+    if (field.fieldArray && this.hasItemGroupInSubtree(field.fieldArray as FormlyFieldConfig)) {
+      return true;
+    }
+
+    return (field.fieldGroup ?? []).some(childField => this.hasItemGroupInSubtree(childField));
+  }
+
+  private hasItemGroupClass(classNames?: string): boolean {
+    return classNames?.split(/\s+/).includes('ITEM_GROUP') ?? false;
+  }
+}

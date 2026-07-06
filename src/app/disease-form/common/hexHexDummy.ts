@@ -894,18 +894,23 @@ export class HexHexDummy {
             valueString: 'Das war eine schwere Diagnose',
           },
         },
-        recordedDate: {
-          answer: {
-            valueDate: '2026-05-05',
-          },
-        },
-        onset: {
-          answer: {
-            valueDate: '2026-05-05',
-          },
-        },
       },
       tabQuestionnaire: {
+        'repeat-section-1': [
+          {
+            countryOfInfection: {
+              answer: {
+                valueCoding: {
+                  code: 'AF',
+                  designations: null,
+                  display: 'Afghanistan',
+                  system: 'urn:iso:std:iso:3166',
+                  selected: false,
+                },
+              },
+            },
+          },
+        ],
         cd4: {
           answer: {
             cd4: '',
@@ -916,19 +921,38 @@ export class HexHexDummy {
             viralLoad: '',
           },
         },
-        'repeat-section-1': [
+        'repeat-section-2': [
           {
             infectionPathRisk: {
               answer: {
                 valueCoding: {
-                  code: '16090731000119102',
-                  display: 'Berufliche Exposition',
+                  code: '472986005',
                   designations: null,
+                  display: 'Sexuell aktiv mit Männern',
                   system: 'http://snomed.info/sct',
+                  selected: false,
                 },
-                medicinalWorkerNote: {
+                infectionSource: {
                   answer: {
-                    valueString: '',
+                    valueCoding: [
+                      {
+                        code: '472986005',
+                        designations: null,
+                        display: 'Sexuell aktiv mit Männern',
+                        system: 'http://snomed.info/sct',
+                        selected: true,
+                      },
+                    ],
+                  },
+                },
+                infectionSourceSecure: {
+                  answer: {
+                    valueCoding: {
+                      code: '373066001',
+                      designations: null,
+                      display: 'Ja',
+                      system: 'http://snomed.info/sct',
+                    },
                   },
                 },
               },
@@ -939,38 +963,60 @@ export class HexHexDummy {
           answer: {
             valueCoding: {
               code: 'DE',
-              display: 'Deutschland',
               designations: null,
+              display: 'Deutschland',
               system: 'urn:iso:std:iso:3166',
+              selected: false,
             },
           },
         },
-        countryOfInfection: {
+        samplingDate: {
           answer: {
-            valueCoding: {
-              code: 'DE',
-              display: 'Deutschland',
-              designations: null,
-              system: 'urn:iso:std:iso:3166',
-            },
+            valueDate: '2026-06-26',
           },
         },
         firstDiagnosisGER: {
           answer: {
             valueCoding: {
-              code: '261665006',
-              display: 'Unbekannt',
+              code: '373066001',
               designations: null,
+              display: 'Ja',
               system: 'http://snomed.info/sct',
+            },
+            lastNegTest: {
+              answer: {
+                valueDate: '2026-07',
+              },
             },
           },
         },
         firstDiagnosisAbroad: {
           answer: {
             valueCoding: {
-              code: '261665006',
-              display: 'Unbekannt',
+              code: '373066001',
               designations: null,
+              display: 'Ja',
+              system: 'http://snomed.info/sct',
+            },
+            firstDiagnosisCountry: {
+              answer: {
+                valueCoding: {
+                  code: 'DE',
+                  designations: null,
+                  display: 'Deutschland',
+                  system: 'urn:iso:std:iso:3166',
+                  selected: false,
+                },
+              },
+            },
+          },
+        },
+        genderDefintion: {
+          answer: {
+            valueCoding: {
+              code: '1332082008',
+              designations: null,
+              display: 'Trans*frau',
               system: 'http://snomed.info/sct',
             },
           },
@@ -978,10 +1024,23 @@ export class HexHexDummy {
         stadiumHIVD: {
           answer: {
             valueCoding: {
-              code: '261665006',
-              display: 'Unbekannt',
+              code: '91947003',
               designations: null,
+              display: 'Asymptomatische HIV-Infektion (CDC-A)',
               system: 'http://snomed.info/sct',
+            },
+            cdcA: {
+              answer: {
+                valueCoding: [
+                  {
+                    code: '111880001',
+                    designations: null,
+                    display: 'Akute HIV-Infektion',
+                    system: 'http://snomed.info/sct',
+                    selected: true,
+                  },
+                ],
+              },
             },
           },
         },
@@ -989,9 +1048,9 @@ export class HexHexDummy {
           answer: {
             valueCoding: [
               {
-                code: '105629000',
-                display: 'Chlamydien-Infektion',
+                code: '1163504003',
                 designations: null,
+                display: 'Infektion durch Mycoplasma genitalium',
                 system: 'http://snomed.info/sct',
                 selected: true,
               },
@@ -1001,29 +1060,29 @@ export class HexHexDummy {
         hivPrEPStatusHIVD: {
           answer: {
             valueCoding: {
+              code: '373067005',
+              designations: null,
+              display: 'Nein',
+              system: 'http://snomed.info/sct',
+            },
+          },
+        },
+        sexWorkSold: {
+          answer: {
+            valueCoding: {
               code: '261665006',
+              designations: null,
               display: 'Unbekannt',
-              designations: null,
               system: 'http://snomed.info/sct',
             },
           },
         },
-        sexWork: {
+        sexWorkBought: {
           answer: {
             valueCoding: {
-              code: '1631000175102',
-              display: 'Patient/Patientin nicht gefragt',
+              code: '373067005',
               designations: null,
-              system: 'http://snomed.info/sct',
-            },
-          },
-        },
-        genderDefintion: {
-          answer: {
-            valueCoding: {
-              code: '1332083003',
-              display: 'Trans*mann',
-              designations: null,
+              display: 'Nein',
               system: 'http://snomed.info/sct',
             },
           },
@@ -1047,10 +1106,11 @@ export class HexHexDummy {
         isDead: {
           answer: {
             valueCoding: {
-              code: 'yes',
-              display: 'Ja',
+              code: '373066001',
               designations: null,
-              system: 'https://demis.rki.de/fhir/CodeSystem/yesOrNoAnswer',
+              display: 'Ja',
+              system: 'http://snomed.info/sct',
+              version: 'http://snomed.info/sct/11000274103/version/20251115',
             },
             deathDate: {
               answer: {
@@ -1072,17 +1132,23 @@ export class HexHexDummy {
         labSpecimenTaken: {
           answer: {
             valueCoding: {
-              code: 'yes',
-              display: 'Ja',
+              code: '373066001',
               designations: null,
-              system: 'https://demis.rki.de/fhir/CodeSystem/yesOrNoAnswer',
+              display: 'Ja',
+              system: 'http://snomed.info/sct',
+              version: 'http://snomed.info/sct/11000274103/version/20251115',
             },
             labSpecimenLab: {
               answer: {
-                Organization: {
+                LaboratoryFacility: {
                   name: {
                     answer: {
                       valueString: 'Lab labor',
+                    },
+                  },
+                  bsnr: {
+                    answer: {
+                      valueString: '132456789',
                     },
                   },
                   address: {
@@ -1161,10 +1227,11 @@ export class HexHexDummy {
         hospitalized: {
           answer: {
             valueCoding: {
-              code: 'yes',
-              display: 'Ja',
+              code: '373066001',
               designations: null,
-              system: 'https://demis.rki.de/fhir/CodeSystem/yesOrNoAnswer',
+              display: 'Ja',
+              system: 'http://snomed.info/sct',
+              version: 'http://snomed.info/sct/11000274103/version/20251115',
             },
             'repeat-section-1': [
               {
@@ -1204,10 +1271,15 @@ export class HexHexDummy {
                                 country: {
                                   answer: {
                                     valueCoding: {
-                                      code: 'NASK',
-                                      display: 'nicht erhoben',
-                                      designations: null,
-                                      system: 'http://terminology.hl7.org/CodeSystem/v3-NullFlavor',
+                                      code: 'DE',
+                                      display: 'Deutschland',
+                                      designations: [
+                                        {
+                                          language: 'de-DE',
+                                          value: 'Deutschland',
+                                        },
+                                      ],
+                                      system: 'urn:iso:std:iso:3166',
                                     },
                                   },
                                 },
@@ -1252,19 +1324,23 @@ export class HexHexDummy {
                           answer: {
                             valueCoding: {
                               code: '0100',
-                              display: 'Innere Medizin',
                               designations: null,
-                              system: 'https://demis.rki.de/fhir/CodeSystem/hospitalizationServiceType',
+                              display: 'Innere Medizin',
+                              system: 'http://fhir.de/CodeSystem/dkgev/Fachabteilungsschluessel-erweitert',
+                              version: '1.5.4',
+                              selected: false,
                             },
                           },
                         },
                         reason: {
                           answer: {
                             valueCoding: {
-                              code: 'NASK',
-                              display: 'nicht erhoben',
+                              code: 'becauseOfOtherReason',
                               designations: null,
-                              system: 'http://terminology.hl7.org/CodeSystem/v3-NullFlavor',
+                              display: 'Hospitalisiert aufgrund einer anderen Ursache als der gemeldeten Krankheit',
+                              system: 'https://demis.rki.de/fhir/CodeSystem/hospitalizationReason',
+                              version: '1.0.1',
+                              selected: false,
                             },
                           },
                         },
@@ -1272,6 +1348,11 @@ export class HexHexDummy {
                           start: {
                             answer: {
                               valueDate: '2026-05-05',
+                            },
+                          },
+                          end: {
+                            answer: {
+                              valueDate: '2026-05-06',
                             },
                           },
                         },
@@ -1286,17 +1367,23 @@ export class HexHexDummy {
         infectProtectFacility: {
           answer: {
             valueCoding: {
-              code: 'yes',
-              display: 'Ja',
+              code: '373066001',
               designations: null,
-              system: 'https://demis.rki.de/fhir/CodeSystem/yesOrNoAnswer',
+              display: 'Ja',
+              system: 'http://snomed.info/sct',
+              version: 'http://snomed.info/sct/11000274103/version/20251115',
             },
             'repeat-section-2': [
               {
                 infectProtectFacilityGroup: {
+                  infectProtectFacilityBegin: {
+                    answer: {
+                      valueDate: '2026-05-05',
+                    },
+                  },
                   infectProtectFacilityOrganization: {
                     answer: {
-                      Organization: {
+                      InfectProtectFacility: {
                         name: {
                           answer: {
                             valueString: 'Krankenhaus Riedlingen-Süd',
@@ -1325,26 +1412,19 @@ export class HexHexDummy {
                           },
                           country: {
                             answer: {
-                              valueCoding: null,
-                            },
-                          },
-                          ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_STRICT && {
-                            country: {
-                              answer: {
-                                valueCoding: {
-                                  code: 'DE',
-                                  display: 'Deutschland',
-                                  designations: [
-                                    {
-                                      language: 'de-DE',
-                                      value: 'Deutschland',
-                                    },
-                                  ],
-                                  system: 'urn:iso:std:iso:3166',
-                                },
+                              valueCoding: {
+                                code: 'DE',
+                                display: 'Deutschland',
+                                designations: [
+                                  {
+                                    language: 'de-DE',
+                                    value: 'Deutschland',
+                                  },
+                                ],
+                                system: 'urn:iso:std:iso:3166',
                               },
                             },
-                          }),
+                          },
                         },
                         contact: {
                           name: {
@@ -1355,12 +1435,12 @@ export class HexHexDummy {
                             },
                             given: {
                               answer: {
-                                valueString: '',
+                                valueString: 'Monica',
                               },
                             },
                             family: {
                               answer: {
-                                valueString: '',
+                                valueString: 'Paris',
                               },
                             },
                           },
@@ -1368,25 +1448,28 @@ export class HexHexDummy {
                         telecom: {
                           phone: {
                             answer: {
-                              valueString: '',
+                              valueString: '030622659',
                             },
                           },
                           email: {
                             answer: {
-                              valueString: '',
+                              valueString: 'paris@foo.de',
                             },
                           },
                         },
-                      },
-                    },
-                  },
-                  infectProtectFacilityType: {
-                    answer: {
-                      valueCoding: {
-                        code: 'medFacility',
-                        display: 'Medizinische Einrichtung',
-                        designations: null,
-                        system: 'https://demis.rki.de/fhir/CodeSystem/organizationType',
+                        type: {
+                          answer: {
+                            valueCoding: {
+                              breadcrumb: 'Medizinische Einrichtung',
+                              code: 'medFacility',
+                              designations: null,
+                              display: 'Medizinische Einrichtung',
+                              system: 'https://demis.rki.de/fhir/CodeSystem/organizationType',
+                              version: '1.4.2',
+                              selected: false,
+                            },
+                          },
+                        },
                       },
                     },
                   },
@@ -1394,15 +1477,11 @@ export class HexHexDummy {
                     answer: {
                       valueCoding: {
                         code: 'accommodation',
+                        designations: [],
                         display: 'Unterbringung',
-                        designations: null,
                         system: 'https://demis.rki.de/fhir/CodeSystem/organizationAssociation',
+                        version: '1.0.1',
                       },
-                    },
-                  },
-                  infectProtectFacilityBegin: {
-                    answer: {
-                      valueDate: '2026-05-05',
                     },
                   },
                 },
@@ -1413,10 +1492,11 @@ export class HexHexDummy {
         placeExposure: {
           answer: {
             valueCoding: {
-              code: 'yes',
-              display: 'Ja',
+              code: '373066001',
               designations: null,
-              system: 'https://demis.rki.de/fhir/CodeSystem/yesOrNoAnswer',
+              display: 'Ja',
+              system: 'http://snomed.info/sct',
+              version: 'http://snomed.info/sct/11000274103/version/20251115',
             },
             'repeat-section-3': [
               {
@@ -1449,10 +1529,11 @@ export class HexHexDummy {
         organDonation: {
           answer: {
             valueCoding: {
-              code: 'yes',
-              display: 'Ja',
+              code: '373066001',
               designations: null,
-              system: 'https://demis.rki.de/fhir/CodeSystem/yesOrNoAnswer',
+              display: 'Ja',
+              system: 'http://snomed.info/sct',
+              version: 'http://snomed.info/sct/11000274103/version/20251115',
             },
           },
         },
@@ -1467,19 +1548,64 @@ export class HexHexDummy {
           answer: {
             valueCoding: {
               code: '373066001',
+              designations: null,
               display: 'Ja',
-              designations: [],
               system: 'http://snomed.info/sct',
+              version: 'http://snomed.info/sct/11000274103/version/20251115',
             },
+            'repeat-section-1': [
+              {
+                immunizationRef: {
+                  answer: {
+                    Immunization: {
+                      note: {
+                        answer: {
+                          valueString: 'Geimpft in den USA',
+                        },
+                      },
+                      vaccineCode: {
+                        answer: {
+                          valueCoding: {
+                            code: '871766009',
+                            designations: [
+                              {
+                                language: 'de-DE',
+                                value: 'Monovalenter Masern-Impfstoff (Ma)',
+                                use: {},
+                              },
+                            ],
+                            display: 'Monovalenter Masern-Impfstoff (Ma)',
+                            system: 'http://snomed.info/sct',
+                            version: 'http://snomed.info/sct/11000274103/version/20251115',
+                            selected: false,
+                          },
+                        },
+                      },
+                      occurrence: {
+                        answer: {
+                          valueDate: '2017-01-04',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            ],
           },
         },
         pregnancy: {
           answer: {
             valueCoding: {
               code: '373066001',
+              designations: null,
               display: 'Ja',
-              designations: [],
               system: 'http://snomed.info/sct',
+              version: 'http://snomed.info/sct/11000274103/version/20251115',
+            },
+            pregnancyWeek: {
+              answer: {
+                pregnancyWeek: 12,
+              },
             },
           },
         },
@@ -1487,9 +1613,10 @@ export class HexHexDummy {
           answer: {
             valueCoding: {
               code: '373066001',
+              designations: null,
               display: 'Ja',
-              designations: [],
               system: 'http://snomed.info/sct',
+              version: 'http://snomed.info/sct/11000274103/version/20251115',
             },
           },
         },

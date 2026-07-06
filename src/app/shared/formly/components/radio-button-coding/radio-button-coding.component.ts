@@ -36,12 +36,13 @@ export class RadioButtonCodingComponent extends FieldType<FieldTypeConfig> imple
   ngOnInit() {
     this.codings = this.props['options'] as DemisCoding[];
 
-    // convert an external coding value (which is not ===) to an internal one
+    // Normalize both the initial value and later changes.
+    // The initial value may already be present before ngOnInit runs, especially for
+    // preloaded data in lazily created repeat-section fields. valueChanges only
+    // covers later updates.
+    this.resolveAndApplyInternalCoding(this.formControl.value);
     this.changesSubscription = this.formControl.valueChanges.subscribe((value: any) => {
-      if (value && !this.codings.find(c => c === value)) {
-        const internalValue = this.codings.find(c => c.code === value.code);
-        this.formControl.setValue(internalValue);
-      }
+      this.resolveAndApplyInternalCoding(value);
     });
 
     const defaultCode: string | undefined = this.props['defaultCode'];
@@ -55,6 +56,29 @@ export class RadioButtonCodingComponent extends FieldType<FieldTypeConfig> imple
       if (defaultCoding) {
         this.formControl.setValue(defaultCoding);
       }
+    }
+  }
+
+  /**
+   * Replaces an externally provided Coding object with the matching option instance
+   * from this radio button's available codings.
+   *
+   * This is needed because the radio group compares selected values by object reference.
+   * Preloaded values, for example from dummy data or imports, may have the same code/system
+   * but not be the same object instance as the option used by the radio button.
+   *
+   * @param value the current form control value to normalize
+   */
+  private resolveAndApplyInternalCoding(value: any): void {
+    if (!value) return;
+
+    const isAlreadyInternalValue = this.codings.some(coding => coding === value);
+    if (isAlreadyInternalValue) return;
+
+    const internalValue = this.codings.find(coding => coding.code === value.code && coding.system === value.system);
+
+    if (internalValue) {
+      this.formControl.setValue(internalValue, { emitEvent: false });
     }
   }
 
