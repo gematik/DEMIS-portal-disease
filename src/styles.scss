@@ -1,6 +1,8 @@
 @use '@angular/material' as mat;
 
 :root {
+  --demis-indent-group-offset: 3rem;
+
   @include mat.tooltip-overrides((
     container-color: var(--color-neutral-lighter),
     supporting-text-color: var(--color-black),
@@ -126,6 +128,10 @@ app-tabs-navigation .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
 button[mat-icon-button] {
   border: none;
   background-color: transparent;
+}
+
+.demis-indent-group {
+  margin-left: var(--demis-indent-group-offset);
 }
 
 .loading-message {

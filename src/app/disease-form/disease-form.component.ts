@@ -304,7 +304,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       case NotificationType.FollowUpNotification7_3:
         return notifiedPersonAnonymousConfigFields(this.countryCodeList, GENDER_OPTION_LIST, NotifiedPersonDisclaimer.NON_NOMINAL_FOLLOW_UP_DISCLAIMER);
       case NotificationType.NonNominalNotification7_3:
-        return notifiedPersonNotByNameConfigFields(this.countryCodeList, GENDER_OPTION_LIST, NotifiedPersonDisclaimer.DEFAULT_DISCLAIMER);
+        return notifiedPersonNotByNameConfigFields(this.countryCodeList, GENDER_OPTION_LIST, NotifiedPersonDisclaimer.NON_NOMINAL_DISCLAIMER);
       default:
         return notifiedPersonFormConfigFields(true);
     }
@@ -312,10 +312,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
 
   public get FEATURE_FLAG_PORTAL_HEADER_FOOTER(): boolean {
     return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_HEADER_FOOTER;
-  }
-
-  public get FEATURE_FLAG_PORTAL_ACCESSIBILITY(): boolean {
-    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_ACCESSIBILITY;
   }
 
   public get FEATURE_FLAG_FOOTER_LINKS_CORRECTION(): boolean {

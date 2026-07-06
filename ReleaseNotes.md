@@ -2,6 +2,14 @@
 
 # Release portal-disease
 
+## Release 1.9.1
+- Fixed third party license collection
+- Removed feature flag FEATURE_FLAG_PORTAL_ACCESSIBILITY
+- Fixed broken indentation for form field groups
+- Updated hexHexDummy data
+- Changed disclaimer text for non-nominal notified person
+- Updated NGINX-Base-Image to 1.31.2
+
 ## Release 1.9.0
 
 - Added address-toggle field type for switchable addresses in questionnaires
