@@ -21,15 +21,13 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  HostBinding,
-  HostListener,
   inject,
   NgZone,
   OnDestroy,
   OnInit,
   signal,
   Signal,
-  ViewChild,
+  viewChild,
   WritableSignal,
 } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -101,6 +99,11 @@ const NO_DISEASE_CHOOSEN: FormlyFieldConfig[] = [
   selector: 'app-disease-form',
   templateUrl: './disease-form.component.html',
   styleUrls: ['./disease-form.component.scss'],
+  host: {
+    '[style.--subheader-offset]': 'subheaderOffset',
+    '(window:keydown.control.ArrowRight)': 'nextTab()',
+    '(window:keydown.control.ArrowLeft)': 'prevTab()',
+  },
   imports: [
     MaxHeightContentContainerComponent,
     MatProgressSpinner,
@@ -114,11 +117,10 @@ const NO_DISEASE_CHOOSEN: FormlyFieldConfig[] = [
   ],
 })
 export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTargetComponent, OnDestroy {
-  @ViewChild('notificationSubheader', { read: ElementRef })
-  private readonly notificationSubheader?: ElementRef<HTMLElement>;
+  private readonly notificationSubheader = viewChild<ElementRef<HTMLElement>>('notificationSubheader');
 
-  @HostBinding('style.--subheader-offset')
   subheaderOffset: string = '0px';
+
   private readonly ngZone = inject(NgZone); // ensure we can force change detection
 
   get formlyConfigFields(): FormlyFieldConfig[] {
@@ -169,9 +171,16 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     }
   }
 
+  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this toggle and keep only the modern layout path once the flag is retired.
+  public get isPortalDiseaseLayoutEnabled(): boolean {
+    return environment.featureFlags?.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT ?? false;
+  }
+
   private calculateSubheaderHeight(): void {
-    if (this.notificationSubheader?.nativeElement) {
-      const height = this.notificationSubheader.nativeElement.offsetHeight;
+    const notificationSubheader = this.notificationSubheader();
+
+    if (notificationSubheader?.nativeElement) {
+      const height = notificationSubheader.nativeElement.offsetHeight;
       this.subheaderOffset = `${height}px`;
     } else {
       this.subheaderOffset = '0px';
@@ -202,14 +211,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       })
     );
   };
-
-  ngAfterViewInit(): void {
-    // Verzögere die Berechnung bis zum nächsten Change Detection Zyklus
-    Promise.resolve().then(() => {
-      this.calculateSubheaderHeight();
-      this.changeDetector.detectChanges();
-    });
-  }
 
   ngOnInit() {
     this.isLoading.set(true);
@@ -297,6 +298,18 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     }
   }
 
+  ngAfterViewInit(): void {
+    // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this legacy-only guard when FEATURE_FLAG_PORTAL_DISEASE_LAYOUT is removed.
+    if (this.isPortalDiseaseLayoutEnabled) {
+      return;
+    }
+
+    Promise.resolve().then(() => {
+      this.calculateSubheaderHeight();
+      this.changeDetector.detectChanges();
+    });
+  }
+
   private getNotifiedPersonFields(notificationType: NotificationType): FormlyFieldConfig[] {
     switch (notificationType) {
       case NotificationType.FollowUpNotification6_1:
@@ -308,14 +321,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       default:
         return notifiedPersonFormConfigFields(true);
     }
-  }
-
-  public get FEATURE_FLAG_PORTAL_HEADER_FOOTER(): boolean {
-    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_PORTAL_HEADER_FOOTER;
-  }
-
-  public get FEATURE_FLAG_FOOTER_LINKS_CORRECTION(): boolean {
-    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOOTER_LINKS_CORRECTION ?? false;
   }
 
   public isFollowUpNotification6_1(): boolean {
@@ -424,7 +429,10 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
         type: 'tabs-navigation',
         id: 'NAVIGATION',
         props: {
-          title: 'Krankheit melden',
+          sideNavTitle: this.getSideNavTitle(),
+          sideNavDescription: this.getSideNavDescription(),
+          onHexHex: () => this.hexHex(),
+          onPaste: (clipboardData: Map<string, string>) => this.paste(clipboardData),
         },
         fieldGroup: [
           {
@@ -475,6 +483,37 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
       this.addTooltipWrapperToFormFields(this.fields);
       this.fieldSequence = makeFieldSequence(this.fields);
     });
+  }
+
+  private getSideNavTitle(): string {
+    switch (this.notificationType) {
+      case NotificationType.NonNominalNotification7_3:
+        return 'Krankheit';
+      case NotificationType.FollowUpNotification6_1:
+      case NotificationType.FollowUpNotification7_3:
+        return 'Folgemeldung';
+      case NotificationType.NominalNotification6_1:
+      default:
+        return 'Krankheitsmeldung (§ 6.1)';
+    }
+  }
+
+  private getSideNavDescription(): string {
+    switch (this.notificationType) {
+      case NotificationType.NonNominalNotification7_3:
+      case NotificationType.FollowUpNotification7_3:
+        return 'Meldung eines Nachweises von Infektionskrankheiten gemäß § 7 Abs. 3 IfSG ohne Angaben von Personendaten';
+      case NotificationType.FollowUpNotification6_1:
+        return 'Meldung eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG ohne Angaben von Personendaten';
+      case NotificationType.NominalNotification6_1:
+      default:
+        return '';
+    }
+  }
+
+  public get FEATURE_FLAG_FOOTER_LINKS_CORRECTION(): boolean {
+    // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): This getter is only needed for the legacy layout branch.
+    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOOTER_LINKS_CORRECTION ?? false;
   }
 
   isFullQuestionnaire() {
@@ -563,26 +602,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
    * Be aware that FormlyValueChangeEvent can be triggered not only when the change has been induced by the user
    * but also while angular/formly process. So it can be triggered at unexpected moment. If you want to only react to
    * user changes, it is better to use other strategies, like defining a change method in the props in the formly config
-   * of the watched component. For instance:
-   *                  {
-   *                   id: 'extractionDate',
-   *                   key: 'extractionDate',
-   *                   type: 'input',
-   *                   className: FormlyConstants.COLMD6,
-   *                   props: {
-   *                     label: 'Entnahmedatum',
-   *                     required: false,
-   *                     maxLength: 10,
-   *                     placeholder: UI_DATE_FORMAT_GER,
-   *                     change: (field: FormlyFieldConfig) => {
-   *                       const parentFormControl = field?.parent?.formControl as FormControl;
-   *                       triggerReceivedDateValidation(parentFormControl);
-   *                     },
-   *                   },
-   *                   validators: {
-   *                     validation: ['dateInputValidator'],
-   *                   },
-   *                 }
+   * of the watched component.
    */
   private handleFieldChange(e: any) {
     if (e.field?.id === 'currentAddressType') {
@@ -740,17 +760,13 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     }
   }
 
-  @HostListener('window:keydown.control.ArrowRight', ['$event'])
-  nextTab(event: Event) {
-    const keyboardEvent = event as KeyboardEvent;
+  nextTab() {
     if (this.canGoForward()) {
       this.goForward();
     }
   }
 
-  @HostListener('window:keydown.control.ArrowLeft', ['$event'])
-  prevTab(event: Event) {
-    const keyboardEvent = event as KeyboardEvent;
+  prevTab() {
     if (this.canGoBack()) {
       this.goBack();
     }

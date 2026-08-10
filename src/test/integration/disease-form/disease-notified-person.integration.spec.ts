@@ -19,13 +19,14 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestBed } from '@angular/core/testing';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { MockedComponentFixture } from 'ng-mocks';
+import { environment } from '../../../environments/environment';
+import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';
+import { VALUE_DEFAULT_PLACEHOLDER } from '../../../app/legacy/common-utils';
 import { getRadioGroup } from '../../shared/material-harness-utils';
 import { selectTab } from '../utils/disease-common-utils';
 import { buildMock, setupIntegrationTests } from './base';
-import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
-import { VALUE_DEFAULT_PLACEHOLDER } from '../../../app/legacy/common-utils';
 
 describe('DiseaseFormComponent integration tests for Notified Person Tab', () => {
   let component: DiseaseFormComponent;
@@ -112,7 +113,7 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
 
     expect(birthDateField).toBeTruthy();
     expect(birthDateField.props?.label).toBe('Geburtsdatum');
-    expect(birthDateField.props?.placeholder).toBe(VALUE_DEFAULT_PLACEHOLDER);
+    expect(birthDateField.props?.placeholder).toBe(environment.featureFlags?.FEATURE_FLAG_PLACEHOLDER_REMOVAL ? '' : VALUE_DEFAULT_PLACEHOLDER);
     expect(birthDateField.props?.maxLength).toBe(10);
     expect(birthDateField.props?.required).toBeFalse();
   });

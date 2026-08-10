@@ -2,6 +2,14 @@
 
 # Release portal-disease
 
+## Release 1.9.2
+- Removed feature flag FEATURE_FLAG_PORTAL_HEADER_FOOTER: forms footer is now always rendered
+- Added reference field in disease choice form
+- Removed FEATURE_FLAG_DISEASE_AUTOCOMPLETE
+- Removed FEATURE_FLAG_WITHOUT_CONTACT_POINT_USE
+- Fixed broken absolute layout
+- Removed placeholder texts from non-select input fields
+
 ## Release 1.9.1
 - Fixed third party license collection
 - Removed feature flag FEATURE_FLAG_PORTAL_ACCESSIBILITY

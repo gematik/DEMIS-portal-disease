@@ -21,6 +21,7 @@ import { formatItems } from '../../format-items';
 import { trimStrings } from '@gematik/demis-portal-core-library';
 import { ExtendedSalutationEnum } from '../../legacy/common-utils';
 import { NotificationType } from '../../demis-types';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root', // Makes it available app-wide
@@ -32,6 +33,9 @@ export class ProcessFormService {
         category: model.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code,
         status: model.tabDiseaseChoice.clinicalStatus.answer.valueString,
         note: model.tabDiseaseChoice.statusNoteGroup.statusNote.answer?.valueString,
+        ...(environment.featureFlags?.FEATURE_FLAG_REFERENCE_FIELD
+          ? { notificationIdReference: model.tabDiseaseChoice.statusNoteGroup.notificationIdReference.answer?.valueString }
+          : {}),
         initialNotificationId: model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer?.valueString,
       },
       notifierFacility: {

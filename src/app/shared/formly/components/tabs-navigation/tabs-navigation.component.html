@@ -1,24 +1,73 @@
-<mat-tab-group class="tabs-navigation" #navtabs [id]="id" animationDuration="0ms">
-  @for (tab of field.fieldGroup; let i = $index; track i) {
-  <mat-tab>
-    <ng-template mat-tab-label>
-      <div [ngClass]="i === navtabs.selectedIndex ? 'selected-tab' : 'unselected-tab'">
-        <div>
-          <mat-icon [svgIcon]="isValid(tab) ? 'checkmark-outline' : 'circle-dash'"></mat-icon>
+<!-- FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Keep this modern layout branch as the only branch after retiring the flag. -->
+@if (isPortalDiseaseLayoutEnabled) {
+  <div class="tabs-navigation-shell">
+    <aside class="side-rail">
+      <div class="side-content-without-footer">
+        <div class="stepper-heading">
+          <h1>{{ sideNavTitle() }}</h1>
+          @if (sideNavDescription()) {
+            <p class="notification-subheader">{{ sideNavDescription() }}</p>
+          }
         </div>
-        {{ tab.props?.label }}
+
+        <nav class="side-nav-steps" aria-label="Formularschritte">
+          @for (tab of field.fieldGroup; let i = $index; track i) {
+            <button type="button" class="side-nav-step" [ngClass]="i === currentIndex() ? 'selected-tab' : 'unselected-tab'" (click)="chooseTab(i)">
+              <mat-icon [svgIcon]="isValid(tab) ? 'checkmark-outline' : 'circle-dash'"></mat-icon>
+              <span>{{ tab.props?.label }}</span>
+            </button>
+          }
+        </nav>
+
+        <div class="side-utilities">
+          <app-hexhexbutton (paste)="handleHexHex()"></app-hexhexbutton>
+          <gem-demis-paste-box (dataPasted)="handlePaste($event)"></gem-demis-paste-box>
+        </div>
       </div>
-    </ng-template>
-    <div id="disease-form-section-header" class="section-header">
-      @let titleText = tab.props?.label || '';
-      <gem-demis-section-header id="disease-form-section-headline" [level]="1" [titleText]="titleText"></gem-demis-section-header>
-    </div>
-    <div class="section-body">
-      <gem-demis-max-height-content-container
-        [elementSelectorsToSubtract]="['app-navbar', '#disease-form-section-header', '#disease-form-action-bar-wrapper']">
-        <formly-field [field]="tab"></formly-field>
-      </gem-demis-max-height-content-container>
-    </div>
-  </mat-tab>
-  }
-</mat-tab-group>
+
+      <gem-demis-forms-footer class="side-footer" [featureFlagFooterLink]="featureFlagFooterLinksCorrection"></gem-demis-forms-footer>
+    </aside>
+
+    <mat-tab-group class="tabs-navigation tabs-navigation-modern" #navtabs [id]="id" animationDuration="0ms">
+      @for (tab of field.fieldGroup; let i = $index; track i) {
+      <mat-tab [label]="tab.props?.label || ''">
+        <div id="disease-form-section-header-modern" class="section-header">
+          @let titleText = tab.props?.label || '';
+          <gem-demis-section-header id="disease-form-section-headline-modern" [level]="1" [titleText]="titleText"></gem-demis-section-header>
+        </div>
+        <div class="section-body">
+          <div class="section-content">
+            <formly-field [field]="tab"></formly-field>
+          </div>
+        </div>
+      </mat-tab>
+      }
+    </mat-tab-group>
+  </div>
+} @else {
+  <!-- FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this entire legacy MatTab label branch when the flag is retired. -->
+  <mat-tab-group class="tabs-navigation tabs-navigation-legacy" #navtabs [id]="id" animationDuration="0ms">
+    @for (tab of field.fieldGroup; let i = $index; track i) {
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <div [ngClass]="i === navtabs.selectedIndex ? 'selected-tab' : 'unselected-tab'">
+          <div>
+            <mat-icon [svgIcon]="isValid(tab) ? 'checkmark-outline' : 'circle-dash'"></mat-icon>
+          </div>
+          {{ tab.props?.label }}
+        </div>
+      </ng-template>
+      <div id="disease-form-section-header" class="section-header">
+        @let titleText = tab.props?.label || '';
+        <gem-demis-section-header id="disease-form-section-headline" [level]="1" [titleText]="titleText"></gem-demis-section-header>
+      </div>
+      <div class="section-body">
+        <gem-demis-max-height-content-container
+          [elementSelectorsToSubtract]="['app-navbar', '#disease-form-section-header', '#disease-form-action-bar-wrapper']">
+          <formly-field [field]="tab"></formly-field>
+        </gem-demis-max-height-content-container>
+      </div>
+    </mat-tab>
+    }
+  </mat-tab-group>
+}

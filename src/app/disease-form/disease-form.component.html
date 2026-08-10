@@ -1,4 +1,9 @@
-<gem-demis-max-height-content-container [elementSelectorsToSubtract]="['app-navbar']" class="disease-form-root" [class]="notificationTypeClass">
+<gem-demis-max-height-content-container
+  [elementSelectorsToSubtract]="['app-navbar']"
+  class="disease-form-root"
+  [class]="notificationTypeClass"
+  [class.portal-disease-layout-enabled]="isPortalDiseaseLayoutEnabled"
+  [class.portal-disease-layout-disabled]="!isPortalDiseaseLayoutEnabled">
   @if (isLoading()){
     <div class="loading-indicator">
       <mat-spinner></mat-spinner>
@@ -33,29 +38,30 @@
       </div>
     </div>
   </form>
-    <div class="stepper-heading">
-      @switch (notificationType) {
-        @case (NotificationType.NominalNotification6_1) {
-          <h1>Krankheitsmeldung (§ 6.1)</h1>
+
+    <!-- FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this entire legacy sidebar block when the flag is retired. -->
+    @if (!isPortalDiseaseLayoutEnabled) {
+      <div class="stepper-heading">
+        @switch (notificationType) {
+          @case (NotificationType.NominalNotification6_1) {
+            <h1>Krankheitsmeldung (§ 6.1)</h1>
+          }
+          @case (NotificationType.NonNominalNotification7_3) {
+            <h1>Krankheit</h1>
+            <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 7 Abs. 3 IfSG ohne Angaben von Personendaten</h4>
+          }
+          @case (NotificationType.FollowUpNotification6_1) {
+            <h1>Folgemeldung</h1>
+            <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG ohne Angaben von Personendaten</h4>
+          }
+          @case (NotificationType.FollowUpNotification7_3) {
+            <h1>Folgemeldung</h1>
+            <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 7 Abs. 3 IfSG ohne Angaben von Personendaten</h4>
+          }
         }
-        @case (NotificationType.NonNominalNotification7_3) {
-          <h1>Krankheit</h1>
-          <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 7 Abs. 3 IfSG ohne Angaben von Personendaten</h4>
-        }
-        @case (NotificationType.FollowUpNotification6_1) {
-          <h1>Folgemeldung</h1>
-          <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 6 IfSG ohne Angaben von
-            Personendaten</h4>
-        }
-        @case (NotificationType.FollowUpNotification7_3) {
-          <h1>Folgemeldung</h1>
-          <h4 #notificationSubheader class="notification-subheader">Meldung eines Nachweises von Infektionskrankheiten gemäß § 7 Abs. 3 IfSG ohne Angaben von Personendaten</h4>
-        }
-      }
-    </div>
-    <app-hexhexbutton (paste)="hexHex()"></app-hexhexbutton>
-    <gem-demis-paste-box (dataPasted)="paste($event)"></gem-demis-paste-box>
-    @if (FEATURE_FLAG_PORTAL_HEADER_FOOTER) {
+      </div>
+      <app-hexhexbutton (paste)="hexHex()"></app-hexhexbutton>
+      <gem-demis-paste-box (dataPasted)="paste($event)"></gem-demis-paste-box>
       <gem-demis-forms-footer [featureFlagFooterLink]="FEATURE_FLAG_FOOTER_LINKS_CORRECTION"></gem-demis-forms-footer>
     }
   }

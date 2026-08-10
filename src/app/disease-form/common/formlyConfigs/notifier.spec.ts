@@ -40,22 +40,7 @@ describe('notifierFacilityOrgaTypeFormlyFieldConfig (via notifierFacilityOrganiz
     environment.diseaseConfig = { featureFlags: {} };
   });
 
-  it('should configure the organizationType field as autocomplete-coding without filterable-select option keys when the feature flag is disabled', () => {
-    environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_AUTOCOMPLETE = false;
-
-    const orgField = findOrganizationTypeField(notifierFacilityOrganizationFormConfigFields(orgaTypeOptions));
-
-    expect(orgField).toBeTruthy();
-    expect(orgField!.type).toBe('autocomplete-coding');
-    expect(orgField!.props?.['options']).toEqual(orgaTypeOptions);
-    expect(orgField!.props?.['optionValueKey']).toBeUndefined();
-    expect(orgField!.props?.['optionLabelKey']).toBeUndefined();
-    expect(orgField!.props?.['optionDescriptionKey']).toBeUndefined();
-  });
-
-  it('should configure the organizationType field as filterable-select with the expected option keys when the feature flag is enabled', () => {
-    environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_AUTOCOMPLETE = true;
-
+  it('should configure the organizationType field as filterable-select with the expected option keys', () => {
     const orgField = findOrganizationTypeField(notifierFacilityOrganizationFormConfigFields(orgaTypeOptions));
 
     expect(orgField).toBeTruthy();

@@ -193,14 +193,6 @@ export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPe
               key: 'contactType',
               defaultValue: 'phone',
             },
-            ...(environment.featureFlags?.FEATURE_FLAG_WITHOUT_CONTACT_POINT_USE
-              ? [{}]
-              : [
-                  {
-                    key: 'usage',
-                    defaultValue: needsContact ? 'work' : undefined,
-                  },
-                ]),
             {
               className: 'flex-grow-1',
               type: 'input',
@@ -279,8 +271,6 @@ export interface ContactsAsModel {
   }[];
   phoneNumbers: {
     contactType: string;
-    //TODO remove usage when FEATURE_FLAG_WITHOUT_CONTACT_POINT_USE is removed
-    usage?: string;
     value: string;
   }[];
 }

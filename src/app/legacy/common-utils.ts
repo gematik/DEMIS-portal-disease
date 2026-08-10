@@ -55,6 +55,7 @@ export const ZIP_INTERNATIONAL_REG_EXP: RegExp = /(?=^[\w\- ]{3,50}$)(?=.*\d)/;
 export const ZIP_GERMANY_SHORT_REG_EXP: RegExp = /^\d{3}$/; // 3-stellige Nummer
 export const NAME_REG_EXP: RegExp = /^[^@\\*?$|=´'"\[\]{}<>0-9]{0,100}$/; // from https://wiki.gematik.de/x/JRlpGw
 export const POSITIVE_NUMBER: RegExp = /^\d{0,10}$/;
+export const UUID_REG_EXP = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const REQUIRED_FIELD: string = 'Diese Angabe wird benötigt';
 export const OPTION_MISMATCH: string = 'Keine Übereinstimmung gefunden';
@@ -75,7 +76,9 @@ export const ZIP_GERMANY_ERROR_MSG: string = 'Die Postleitzahl muss aus 5 Ziffer
 export const ZIP_INTERNATIONAL_ERROR_MSG: string = 'Die Postleitzahl muss aus mindestens 3 Zeichen und einer Ziffer bestehen';
 export const ZIP_GERMANY_SHORT_ERROR_MSG: string = 'Die Postleitzahl muss aus 3 Ziffern bestehen';
 export const NUMBER_ERROR_MSG: string = 'Bitte geben Sie eine positive Zahl ein.';
-export const VALUE_DEFAULT_PLACEHOLDER: string = 'Bitte eingeben';
+export const UUID_MSG = 'Die Meldungs-ID muss dem UUID-Format entsprechen.';
+// FLAG_CLEANUP(FEATURE_FLAG_PLACEHOLDER_REMOVAL): Remove when non-select fields no longer need the legacy default placeholder.
+export const VALUE_DEFAULT_PLACEHOLDER = 'Bitte eingeben';
 export const VALUE_DEFAULT_SELECT_PLACEHOLDER = 'Bitte auswählen';
 
 // 'None' is hardcoded and not in the enum because it's only needed for the frontend

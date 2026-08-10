@@ -126,7 +126,7 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
     expect(component.model.tabDiseaseChoice.diseaseChoice.answer.valueCoding?.code).toBe(mockDiseaseCode);
     expect(component.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer.valueString).toBe(mockNotificationId);
 
-    const diseaseChoiceField = component.diseaseChoiceFields.find(f => f.id === 'disease-choice');
+    const diseaseChoiceField = component.diseaseChoiceFields.find(f => f.id === 'disease-choice-input');
     expect(diseaseChoiceField?.props?.disabled).toBeTrue();
 
     const initialNotificationIdField = component.diseaseChoiceFields
