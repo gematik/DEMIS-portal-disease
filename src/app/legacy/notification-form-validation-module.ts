@@ -15,20 +15,17 @@
     find details in the "Readme" file.
  */
 
-import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
-import { DateTime } from 'luxon';
+import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
+import { lastValueFrom } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 import {
   ADDITIONAL_INFO_REG_EXP,
   BLANK_ERROR_MSG,
   BSNR_ERROR_MSG,
   BSNR_REG_EXP,
   CODING_ERROR_MGS,
-  DATE_FORMAT_DD_MM_YYYY_REG_EXP,
-  DATE_FORMAT_ERROR_MSG,
-  DATE_FORMAT_PARTIAL_EXP,
-  DATE_IN_FUTURE_ERROR_MSG,
-  DATE_NOT_EXIST,
   EMAIL_ERROR_MSG,
   EMAIL_REG_EXP,
   HOUSE_NBR_ERROR_MSG,
@@ -38,7 +35,6 @@ import {
   NUMBER_ERROR_MSG,
   OPTION_INCOMPLETE,
   OPTION_MISMATCH,
-  PARTIAL_DATE_FORMAT_ERROR_MSG,
   PHONE_ERROR_MSG,
   PHONE_REG_EXP,
   POSITIVE_NUMBER,
@@ -46,7 +42,8 @@ import {
   STREET_REG_EXP,
   TEXT_ERROR_MSG,
   TEXT_REG_EXP,
-  UI_LUXON_DATE_FORMAT,
+  UUID_MSG,
+  UUID_REG_EXP,
   ZIP_GERMANY_ERROR_MSG,
   ZIP_GERMANY_REG_EXP,
   ZIP_GERMANY_SHORT_ERROR_MSG,
@@ -54,17 +51,12 @@ import {
   ZIP_INTERNATIONAL_ERROR_MSG,
   ZIP_INTERNATIONAL_REG_EXP,
 } from './common-utils';
-import { map } from 'rxjs/operators';
 import { ValidationWrapperComponent } from './validation-wrapper/validation-wrapper.component';
-import { lastValueFrom } from 'rxjs';
-import { environment } from '../../environments/environment';
 
 export const NotificationFormValidationModule = FormlyModule.forRoot({
   validators: [
     { name: 'bsNrValidator', validation: bsNrValidation },
     { name: 'codingValidator', validation: codingValidation },
-    { name: 'dateInputValidator', validation: dateInputValidation },
-    { name: 'partialDateInputValidation', validation: partialDateInputValidation },
     { name: 'germanZipValidator', validation: germanZipValidation },
     { name: 'germanShortZipValidator', validation: germanShortZipValidation },
     { name: 'houseNumberValidator', validation: houseNumberValidation },
@@ -79,6 +71,7 @@ export const NotificationFormValidationModule = FormlyModule.forRoot({
     { name: 'nonBlankValidator', validation: nonBlankValidator },
     { name: 'optionMatches', validation: optionMatchesValidation },
     { name: 'isCodeChoosen', validation: validOptionHasBeenSelectedFromDropdownMenu },
+    { name: 'uuidValidator', validation: uuidValidator },
   ],
   validationMessages: [
     { name: 'minLength', message: MINIMUM_LENGTH_NOT_REACHED },
@@ -101,49 +94,6 @@ export function validateBSNR(bsNummer: string): any {
     return null;
   }
   return matchesRegExp(BSNR_REG_EXP, bsNummer) ? null : setValidationMessage(BSNR_ERROR_MSG);
-}
-
-function dateExist(date: string): boolean {
-  return !!DateTime.fromFormat(date, UI_LUXON_DATE_FORMAT).toISODate();
-}
-
-export function validateDateInput(date: string): any {
-  return !!date
-    ? matchesRegExp(DATE_FORMAT_DD_MM_YYYY_REG_EXP, date) // check for the format: dd.mm.yyyy
-      ? dateExist(date) // check for not-existing dates like: '31.06.2022'
-        ? isEmptyOrInFutureDate(DateTime.fromFormat(date, UI_LUXON_DATE_FORMAT).toJSDate())
-          ? setValidationMessage(DATE_IN_FUTURE_ERROR_MSG)
-          : null
-        : setValidationMessage(DATE_NOT_EXIST)
-      : setValidationMessage(DATE_FORMAT_ERROR_MSG)
-    : null;
-}
-
-export function validatePartialDateInput(date: string): any {
-  if (matchesRegExp(DATE_FORMAT_DD_MM_YYYY_REG_EXP, date)) {
-    // check for the format: dd.mm.yyyy
-    return validateDateInput(date);
-  } else {
-    return !!date
-      ? matchesRegExp(DATE_FORMAT_PARTIAL_EXP, date) // check for the format: yyyy, mm.yyyy, dd.mm.yyyy, m.yyyy, d.m.yyyy
-        ? !partialDateNotInFuture(date)
-          ? setValidationMessage(DATE_IN_FUTURE_ERROR_MSG)
-          : null
-        : setValidationMessage(PARTIAL_DATE_FORMAT_ERROR_MSG)
-      : null;
-  }
-}
-
-export function isEmptyOrInFutureDate(date: Date): boolean {
-  // !date means that it is not a required field therefore it is also valid if it is not given.
-  // but if given, then it should be valid
-  return !date || isFutureDate(date);
-}
-
-export function isFutureDate(date: Date): boolean {
-  let today = DateTime.local();
-  let givenDate = DateTime.fromJSDate(date);
-  return givenDate.startOf('day') > today.startOf('day');
 }
 
 export function validateGermanZip(zip: string): any {
@@ -219,6 +169,11 @@ export function validateNotBlank(s: string): any {
   return matchesRegExp(/.*\S.*/, s) ? null : setValidationMessage(BLANK_ERROR_MSG);
 }
 
+export function validateUUID(s: string): any {
+  if (!s) return null;
+  return matchesRegExp(UUID_REG_EXP, s) ? null : setValidationMessage(UUID_MSG);
+}
+
 export function validateEmail(email: string, required: boolean = true): ValidationErrors | null {
   if (required || email) {
     return validateEmailRegex(email);
@@ -280,19 +235,6 @@ function partialDateNotInFuture(date: string): boolean {
   }
 }
 
-/***
- * For the validation of dates of type: Input (String)
- *
- * @param control
- */
-function dateInputValidation(control: AbstractControl): any {
-  return validateDateInput(control.value);
-}
-
-function partialDateInputValidation(control: AbstractControl): any {
-  return validatePartialDateInput(control.value);
-}
-
 function germanZipValidation(control: AbstractControl): any {
   return validateGermanZip(control.value);
 }
@@ -337,6 +279,10 @@ function numberValidator(control: AbstractControl): any {
 
 function nonBlankValidator(control: AbstractControl): any {
   return validateNotBlank(control.value);
+}
+
+function uuidValidator(control: AbstractControl): any {
+  return validateUUID(control.value);
 }
 
 export async function optionMatchesValidation(control: AbstractControl, field: FormlyFieldConfig): Promise<ValidationErrors> {

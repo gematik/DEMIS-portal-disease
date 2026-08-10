@@ -15,7 +15,16 @@
     find details in the "Readme" file.
  */
 
-import { getAutocomplete, getCheckBox, getInput, getRadioButton, getRadioGroup, getTabGroup, selectRadioOption } from '../../shared/material-harness-utils';
+import {
+  getAutocomplete,
+  getCheckBox,
+  getInput,
+  getRadioButton,
+  getRadioGroup,
+  getSelect,
+  getTabGroup,
+  selectRadioOption,
+} from '../../shared/material-harness-utils';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { FIELD_CURRENT_ADDRESS_TYPE } from '../../shared/test-constants';
 import { AddressType } from '../../../api/notification';
@@ -240,9 +249,7 @@ export async function selectNotifiedPersonCurrentAddressSubmittingFacility(loade
 export async function moveFromNotifiedPersonToKlinischeAngaben(fixture: MockedComponentFixture, loader: HarnessLoader) {
   await selectTab(fixture, loader, 3);
   expect(fixture.nativeElement.querySelector('.section-header-title').textContent).toBe('Meldetatbestand');
-  const inputField = await getInput(loader, '#disease-choice-input');
-  await inputField.setValue('Cholera');
-  await inputField.blur();
+  await setDiseaseChoice(loader, fixture, 'Cholera');
   await selectTab(fixture, loader, 5);
   expect(fixture.nativeElement.querySelector('.section-header-title').textContent).toBe('Klinische und epidemiologische Angaben');
   fixture.detectChanges();
@@ -250,8 +257,13 @@ export async function moveFromNotifiedPersonToKlinischeAngaben(fixture: MockedCo
 
 export async function verifySelectedMeldetatbestand(fixture: MockedComponentFixture, loader: HarnessLoader) {
   expect(getStepHeader(fixture)).toBe('Meldetatbestand');
-  const inputField = await getInput(loader, '#disease-choice-input');
-  expect(await inputField.getValue()).toContain('Coronavirus');
+  try {
+    const inputField = await getInput(loader, '#disease-choice-input');
+    expect(await inputField.getValue()).toContain('Coronavirus');
+  } catch {
+    const select = await getSelect(loader, '#disease-choice-input');
+    expect(await select.getValueText()).toContain('Coronavirus');
+  }
 }
 
 export function getStepHeader(fixture: ComponentFixture<any>): string {
@@ -259,21 +271,31 @@ export function getStepHeader(fixture: ComponentFixture<any>): string {
 }
 
 export async function selectDisease(loader: HarnessLoader, fixture: MockedComponentFixture<any>, display: RegExp) {
-  const inputSelector = '#disease-choice-input';
+  await setDiseaseChoice(loader, fixture, display);
+}
+
+async function setDiseaseChoice(loader: HarnessLoader, fixture: MockedComponentFixture<any>, display: string | RegExp) {
+  const selector = '#disease-choice-input';
+
   try {
-    const inputHarness = await getInput(loader, inputSelector);
+    const inputHarness = await getInput(loader, selector);
     await inputHarness.focus();
     await fixture.whenStable();
-    const autocompleteHarness = await getAutocomplete(loader, inputSelector);
+    const autocompleteHarness = await getAutocomplete(loader, selector);
     await (await autocompleteHarness.host()).click();
     await fixture.whenStable();
     await autocompleteHarness.selectOption({ text: display });
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-  } catch (e) {
-    throw e;
+  } catch {
+    const select = await getSelect(loader, selector);
+    if (!(await select.isOpen())) {
+      await select.open();
+    }
+    await select.clickOptions({ text: display });
   }
+
+  fixture.detectChanges();
+  await fixture.whenStable();
+  fixture.detectChanges();
 }
 
 export async function navigateToTabIndex(loader: HarnessLoader, fixture: MockedComponentFixture<any>, index: number, label: string) {

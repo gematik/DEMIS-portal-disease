@@ -118,22 +118,17 @@ export interface PractitionerInfoAsModel {
 }
 
 function notifierFacilityOrgaTypeFormlyFieldConfig(orgaTypeOptions: DemisCoding[]): FormlyFieldConfig {
-  const FEATURE_FLAG_DISEASE_AUTOCOMPLETE = environment.featureFlags?.FEATURE_FLAG_DISEASE_AUTOCOMPLETE;
   return {
     id: 'organizationType',
     // note: key suffix answer.valueCoding is required for the clipboard functionality to work
     key: 'organizationType.answer.valueCoding',
-    type: FEATURE_FLAG_DISEASE_AUTOCOMPLETE ? 'filterable-select' : 'autocomplete-coding',
+    type: 'filterable-select',
     className: 'id_organizationType col-md-12',
     defaultValue: '',
     props: {
-      ...(FEATURE_FLAG_DISEASE_AUTOCOMPLETE
-        ? {
-            optionValueKey: 'code',
-            optionLabelKey: 'display',
-            optionDescriptionKey: 'breadcrumb',
-          }
-        : {}),
+      optionValueKey: 'code',
+      optionLabelKey: 'display',
+      optionDescriptionKey: 'breadcrumb',
       options: orgaTypeOptions,
       required: true,
       clearable: true,

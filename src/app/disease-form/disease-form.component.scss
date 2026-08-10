@@ -1,5 +1,5 @@
 $max-side-container-width: 437px; //17.5vw;
-$content-width: 345px; //15
+$content-width: 345px;
 $stepper-top: 44px;
 $tab-top: calc($stepper-top + 90px);
 $hexhex-top: calc($tab-top + 360px + var(--subheader-offset, 0px));
@@ -17,6 +17,37 @@ $form-footer-top: calc($paste-top + 300px);
 
 
 :host ::ng-deep {
+
+  // Shared layout baseline for BOTH branches of FEATURE_FLAG_PORTAL_DISEASE_LAYOUT.
+  // This block was introduced during the tabs-navigation refactor to keep a stable
+  // full-height/flex chain for formly content and the action bar, independent of
+  // whether the legacy or modern sidebar branch is rendered.
+  gem-demis-max-height-content-container.disease-form-root > div {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #disease-form {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  #disease-form > formly-form {
+    display: block;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  app-tabs-navigation {
+    display: block;
+    height: 100%;
+    min-height: 0;
+  }
 
   .loading-indicator {
     max-width: 1140px;
@@ -40,7 +71,7 @@ $form-footer-top: calc($paste-top + 300px);
 
   .mat-mdc-tab-label-container {
     width: $max-side-container-width;
-    padding-top: $tab-top;
+    box-sizing: border-box;
     background-color: var(--color-white);
     border-bottom-right-radius: 0;
     border-right-color: rgba(0, 3, 3, 0.12);
@@ -49,11 +80,18 @@ $form-footer-top: calc($paste-top + 300px);
     border-top-right-radius: 0;
   }
 
+  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove legacy tab label spacing rules when the flag is retired.
+  .disease-form-root.portal-disease-layout-disabled {
+    .mat-mdc-tab-label-container {
+      padding-top: $tab-top;
+    }
+  }
 
-  //temporary fix to prevent overlapping bug, should be fixed with new side navigation component
-  .disease-form-root.notification-type-non-nominal-7-3,
-  .disease-form-root.notification-type-followup-6-1,
-  .disease-form-root.notification-type-non-nominal-7-3-follow-up {
+
+  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this legacy overlap workaround after removing the flag.
+  .disease-form-root.portal-disease-layout-disabled.notification-type-non-nominal-7-3,
+  .disease-form-root.portal-disease-layout-disabled.notification-type-followup-6-1,
+  .disease-form-root.portal-disease-layout-disabled.notification-type-non-nominal-7-3-follow-up {
     .mat-mdc-tab-label-container {
       padding-top: calc($tab-top + 30px);
     }
@@ -80,9 +118,13 @@ $form-footer-top: calc($paste-top + 300px);
   .action-bar-wrapper {
     margin-left: $max-side-container-width;
     display: flex;
-    border-left-color: rgba(0, 3, 3, 0.12);
-    border-left-style: solid;
-    border-left-width: 1px;
+    flex-shrink: 0;
+    background-color: var(--color-white);
+    border-left: 1px solid rgba(0, 3, 3, 0.12);
+    border-top: none;
+    position: sticky;
+    bottom: 0;
+    z-index: 1001;
   }
 
   .action-bar {
@@ -105,7 +147,8 @@ $form-footer-top: calc($paste-top + 300px);
     gap: 10px;
   }
 
-  .stepper-heading {
+  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove all legacy sidebar positioning styles below when the flag is retired.
+  .disease-form-root.portal-disease-layout-disabled .stepper-heading {
     position: absolute;
     left: 1vw;
     top: $stepper-top;
@@ -115,14 +158,14 @@ $form-footer-top: calc($paste-top + 300px);
     padding-bottom: 15px;
   }
 
-  .notification-subheader {
+  .disease-form-root.portal-disease-layout-disabled .notification-subheader {
     font-size: 15px;
     font-style: normal;
     font-weight: 400;
     line-height: 20px;
   }
 
-  app-hexhexbutton {
+  .disease-form-root.portal-disease-layout-disabled app-hexhexbutton {
     position: absolute;
     left: 0;
     top: $hexhex-top;
@@ -130,7 +173,8 @@ $form-footer-top: calc($paste-top + 300px);
     z-index: 999;
   }
 
-  app-paste-box, gem-demis-paste-box {
+  .disease-form-root.portal-disease-layout-disabled app-paste-box,
+  .disease-form-root.portal-disease-layout-disabled gem-demis-paste-box {
     position: absolute;
     top: $paste-top;
     left: 0;
@@ -139,7 +183,7 @@ $form-footer-top: calc($paste-top + 300px);
     z-index: 999;
   }
 
-  gem-demis-forms-footer {
+  .disease-form-root.portal-disease-layout-disabled gem-demis-forms-footer {
     position: absolute;
     top: $form-footer-top;
     left: 0;
@@ -148,9 +192,9 @@ $form-footer-top: calc($paste-top + 300px);
     z-index: 1000;
   }
 
-}
+  .disease-form-root.portal-disease-layout-disabled #disease-form gem-demis-max-height-content-container > div {
+    overflow-x: hidden;
+    padding-right: 16px;
+  }
 
-:host ::ng-deep #disease-form gem-demis-max-height-content-container > div {
-  overflow-x: hidden;
-  padding-right: 16px;
 }

@@ -15,7 +15,8 @@
     find details in the "Readme" file.
  */
 
-import { AddressType, Gender } from '../../api/notification';
+import { AddressType, DiseaseStatus, Gender } from '../../api/notification';
+import NotificationIdReferenceEnum = DiseaseStatus.NotificationIdReferenceEnum;
 
 export const RESIDENCE_ADDRESS_TYPE_OPTION_LIST = [
   { value: AddressType.Primary, label: 'Hauptwohnung' },
@@ -35,4 +36,10 @@ export const GENDER_OPTION_LIST = [
   { value: Gender.Diverse, label: 'Divers' },
   { value: Gender.Otherx, label: 'Kein Geschlechtseintrag' },
   { value: Gender.Unknown, label: 'Unbekannt' },
+];
+
+export const NOTIFICATION_ID_REFERENCE_LIST = [
+  { value: NotificationIdReferenceEnum.NoReference, label: 'Kein Verweis' },
+  { value: NotificationIdReferenceEnum.RelatesToOwnFacility, label: 'Initialmeldung meiner Einrichtung' },
+  { value: NotificationIdReferenceEnum.RelatesToOtherFacility, label: 'Initialmeldung einer anderen Einrichtung' },
 ];

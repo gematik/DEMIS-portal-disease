@@ -28,7 +28,7 @@ import { AddressType } from '../../../api/notification';
 
 export type ClipboardRules = Record<string, (key: string, partialModel: any) => any | Promise<any>>;
 
-type ImportSpec = { importKey: string; multi?: boolean };
+type ImportSpec = { importKey: string; multi?: boolean; valueMap?: Record<string, string> };
 
 const FORMLY_PATH_PROPERTY_NAME = '_formlyPathKeys_';
 
@@ -279,7 +279,10 @@ export class ImportFieldValuesService {
   }
 
   internValueStrings(rawValue: string, ffc: FormlyFieldConfig): { valueString: string }[] {
-    return [{ valueString: rawValue.trim() }];
+    const importSpec: ImportSpec | undefined = ffc.props?.['importSpec'];
+    const trimmedValue = rawValue.trim();
+    const mappedValue = importSpec?.valueMap?.[trimmedValue] ?? trimmedValue;
+    return [{ valueString: mappedValue }];
   }
 
   internValueCoding(rawValue: string, ffc: FormlyFieldConfig): { valueCoding: DemisCoding }[] {

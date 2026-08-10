@@ -22,7 +22,7 @@ import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'n
 import { ImportFieldValuesService } from './services/import-field-values.service';
 import { HelpersService } from '../shared/helpers.service';
 import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
-import { ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, ElementRef } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ValueSetService } from '../legacy/value-set.service';
 import { FORMLY_CONFIG } from '@ngx-formly/core';
@@ -387,25 +387,87 @@ describe('DiseaseFormComponent unit tests', () => {
     });
   });
 
-  describe('form footer rendering via feature flag', () => {
-    it('should render gem-demis-forms-footer when FEATURE_FLAG_PORTAL_HEADER_FOOTER is true', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_HEADER_FOOTER = true;
-
-      const fixture = MockRender(DiseaseFormComponent);
-      fixture.detectChanges();
-
-      const footerEl: HTMLElement | null = fixture.nativeElement.querySelector('gem-demis-forms-footer');
-      expect(footerEl).toBeTruthy();
+  describe('isPortalDiseaseLayoutEnabled', () => {
+    it('returns true when FEATURE_FLAG_PORTAL_DISEASE_LAYOUT is enabled', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT = true;
+      expect(component.isPortalDiseaseLayoutEnabled).toBeTrue();
     });
 
-    it('should not render gem-demis-forms-footer when FEATURE_FLAG_PORTAL_HEADER_FOOTER is false', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_HEADER_FOOTER = false;
+    it('returns false when FEATURE_FLAG_PORTAL_DISEASE_LAYOUT is disabled', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT = false;
+      expect(component.isPortalDiseaseLayoutEnabled).toBeFalse();
+    });
 
-      const fixture = MockRender(DiseaseFormComponent);
-      fixture.detectChanges();
+    it('returns false when featureFlags are not set', () => {
+      environment.diseaseConfig.featureFlags = undefined;
+      expect(component.isPortalDiseaseLayoutEnabled).toBeFalse();
+    });
+  });
 
-      const footerEl: HTMLElement | null = fixture.nativeElement.querySelector('gem-demis-forms-footer');
-      expect(footerEl).toBeFalsy();
+  describe('ngAfterViewInit', () => {
+    it('returns early and does not call calculateSubheaderHeight when isPortalDiseaseLayoutEnabled is true', () => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT = true;
+      const spy = spyOn<any>(component, 'calculateSubheaderHeight');
+
+      component.ngAfterViewInit();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('calls calculateSubheaderHeight asynchronously when isPortalDiseaseLayoutEnabled is false', fakeAsync(() => {
+      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT = false;
+      const spy = spyOn<any>(component, 'calculateSubheaderHeight');
+
+      component.ngAfterViewInit();
+      // Promise.resolve().then() schedules a microtask; flush by advancing past it
+      Promise.resolve().then(() => {
+        expect(spy).toHaveBeenCalled();
+      });
+    }));
+  });
+
+  describe('calculateSubheaderHeight', () => {
+    it('sets subheaderOffset from element offsetHeight when nativeElement is present', () => {
+      const mockElement = { offsetHeight: 72 } as HTMLElement;
+      const mockRef = { nativeElement: mockElement } as ElementRef<HTMLElement>;
+      (component as any).notificationSubheader = () => mockRef;
+
+      (component as any)['calculateSubheaderHeight']();
+
+      expect(component.subheaderOffset).toBe('72px');
+    });
+
+    it('sets subheaderOffset to 0px when nativeElement is absent', () => {
+      (component as any).notificationSubheader = () => undefined;
+
+      (component as any)['calculateSubheaderHeight']();
+
+      expect(component.subheaderOffset).toBe('0px');
+    });
+  });
+
+  describe('combineFields props callbacks', () => {
+    it('onHexHex callback invokes hexHex()', () => {
+      const hexHexSpy = spyOn<any>(component, 'hexHex');
+      (component as any)['combineFields']();
+
+      const onHexHex = component.fields[0].props?.['onHexHex'];
+      expect(onHexHex).toBeDefined();
+      onHexHex();
+
+      expect(hexHexSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('onPaste callback invokes paste() with the provided clipboardData', () => {
+      const pasteSpy = spyOn<any>(component, 'paste');
+      (component as any)['combineFields']();
+
+      const onPaste = component.fields[0].props?.['onPaste'];
+      const clipboardData = new Map<string, string>([['key', 'value']]);
+      expect(onPaste).toBeDefined();
+      onPaste(clipboardData);
+
+      expect(pasteSpy).toHaveBeenCalledWith(clipboardData);
     });
   });
 });

@@ -8,6 +8,6 @@
     "allowSyntheticDefaultImports": true
   },
   "files": ["src/main.single-spa.ts"],
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.d.ts"],
   "exclude": ["src/**/*.spec.ts", "src/test/**/*.ts"]
 }

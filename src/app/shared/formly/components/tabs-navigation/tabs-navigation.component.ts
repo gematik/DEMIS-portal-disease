@@ -15,18 +15,7 @@
     find details in the "Readme" file.
  */
 
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  signal,
-  ViewChild,
-  WritableSignal,
-  inject,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, signal, viewChild, WritableSignal, inject } from '@angular/core';
 import { MatTabGroup, MatTab, MatTabLabel } from '@angular/material/tabs';
 import { FieldTypeConfig, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FieldType } from '@ngx-formly/material';
@@ -34,7 +23,9 @@ import { Subject, takeUntil } from 'rxjs';
 import { TabsNavigationService } from './tabs-navigation.service';
 import { NgClass } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
-import { SectionHeaderComponent, MaxHeightContentContainerComponent } from '@gematik/demis-portal-core-library';
+import { FormsFooterComponent, MaxHeightContentContainerComponent, PasteBoxComponent, SectionHeaderComponent } from '@gematik/demis-portal-core-library';
+import { environment } from '../../../../../environments/environment';
+import { HexhexbuttonComponent } from '../../../components/hexhexbutton/hexhexbutton.component';
 
 /*
  * If we ever need more than one TabsNavigationComponent on a page, we could give em names
@@ -44,23 +35,55 @@ import { SectionHeaderComponent, MaxHeightContentContainerComponent } from '@gem
   selector: 'app-tabs-navigation',
   templateUrl: './tabs-navigation.component.html',
   styleUrls: ['./tabs-navigation.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Default,
-  imports: [MatTabGroup, MatTab, MatTabLabel, NgClass, MatIcon, SectionHeaderComponent, MaxHeightContentContainerComponent, FormlyModule],
+  imports: [
+    MatTabGroup,
+    MatTab,
+    MatTabLabel,
+    NgClass,
+    MatIcon,
+    SectionHeaderComponent,
+    FormsFooterComponent,
+    PasteBoxComponent,
+    HexhexbuttonComponent,
+    MaxHeightContentContainerComponent,
+    FormlyModule,
+  ],
 })
 export class TabsNavigationComponent extends FieldType<FieldTypeConfig> implements OnInit, AfterViewInit, OnDestroy {
-  private tabsNavigationService = inject(TabsNavigationService);
-  private changeDetectorRef = inject(ChangeDetectorRef);
+  private readonly tabsNavigationService = inject(TabsNavigationService);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private readonly navtabs = viewChild<MatTabGroup>('navtabs');
+  protected readonly featureFlagFooterLinksCorrection = environment.featureFlags?.FEATURE_FLAG_FOOTER_LINKS_CORRECTION ?? false;
+  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this toggle and legacy rendering path when the flag is retired.
+  protected readonly isPortalDiseaseLayoutEnabled = environment.featureFlags?.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT ?? false;
 
   matTabGroup?: MatTabGroup;
   unsubscribed = new Subject<void>();
   tabCount: WritableSignal<number> = signal(0);
 
-  @ViewChild('navtabs', { static: false }) set navtabs(mtg: MatTabGroup) {
-    this.matTabGroup = mtg;
-    this.matTabGroup!.selectedTabChange.pipe(takeUntil(this.unsubscribed)).subscribe(e => this.currentIndex.set(e.index));
+  currentIndex: WritableSignal<number | undefined> = signal(0);
+
+  sideNavTitle(): string {
+    return typeof this.props['sideNavTitle'] === 'string' ? this.props['sideNavTitle'] : '';
   }
 
-  currentIndex: WritableSignal<number | undefined> = signal(this.matTabGroup ? this.matTabGroup.selectedIndex || 0 : undefined);
+  sideNavDescription(): string {
+    return typeof this.props['sideNavDescription'] === 'string' ? this.props['sideNavDescription'] : '';
+  }
+
+  handleHexHex(): void {
+    const onHexHex = this.props['onHexHex'];
+    if (typeof onHexHex === 'function') {
+      onHexHex();
+    }
+  }
+
+  handlePaste(clipboardData: Map<string, string>): void {
+    const onPaste = this.props['onPaste'];
+    if (typeof onPaste === 'function') {
+      onPaste(clipboardData);
+    }
+  }
 
   isValid(fielFormlyFieldConfig: FormlyFieldConfig): boolean {
     return !!fielFormlyFieldConfig.formControl?.valid;
@@ -81,17 +104,15 @@ export class TabsNavigationComponent extends FieldType<FieldTypeConfig> implemen
   }
 
   ngAfterViewInit() {
+    const matTabGroup = this.navtabs();
+
+    if (matTabGroup) {
+      this.matTabGroup = matTabGroup;
+      this.matTabGroup.selectedTabChange.pipe(takeUntil(this.unsubscribed)).subscribe(e => this.currentIndex.set(e.index));
+    }
+
     this.chooseTab(0);
   }
-
-  // @todo deactivated: it shows some strange behaviour when selecting disease because it creates a new formly config
-  // focusFirstFieldOfTab() {
-  //   setTimeout(() => {
-  //     const fieldsOnTab = this.matTabGroup!._elementRef.nativeElement
-  //     const firstInputOrSelect = fieldsOnTab.querySelector('input, mat-select') // do we also need textarea?
-  //     firstInputOrSelect?.focus()
-  //   }, 600)
-  // }
 
   override ngOnDestroy() {
     this.tabsNavigationService.unregister(this);
