@@ -2,6 +2,9 @@
 
 # Release portal-disease
 
+## Release 1.9.3
+- Fixed broken CSS in steps navigation
+
 ## Release 1.9.2
 - Removed feature flag FEATURE_FLAG_PORTAL_HEADER_FOOTER: forms footer is now always rendered
 - Added reference field in disease choice form
