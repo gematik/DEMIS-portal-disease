@@ -1,6 +1,6 @@
 {
   "name": "portal-disease",
-  "version": "1.9.2-snapshot",
+  "version": "1.9.3-snapshot",
   "overrides": {
     "browserslist": "4.28.7",
     "fast-uri": "3.1.5",
