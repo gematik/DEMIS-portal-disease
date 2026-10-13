@@ -15,13 +15,13 @@
     find details in the "Readme" file.
  */
 
-import { buildMock, mainConfig, setupIntegrationTests } from './base';
+import { buildMock, setupIntegrationTests } from './base';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { NotificationType } from '../../../app/demis-types';
 import { TestBed } from '@angular/core/testing';
-import { FollowUpNotificationIdService, FollowUpMixedCodesService, MessageDialogService } from '@gematik/demis-portal-core-library';
+import { FollowUpMixedCodesService, FollowUpNotificationIdService, MessageDialogService } from '@gematik/demis-portal-core-library';
 import { Ifsg61Service } from '../../../app/ifsg61.service';
 import { EXAMPLE_DISEASE_OPTIONS } from '../../shared/data/test-values';
 import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
@@ -147,7 +147,7 @@ describe('DiseaseFormComponent followUp integration tests', () => {
         await notifiedPersonInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: notifiedPersonInput,
           expectedResult: parameter.expectedResult,
         });

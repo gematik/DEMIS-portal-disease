@@ -2,6 +2,13 @@
 
 # Release portal-disease
 
+## Release 1.9.4
+- Removed FEATURE_FLAG_PLACEHOLDER_REMOVAL
+- Updated @gematik/demis-portal-core-library to 4.4.6 incl. a11y improvements for pastebox, repeater and dialogs
+- Removed FEATURE_FLAG_REFERENCE_FIELD
+- Updated minor/patch versions of dependencies
+- Updated NGINX-Base-Image to 1.31.6
+
 ## Release 1.9.3
 - Fixed broken CSS in steps navigation
 

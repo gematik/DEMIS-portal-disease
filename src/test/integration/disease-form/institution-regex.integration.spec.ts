@@ -48,7 +48,7 @@ describe('DiseaseFormComponent institution regex integration tests', () => {
         await facilityInfoInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: facilityInfoInput,
           expectedResult: parameter.expectedResult,
         });
@@ -64,7 +64,7 @@ describe('DiseaseFormComponent institution regex integration tests', () => {
         await notifierFacilityAddressInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: notifierFacilityAddressInput,
           expectedResult: parameter.expectedResult,
         });
@@ -80,7 +80,7 @@ describe('DiseaseFormComponent institution regex integration tests', () => {
         await firstnameInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: firstnameInput,
           expectedResult: parameter.expectedResult,
         });
@@ -97,7 +97,7 @@ describe('DiseaseFormComponent institution regex integration tests', () => {
         await phoneNoInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: phoneNoInput,
           expectedResult: parameter.expectedResult,
         });
@@ -114,7 +114,7 @@ describe('DiseaseFormComponent institution regex integration tests', () => {
         await emailInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: emailInput,
           expectedResult: parameter.expectedResult,
         });

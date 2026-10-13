@@ -33,9 +33,7 @@ export class ProcessFormService {
         category: model.tabDiseaseChoice.diseaseChoice.answer.valueCoding.code,
         status: model.tabDiseaseChoice.clinicalStatus.answer.valueString,
         note: model.tabDiseaseChoice.statusNoteGroup.statusNote.answer?.valueString,
-        ...(environment.featureFlags?.FEATURE_FLAG_REFERENCE_FIELD
-          ? { notificationIdReference: model.tabDiseaseChoice.statusNoteGroup.notificationIdReference.answer?.valueString }
-          : {}),
+        notificationIdReference: model.tabDiseaseChoice.statusNoteGroup.notificationIdReference.answer?.valueString,
         initialNotificationId: model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer?.valueString,
       },
       notifierFacility: {

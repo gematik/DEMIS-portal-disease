@@ -46,6 +46,7 @@ import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
 import { NGXLogger } from 'ngx-logger';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButton, MatButtonModule } from '@angular/material/button';
+import { FocusMonitor } from '@angular/cdk/a11y';
 
 const overrides = {
   get Ifsg61Service() {
@@ -158,6 +159,7 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
     .keep(ReactiveFormsModule)
     .keep(MatButtonModule)
     .keep(MatButton)
+    .keep(FocusMonitor)
     .provide(provideRouter([]))
     .provide(provideFormlyCore([APP_FORMLY_CONFIG, ...withFormlyMaterial(), ...withDemisFormlyCore()]))
     .provide(MockProvider(Ifsg61Service, ifsg61Service))
