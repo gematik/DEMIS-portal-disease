@@ -19,6 +19,8 @@ import { TestBed } from '@angular/core/testing';
 import { ProcessFormService } from './process-form-service';
 import { ExtendedSalutationEnum } from '../../legacy/common-utils';
 import { NotificationType } from '../../demis-types';
+import { NotificationLaboratoryCategory } from 'src/api/notification';
+import NotificationIdReferenceEnum = NotificationLaboratoryCategory.NotificationIdReferenceEnum;
 
 describe('ProcessFormService', () => {
   let service: ProcessFormService;
@@ -41,6 +43,7 @@ describe('ProcessFormService', () => {
         clinicalStatus: { answer: { valueString: 'active' } },
         statusNoteGroup: {
           statusNote: { answer: { valueString: 'note' } },
+          notificationIdReference: { answer: { valueString: NotificationIdReferenceEnum.NoReference } },
           initialNotificationId: { answer: { valueString: 'initId' } },
         },
       },
@@ -353,6 +356,7 @@ describe('ProcessFormService', () => {
           clinicalStatus: { answer: { valueString: 'active' } },
           statusNoteGroup: {
             statusNote: { answer: { valueString: 'note' } },
+            notificationIdReference: { answer: { valueString: NotificationIdReferenceEnum.NoReference } },
             initialNotificationId: { answer: { valueString: 'initId' } },
           },
         },
@@ -388,6 +392,7 @@ describe('ProcessFormService', () => {
           clinicalStatus: { answer: { valueString: 'active' } },
           statusNoteGroup: {
             statusNote: { answer: { valueString: 'note' } },
+            notificationIdReference: { answer: { valueString: NotificationIdReferenceEnum.NoReference } },
             initialNotificationId: { answer: { valueString: 'initId' } },
           },
         },
@@ -423,6 +428,7 @@ describe('ProcessFormService', () => {
           clinicalStatus: { answer: { valueString: 'active' } },
           statusNoteGroup: {
             statusNote: { answer: { valueString: 'note' } },
+            notificationIdReference: { answer: { valueString: NotificationIdReferenceEnum.NoReference } },
             initialNotificationId: { answer: { valueString: 'initId' } },
           },
         },

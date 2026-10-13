@@ -77,8 +77,6 @@ export const ZIP_INTERNATIONAL_ERROR_MSG: string = 'Die Postleitzahl muss aus mi
 export const ZIP_GERMANY_SHORT_ERROR_MSG: string = 'Die Postleitzahl muss aus 3 Ziffern bestehen';
 export const NUMBER_ERROR_MSG: string = 'Bitte geben Sie eine positive Zahl ein.';
 export const UUID_MSG = 'Die Meldungs-ID muss dem UUID-Format entsprechen.';
-// FLAG_CLEANUP(FEATURE_FLAG_PLACEHOLDER_REMOVAL): Remove when non-select fields no longer need the legacy default placeholder.
-export const VALUE_DEFAULT_PLACEHOLDER = 'Bitte eingeben';
 export const VALUE_DEFAULT_SELECT_PLACEHOLDER = 'Bitte auswählen';
 
 // 'None' is hardcoded and not in the enum because it's only needed for the frontend

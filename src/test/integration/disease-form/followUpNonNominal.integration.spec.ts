@@ -15,22 +15,21 @@
     find details in the "Readme" file.
  */
 
-import { buildMock, mainConfig, setupIntegrationTests } from './base';
+import { buildMock, setupIntegrationTests } from './base';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { NotificationType } from '../../../app/demis-types';
 import { TestBed } from '@angular/core/testing';
-import { FollowUpNotificationIdService, FollowUpMixedCodesService, MessageDialogService } from '@gematik/demis-portal-core-library';
+import { FollowUpMixedCodesService, FollowUpNotificationIdService, MessageDialogService } from '@gematik/demis-portal-core-library';
 import { Ifsg61Service } from '../../../app/ifsg61.service';
 import { EXAMPLE_DISEASE_OPTIONS_NONNOMINAL } from '../../shared/data/test-values';
 import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
-import { getButton, getCheckBox, getInput, getSelect, navigateTo } from '../../shared/material-harness-utils';
+import { getButton, getInput, getSelect, navigateTo } from '../../shared/material-harness-utils';
 import { checkDescribingError } from '../../shared/assertion-utils';
 import { getHtmlButtonElement } from '../../shared/html-element-utils';
 import { clickNextButton } from '../../shared/test-utils';
 import { lastValueFrom, of } from 'rxjs';
-import { selectIsHospitalizedYes, selectTab } from '../utils/disease-common-utils';
 import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
 
 describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
@@ -147,7 +146,7 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
         await notifiedPersonInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: notifiedPersonInput,
           expectedResult: parameter.expectedResult,
         });

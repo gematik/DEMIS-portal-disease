@@ -183,15 +183,11 @@ export class HexHexDummy {
               valueString: 'Wichtiger Hinweis zum Status der betroffenen Person.',
             },
           },
-          ...(environment.featureFlags?.FEATURE_FLAG_REFERENCE_FIELD
-            ? {
-                notificationIdReference: {
-                  answer: {
-                    valueString: 'noReference',
-                  },
-                },
-              }
-            : {}),
+          notificationIdReference: {
+            answer: {
+              valueString: 'noReference',
+            },
+          },
           initialNotificationId: '',
         },
       },
@@ -894,15 +890,11 @@ export class HexHexDummy {
               valueString: 'Wichtiger Hinweis zum Status der betroffenen Person.',
             },
           },
-          ...(environment.featureFlags?.FEATURE_FLAG_REFERENCE_FIELD
-            ? {
-                notificationIdReference: {
-                  answer: {
-                    valueString: 'noReference',
-                  },
-                },
-              }
-            : {}),
+          notificationIdReference: {
+            answer: {
+              valueString: 'noReference',
+            },
+          },
           initialNotificationId: '',
         },
       },

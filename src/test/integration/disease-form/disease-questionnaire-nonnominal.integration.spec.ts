@@ -69,7 +69,7 @@ describe('DiseaseFormComponent integration tests for Questionnaire Tab with §7.
     const blurAndExpectQuantityError = async () => {
       await inputField.blur();
       await checkDescribingError({
-        fixture,
+        loader,
         element: inputField,
         expectedResult: VALUE_INVALID_QUANTITY,
       });

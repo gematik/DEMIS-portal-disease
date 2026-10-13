@@ -20,7 +20,6 @@ import { Observable } from 'rxjs';
 import { FormlyConstants } from '../../../legacy/formly-constants';
 import { ZIP_GERMANY_MAX_LENGTH, ZIP_GERMANY_MIN_LENGTH, ZIP_INTERNATIONAL_MAX_LENGTH, ZIP_INTERNATIONAL_MIN_LENGTH } from '../../../legacy/common-utils';
 import { NotifiedPersonDisclaimer } from '../notified-person-disclaimer';
-import { environment } from 'src/environments/environment';
 
 export type FormlyExpressionType = {
   [property: string]: string | ((field: FormlyFieldConfig) => any) | Observable<any>;
@@ -47,7 +46,7 @@ export const formlyInputField = (config: {
 
 export const formlyRow = (fieldConfig: FormlyFieldConfig[], key?: string, className: string = 'row') => {
   return {
-    key: key ? key : undefined,
+    key: key || undefined,
     fieldGroupClassName: className,
     fieldGroup: fieldConfig,
   } as FormlyFieldConfig;
@@ -170,7 +169,7 @@ export const addressFormConfigFields = (
 export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPerson?: boolean) => FormlyFieldConfig[] = needsContact => [
   {
     className: 'col-sm-12 mt-sm-3',
-    template: `<p>Bitte geben Sie mindestens eine Kontaktmöglichkeit an.</p>`,
+    template: `<p id='kontakt-hinweis'>Bitte geben Sie mindestens eine Kontaktmöglichkeit an.</p>`,
     expressions: { hide: () => !needsContact },
   },
   {

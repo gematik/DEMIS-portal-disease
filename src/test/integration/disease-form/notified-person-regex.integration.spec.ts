@@ -49,7 +49,7 @@ describe('DiseaseFormComponent notified person regex integration tests', () => {
         await notifiedPersonInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: notifiedPersonInput,
           expectedResult: parameter.expectedResult,
         });
@@ -66,7 +66,7 @@ describe('DiseaseFormComponent notified person regex integration tests', () => {
         await residenceAddressInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: residenceAddressInput,
           expectedResult: parameter.expectedResult,
         });
@@ -85,7 +85,7 @@ describe('DiseaseFormComponent notified person regex integration tests', () => {
         await residenceAddressInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: residenceAddressInput,
           expectedResult: parameter.expectedResult,
         });
@@ -104,7 +104,7 @@ describe('DiseaseFormComponent notified person regex integration tests', () => {
         await currentAddressInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: currentAddressInput,
           expectedResult: parameter.expectedResult,
         });
@@ -123,7 +123,7 @@ describe('DiseaseFormComponent notified person regex integration tests', () => {
         await currentAddressInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: currentAddressInput,
           expectedResult: parameter.expectedResult,
         });
@@ -141,7 +141,7 @@ describe('DiseaseFormComponent notified person regex integration tests', () => {
         await phoneNoInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: phoneNoInput,
           expectedResult: parameter.expectedResult,
         });
@@ -159,7 +159,7 @@ describe('DiseaseFormComponent notified person regex integration tests', () => {
         await emailInput.blur();
 
         await checkDescribingError({
-          fixture: fixture,
+          loader: loader,
           element: emailInput,
           expectedResult: parameter.expectedResult,
         });
