@@ -15,23 +15,60 @@
     find details in the "Readme" file.
  */
 
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { Component } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatRadioGroupHarness } from '@angular/material/radio/testing';
+import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { RadioButtonCodingComponent } from './radio-button-coding.component';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 
-//@todo Component needs many formly-inputs, disabled -> need to fix initialization
-xdescribe('RadioButtonCodingComponent', () => {
-  let fixture: MockedComponentFixture<RadioButtonCodingComponent>;
-  let component: RadioButtonCodingComponent;
+describe('RadioButtonCodingComponent', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [
+        ReactiveFormsModule,
+        FormlyModule.forRoot({
+          types: [{ name: 'radio-button-coding', component: RadioButtonCodingComponent }],
+        }),
+        RadioButtonCodingTestHostComponent,
+      ],
+    });
+  });
 
-  const createComponent = () => {
-    fixture = MockRender(RadioButtonCodingComponent);
-    component = fixture.point.componentInstance;
-  };
+  it('updates the form control when a coding is selected', async () => {
+    const fixture = TestBed.createComponent(RadioButtonCodingTestHostComponent);
+    fixture.detectChanges();
 
-  beforeEach(() => MockBuilder(RadioButtonCodingComponent));
+    const loader = TestbedHarnessEnvironment.loader(fixture);
+    const radioGroup = await loader.getHarness(MatRadioGroupHarness.with({ selector: '#radio-group-test-radio' }));
+    await radioGroup.checkRadioButton({ label: 'Ja' });
 
-  it('should create', () => {
-    createComponent();
-    expect(component).withContext('component was not created').toBeTruthy();
+    expect(fixture.componentInstance.form.get('choice')?.value).toEqual(codings[0]);
   });
 });
+
+const codings = [
+  { code: 'yes', display: 'Ja', system: 'test-system' },
+  { code: 'no', display: 'Nein', system: 'test-system' },
+];
+
+@Component({
+  selector: 'app-radio-button-coding-test-host',
+  template: '<form [formGroup]="form"><formly-form [form]="form" [fields]="fields" [model]="model"></formly-form></form>',
+  imports: [ReactiveFormsModule, FormlyModule],
+})
+class RadioButtonCodingTestHostComponent {
+  form = new FormGroup({});
+  model = {};
+  fields: FormlyFieldConfig[] = [
+    {
+      id: 'test-radio',
+      key: 'choice',
+      type: 'radio-button-coding',
+      className: 'test-radio',
+      props: { options: codings },
+    },
+  ];
+}

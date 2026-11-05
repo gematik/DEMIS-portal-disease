@@ -16,15 +16,14 @@
  */
 
 import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, signal, viewChild, WritableSignal, inject } from '@angular/core';
-import { MatTabGroup, MatTab, MatTabLabel } from '@angular/material/tabs';
+import { MatTabGroup, MatTab } from '@angular/material/tabs';
 import { FieldTypeConfig, FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FieldType } from '@ngx-formly/material';
 import { Subject, takeUntil } from 'rxjs';
 import { TabsNavigationService } from './tabs-navigation.service';
 import { NgClass } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
-import { FormsFooterComponent, MaxHeightContentContainerComponent, PasteBoxComponent, SectionHeaderComponent } from '@gematik/demis-portal-core-library';
-import { environment } from '../../../../../environments/environment';
+import { FormsFooterComponent, PasteBoxComponent, SectionHeaderComponent } from '@gematik/demis-portal-core-library';
 import { HexhexbuttonComponent } from '../../../components/hexhexbutton/hexhexbutton.component';
 
 /*
@@ -35,27 +34,12 @@ import { HexhexbuttonComponent } from '../../../components/hexhexbutton/hexhexbu
   selector: 'app-tabs-navigation',
   templateUrl: './tabs-navigation.component.html',
   styleUrls: ['./tabs-navigation.component.scss'],
-  imports: [
-    MatTabGroup,
-    MatTab,
-    MatTabLabel,
-    NgClass,
-    MatIcon,
-    SectionHeaderComponent,
-    FormsFooterComponent,
-    PasteBoxComponent,
-    HexhexbuttonComponent,
-    MaxHeightContentContainerComponent,
-    FormlyModule,
-  ],
+  imports: [MatTabGroup, MatTab, NgClass, MatIcon, SectionHeaderComponent, FormsFooterComponent, PasteBoxComponent, HexhexbuttonComponent, FormlyModule],
 })
 export class TabsNavigationComponent extends FieldType<FieldTypeConfig> implements OnInit, AfterViewInit, OnDestroy {
   private readonly tabsNavigationService = inject(TabsNavigationService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private readonly navtabs = viewChild<MatTabGroup>('navtabs');
-  protected readonly featureFlagFooterLinksCorrection = environment.featureFlags?.FEATURE_FLAG_FOOTER_LINKS_CORRECTION ?? false;
-  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this toggle and legacy rendering path when the flag is retired.
-  protected readonly isPortalDiseaseLayoutEnabled = environment.featureFlags?.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT ?? false;
 
   matTabGroup?: MatTabGroup;
   unsubscribed = new Subject<void>();

@@ -23,13 +23,14 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { firstValueFrom, skip } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { FormlyModule } from '@ngx-formly/core';
 import { DemisCoding } from '../../../demis-types';
 import { AddBreadcrumbDirective } from '../../formly/components/autocomplete-coding/add-breadcrumb.directive';
 import { AutocompleteComponent } from './autocomplete.component';
-import { FormlyModule } from '@ngx-formly/core';
 
 describe('AutocompleteComponent', () => {
   let component: AutocompleteComponent;
@@ -44,7 +45,6 @@ describe('AutocompleteComponent', () => {
   beforeEach(() => {
     return MockBuilder(AutocompleteComponent)
       .keep(ReactiveFormsModule)
-      .keep(NoopAnimationsModule)
       .keep(FormlyModule)
       .keep(FormsModule)
       .keep(MatFormFieldModule)
@@ -124,13 +124,13 @@ describe('AutocompleteComponent', () => {
   });
 
   it('should handle registerOnChange', () => {
-    const mockOnChange = jasmine.createSpy('onChange');
+    const mockOnChange = vi.fn();
     component.registerOnChange(mockOnChange);
     expect(component.onChange).toBe(mockOnChange);
   });
 
   it('should handle registerOnTouched', () => {
-    const mockOnTouched = jasmine.createSpy('onTouched');
+    const mockOnTouched = vi.fn();
     component.registerOnTouched(mockOnTouched);
     expect(component.onTouched).toBe(mockOnTouched);
   });
@@ -211,8 +211,8 @@ describe('AutocompleteComponent', () => {
 
   it('should handle onClick', () => {
     component.selectControl.setValue('test');
-    const openPanelSpy = jasmine.createSpy('openPanel');
-    spyOn(component, 'autocomplete' as any).and.returnValue({ openPanel: openPanelSpy });
+    const openPanelSpy = vi.fn();
+    vi.spyOn(component, 'autocomplete' as any).mockReturnValue({ openPanel: openPanelSpy });
     component.onClick();
     expect(component.selectControl.value).toBe('');
     expect(openPanelSpy).toHaveBeenCalled();
@@ -221,15 +221,15 @@ describe('AutocompleteComponent', () => {
   it('should not open panel on onClick when autocomplete is disabled', () => {
     component.selectControl.setValue('test');
     component.autocompleteDisabled = true;
-    const openPanelSpy = jasmine.createSpy('openPanel');
-    spyOn(component, 'autocomplete' as any).and.returnValue({ openPanel: openPanelSpy });
+    const openPanelSpy = vi.fn();
+    vi.spyOn(component, 'autocomplete' as any).mockReturnValue({ openPanel: openPanelSpy });
     component.onClick();
     expect(openPanelSpy).not.toHaveBeenCalled();
   });
 
   it('should handle onRemoveSelection', () => {
     const mockEvent = {
-      stopPropagation: jasmine.createSpy('stopPropagation'),
+      stopPropagation: vi.fn(),
     } as any;
 
     component.selectControl.setValue('test');
@@ -261,7 +261,7 @@ describe('AutocompleteComponent', () => {
 
   it('should handle onClosePanel', () => {
     component.activeOption = mockOptions[0];
-    spyOn(component, 'markAsTouched');
+    vi.spyOn(component, 'markAsTouched');
 
     component.onClosePanel();
 
@@ -297,8 +297,8 @@ describe('AutocompleteComponent', () => {
       });
       const multiComponent = multiFixture.point.componentInstance;
 
-      const openPanelSpy = jasmine.createSpy('openPanel');
-      spyOn(multiComponent, 'autocomplete' as any).and.returnValue({ openPanel: openPanelSpy, updatePosition: jasmine.createSpy() });
+      const openPanelSpy = vi.fn();
+      vi.spyOn(multiComponent, 'autocomplete' as any).mockReturnValue({ openPanel: openPanelSpy, updatePosition: vi.fn() });
 
       const coding: DemisCoding = { code: 'test1', display: 'Test Option 1', system: 'test-system' };
       const mockEvent = { option: { value: coding } } as any;
@@ -371,7 +371,7 @@ describe('AutocompleteComponent', () => {
     const multiComponent = multiFixture.point.componentInstance;
 
     multiComponent.selectControl.setValue('filter text');
-    spyOn(multiComponent, 'autocomplete' as any).and.returnValue({ panelOpen: true });
+    vi.spyOn(multiComponent, 'autocomplete' as any).mockReturnValue({ panelOpen: true });
     multiComponent.onBlur();
     expect(multiComponent.selectControl.value).toBe('filter text');
   });
@@ -453,7 +453,7 @@ describe('AutocompleteComponent', () => {
     const multiComponent = multiFixture.point.componentInstance;
 
     multiComponent.selectControl.setValue('filter text');
-    spyOn(multiComponent, 'autocomplete' as any).and.returnValue({ panelOpen: true });
+    vi.spyOn(multiComponent, 'autocomplete' as any).mockReturnValue({ panelOpen: true });
     multiComponent.onInputFocus();
     expect(multiComponent.selectControl.value).toBe('filter text');
   });
@@ -490,7 +490,7 @@ describe('AutocompleteComponent', () => {
 
   describe('handleSpace', () => {
     it('should return true and prevent default when not in multi mode', () => {
-      const mockEvent = { preventDefault: jasmine.createSpy('preventDefault') } as any;
+      const mockEvent = { preventDefault: vi.fn() } as any;
       const result = component.handleSpace(mockEvent);
       expect(mockEvent.preventDefault).toHaveBeenCalled();
       expect(result).toBe(true);
@@ -507,7 +507,7 @@ describe('AutocompleteComponent', () => {
       });
       const multiComponent = multiFixture.point.componentInstance;
 
-      const mockEvent = { preventDefault: jasmine.createSpy('preventDefault') } as any;
+      const mockEvent = { preventDefault: vi.fn() } as any;
       multiComponent.activeOption = undefined;
       const result = multiComponent.handleSpace(mockEvent);
       expect(mockEvent.preventDefault).toHaveBeenCalled();
@@ -525,7 +525,7 @@ describe('AutocompleteComponent', () => {
       });
       const multiComponent = multiFixture.point.componentInstance;
 
-      const mockEvent = { preventDefault: jasmine.createSpy('preventDefault') } as any;
+      const mockEvent = { preventDefault: vi.fn() } as any;
       multiComponent.activeOption = { code: 'fresh1', display: 'Fresh Option', system: 'test' };
       const result = multiComponent.handleSpace(mockEvent);
       expect(mockEvent.preventDefault).toHaveBeenCalled();
@@ -545,7 +545,7 @@ describe('AutocompleteComponent', () => {
       const multiComponent = multiFixture.point.componentInstance;
       multiComponent.setDisabledState?.(true);
 
-      const mockEvent = { preventDefault: jasmine.createSpy('preventDefault') } as any;
+      const mockEvent = { preventDefault: vi.fn() } as any;
       multiComponent.activeOption = { ...mockOptions[0] };
       const result = multiComponent.handleSpace(mockEvent);
       expect(result).toBe(true);
@@ -578,7 +578,7 @@ describe('AutocompleteComponent', () => {
   it('should not remove selection when disabled', () => {
     component.selectControl.setValue('test');
     component.setDisabledState?.(true);
-    const mockEvent = { stopPropagation: jasmine.createSpy('stopPropagation') } as any;
+    const mockEvent = { stopPropagation: vi.fn() } as any;
     component.onRemoveSelection(mockEvent);
     expect(component.selectControl.value).toBe('test');
     expect(mockEvent.stopPropagation).not.toHaveBeenCalled();
@@ -716,7 +716,7 @@ describe('AutocompleteComponent', () => {
     expect(toggleComponent.autocompleteDisabled).toBeTruthy();
   });
 
-  it('should filter options by code when showCode is true', (done: DoneFn) => {
+  it('should filter options by code when showCode is true', async () => {
     const showCodeFixture = MockRender(AutocompleteComponent, {
       options: mockOptions,
       formControl: new FormControl(),
@@ -727,27 +727,17 @@ describe('AutocompleteComponent', () => {
     });
     const showCodeComponent = showCodeFixture.point.componentInstance;
 
-    let emissions = 0;
-    showCodeComponent.filteredCodings.subscribe(result => {
-      emissions++;
-      if (emissions === 2) {
-        expect(result.length).toBe(1);
-        expect(result[0].code).toBe('test1');
-        done();
-      }
-    });
+    const resultPromise = firstValueFrom(showCodeComponent.filteredCodings.pipe(skip(1)));
     showCodeComponent.selectControl.setValue('test1');
+
+    const result = await resultPromise;
+    expect(result).toHaveLength(1);
+    expect(result[0].code).toBe('test1');
   });
 
-  it('should return all options when filter value is empty', (done: DoneFn) => {
-    let emissions = 0;
-    component.filteredCodings.subscribe(result => {
-      emissions++;
-      if (emissions === 1) {
-        expect(result.length).toBe(3);
-        done();
-      }
-    });
+  it('should return all options when filter value is empty', async () => {
+    const result = await firstValueFrom(component.filteredCodings);
+    expect(result).toHaveLength(3);
   });
 
   it('should handle writeValue for single selection without code property', () => {
@@ -772,7 +762,7 @@ describe('AutocompleteComponent', () => {
   });
 
   it('should handle markAsTouched', () => {
-    const mockOnTouched = jasmine.createSpy('onTouched');
+    const mockOnTouched = vi.fn();
     component.registerOnTouched(mockOnTouched);
     component.markAsTouched();
     expect(component.formControl().touched).toBeTruthy();
@@ -791,7 +781,7 @@ describe('AutocompleteComponent', () => {
     });
     const multiComponent = multiFixture.point.componentInstance;
 
-    const onChangeSpy = jasmine.createSpy('onChange');
+    const onChangeSpy = vi.fn();
     multiComponent.registerOnChange(onChangeSpy);
 
     // In multi mode, selectControl.valueChanges should not propagate via propagateValueToParent
@@ -817,7 +807,7 @@ describe('AutocompleteComponent', () => {
     expect(testComponent.latestValidSelection).toEqual(coding);
   });
 
-  it('should handle filteredCodings with empty options', () => {
+  it('should handle filteredCodings with empty options', async () => {
     const emptyFixture = MockRender(AutocompleteComponent, {
       options: [],
       formControl: new FormControl(),
@@ -828,13 +818,14 @@ describe('AutocompleteComponent', () => {
     });
     const emptyComponent = emptyFixture.point.componentInstance;
 
+    const resultPromise = firstValueFrom(emptyComponent.filteredCodings.pipe(skip(1)));
     emptyComponent.selectControl.setValue('test');
-    emptyComponent.filteredCodings.subscribe(result => {
-      expect(result.length).toBe(0);
-    });
+
+    const result = await resultPromise;
+    expect(result).toHaveLength(0);
   });
 
-  it('should auto-select when filteredCodings finds exactly one match with same display', (done: DoneFn) => {
+  it('should auto-select when filteredCodings finds exactly one match with same display', async () => {
     const parentControl = new FormControl();
     const autoFixture = MockRender(AutocompleteComponent, {
       options: mockOptions,
@@ -846,16 +837,12 @@ describe('AutocompleteComponent', () => {
     });
     const autoComponent = autoFixture.point.componentInstance;
 
-    let emissions = 0;
-    autoComponent.filteredCodings.subscribe(result => {
-      emissions++;
-      if (emissions === 2) {
-        expect(result.length).toBe(1);
-        expect(parentControl.value).toEqual(mockOptions[2]);
-        done();
-      }
-    });
+    const resultPromise = firstValueFrom(autoComponent.filteredCodings.pipe(skip(1)));
     // Type exact display value that matches only one option
     autoComponent.selectControl.setValue('Another Test');
+
+    const result = await resultPromise;
+    expect(result).toHaveLength(1);
+    expect(parentControl.value).toEqual(mockOptions[2]);
   });
 });

@@ -15,7 +15,14 @@
     find details in the "Readme" file.
  */
 
-export interface TemplateOptions {
-  value: string;
-  label: string;
-}
+import '@angular/compiler';
+import '@analogjs/vitest-angular/setup-zone';
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+import { provideZoneChangeDetection } from '@angular/core';
+
+setupTestBed({
+  zoneless: false,
+  // Angular 21 defaults to zoneless; the app (and the former Karma setup) relies on zone-based change detection.
+  providers: [provideZoneChangeDetection()],
+  teardown: { destroyAfterEach: true },
+});

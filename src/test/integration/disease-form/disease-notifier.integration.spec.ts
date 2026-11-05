@@ -15,15 +15,14 @@
     find details in the "Readme" file.
  */
 
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture, MockRender } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { environment } from '../../../environments/environment';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { selectTab } from '../utils/disease-common-utils';
-import { getAllButtonsWithSameSelector, getButton, getMultipleInputFieldsWithSameSelector } from '../../shared/material-harness-utils';
 import { MatButtonHarness } from '@angular/material/button/testing';
-import { buildMock, mainConfig, setupIntegrationTests } from './base';
+import { MockedComponentFixture } from 'ng-mocks';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
+import { getAllButtonsWithSameSelector, getButton, getMultipleInputFieldsWithSameSelector } from '../../shared/material-harness-utils';
+import { selectTab } from '../utils/disease-common-utils';
+import { buildMock, setupIntegrationTests } from './base';
 
 describe('DiseaseFormComponent integration tests for Notifier Tab', () => {
   let component: DiseaseFormComponent;
@@ -41,7 +40,7 @@ describe('DiseaseFormComponent integration tests for Notifier Tab', () => {
   });
 
   it('should create', () => {
-    expect(component).withContext('DiseaseFormComponent could be created').toBeTruthy();
+    expect(component, 'DiseaseFormComponent could be created').toBeTruthy();
   });
 
   describe('contacts works as expected', async () => {

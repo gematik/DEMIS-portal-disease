@@ -15,13 +15,13 @@
     find details in the "Readme" file.
  */
 
-import { AddressToggleComponent } from './address-toggle.component';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Component } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
+import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { AddressToggleComponent } from './address-toggle.component';
 
 describe('AddressToggleComponent', () => {
   let fixture: ComponentFixture<MockComponent>;
@@ -31,7 +31,6 @@ describe('AddressToggleComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         ReactiveFormsModule,
-        NoopAnimationsModule,
         FormlyModule.forRoot({
           types: [{ name: 'address-toggle', component: AddressToggleComponent }],
         }),
@@ -139,19 +138,19 @@ describe('AddressToggleComponent', () => {
     expect(cityControl?.value).toBe('Berlin');
   });
 
-  it('should automatically show fields when external data is imported (HexHex/Pastebox)', fakeAsync(() => {
+  it('should automatically show fields when external data is imported (HexHex/Pastebox)', async () => {
     const addressField = mockComponent.fields[0];
 
     // Initially hidden
     expect(addressField.fieldGroup?.[0].hide).toBe(true);
 
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     // Simulate external data import by setting model values directly
     mockComponent.model = { address: { street: 'Importierte Straße', city: 'Berlin' } };
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     // Fields should now be visible
@@ -161,48 +160,48 @@ describe('AddressToggleComponent', () => {
     // Button label should reflect visible state
     const label = fixture.debugElement.query(By.css('.toggle-label'));
     expect(label.nativeElement.textContent).toContain('Adresse entfernen');
-  }));
+  });
 
-  it('should not auto-show fields when model has only empty values', fakeAsync(() => {
+  it('should not auto-show fields when model has only empty values', async () => {
     const addressField = mockComponent.fields[0];
 
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     // Set model with empty strings - should NOT trigger auto-show
     mockComponent.model = { address: { street: '', city: '' } };
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     // Fields should remain hidden
     expect(addressField.fieldGroup?.[0].hide).toBe(true);
-  }));
+  });
 
-  it('should not auto-show fields when model has only null values', fakeAsync(() => {
+  it('should not auto-show fields when model has only null values', async () => {
     const addressField = mockComponent.fields[0];
 
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     mockComponent.model = { address: { street: null, city: null } } as any;
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(addressField.fieldGroup?.[0].hide).toBe(true);
-  }));
+  });
 
-  it('should auto-show fields and ignore null values while keeping valid ones', fakeAsync(() => {
+  it('should auto-show fields and ignore null values while keeping valid ones', async () => {
     const addressField = mockComponent.fields[0];
 
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     // Only city has a value, street is null
     mockComponent.model = { address: { street: null, city: 'Berlin' } } as any;
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     // Fields should be shown because at least one value is present
@@ -212,15 +211,15 @@ describe('AddressToggleComponent', () => {
     // The city field should have the imported value
     const cityControl = addressField.fieldGroup?.[1].formControl;
     expect(cityControl?.value).toBe('Berlin');
-  }));
+  });
 
-  it('should not auto-show fields that are already visible', fakeAsync(() => {
+  it('should not auto-show fields that are already visible', async () => {
     const button = fixture.debugElement.query(By.css('button'));
 
     // Manually show fields
     button.nativeElement.click();
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     const addressField = mockComponent.fields[0];
     expect(addressField.fieldGroup?.[0].hide).toBe(false);
@@ -228,14 +227,14 @@ describe('AddressToggleComponent', () => {
     // Set model - should not cause issues since fields are already visible
     mockComponent.model = { address: { street: 'New Street' } };
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     // Fields should still be visible
     expect(addressField.fieldGroup?.[0].hide).toBe(false);
-  }));
+  });
 
-  it('should detect nested key values like street.answer.valueString (FUTS structure)', fakeAsync(() => {
+  it('should detect nested key values like street.answer.valueString (FUTS structure)', async () => {
     const nestedFixture = TestBed.createComponent(MockComponentWithNestedKeys);
     const nestedComponent = nestedFixture.componentInstance;
     nestedFixture.detectChanges();
@@ -245,7 +244,7 @@ describe('AddressToggleComponent', () => {
     // Initially hidden
     expect(addressField.fieldGroup?.[0].hide).toBe(true);
 
-    tick();
+    await nestedFixture.whenStable();
     nestedFixture.detectChanges();
 
     // Simulate HexHex import with FUTS-style nested structure
@@ -256,7 +255,7 @@ describe('AddressToggleComponent', () => {
       },
     };
     nestedFixture.detectChanges();
-    tick();
+    await nestedFixture.whenStable();
     nestedFixture.detectChanges();
 
     // Fields should now be visible
@@ -266,26 +265,26 @@ describe('AddressToggleComponent', () => {
     // Button should show remove label
     const label = nestedFixture.debugElement.query(By.css('.toggle-label'));
     expect(label.nativeElement.textContent).toContain('Adresse entfernen');
-  }));
+  });
 
-  it('should handle fieldGroup children without key during external import', fakeAsync(() => {
+  it('should handle fieldGroup children without key during external import', async () => {
     const fixtureNoKey = TestBed.createComponent(MockComponentWithChildWithoutKey);
     fixtureNoKey.detectChanges();
 
     const addressField = fixtureNoKey.componentInstance.fields[0];
 
-    tick();
+    await fixtureNoKey.whenStable();
     fixtureNoKey.detectChanges();
 
     // Import data - the keyless child should not cause errors
     fixtureNoKey.componentInstance.model = { address: { street: 'Imported' } };
     fixtureNoKey.detectChanges();
-    tick();
+    await fixtureNoKey.whenStable();
     fixtureNoKey.detectChanges();
 
     // Field with key should be shown since it has a value
     expect(addressField.fieldGroup?.[1].hide).toBe(false);
-  }));
+  });
 
   it('should handle address-toggle without fieldGroup gracefully', () => {
     const fixtureNoGroup = TestBed.createComponent(MockComponentWithoutFieldGroup);

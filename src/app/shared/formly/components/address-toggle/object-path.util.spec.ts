@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { describe, expect, it } from 'vitest';
 import { getNestedValue, setNestedValue } from './object-path.util';
 
 describe('object-path.util', () => {

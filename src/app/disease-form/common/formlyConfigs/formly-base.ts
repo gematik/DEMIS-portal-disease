@@ -101,7 +101,7 @@ export const addressFormConfigFields = (
   disabled: boolean = false,
   zipExpressions: FormlyExpressionType | undefined = undefined,
   countryDisabled: boolean = false
-) => [
+): FormlyFieldConfig[] => [
   formlyInputField({
     id: `${idPrefix}street`,
     key: `street`,
@@ -170,6 +170,7 @@ export const contactsFormConfigFields: (needsContact: boolean, hospitalizationPe
   {
     className: 'col-sm-12 mt-sm-3',
     template: `<p id='kontakt-hinweis'>Bitte geben Sie mindestens eine Kontaktmöglichkeit an.</p>`,
+    props: { safeHtml: true },
     expressions: { hide: () => !needsContact },
   },
   {

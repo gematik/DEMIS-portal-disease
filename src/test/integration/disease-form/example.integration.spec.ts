@@ -15,13 +15,14 @@
     find details in the "Readme" file.
  */
 
-import { buildMock, setupIntegrationTests } from './base';
-import { clickNextButton } from '../../shared/test-utils';
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { getTabList, navigateTo } from '../../shared/material-harness-utils';
+import { MockedComponentFixture } from 'ng-mocks';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { getHtmlSpanElement } from '../../shared/html-element-utils';
+import { getTabList, navigateTo } from '../../shared/material-harness-utils';
+import { clickNextButton } from '../../shared/test-utils';
+import { buildMock, setupIntegrationTests } from './base';
 
 describe('DiseaseFormComponent example integration tests', () => {
   let component: DiseaseFormComponent;
@@ -38,7 +39,7 @@ describe('DiseaseFormComponent example integration tests', () => {
   });
 
   it('should create', () => {
-    expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+    expect(component, 'DiseaseFormComponent could not be created').toBeTruthy();
   });
 
   it('should reset disease dependent input', async () => {
@@ -49,14 +50,14 @@ describe('DiseaseFormComponent example integration tests', () => {
     // when
     await component.loadQuestionnaire('msvd'); // Masern
     // then
-    expect(component.model.tabDiseaseCondition.test).withContext("tabDiseaseCondition should have been reset but isn't").toBeUndefined();
-    expect(component.model.tabDiseaseCommon.test).withContext("tabDiseaseCommon should have been reset but isn't").toBeUndefined();
-    expect(component.model.tabQuestionnaire.test).withContext("tabQuestionnaire should have been reset but isn't").toBeUndefined();
+    expect(component.model.tabDiseaseCondition.test, "tabDiseaseCondition should have been reset but isn't").toBeUndefined();
+    expect(component.model.tabDiseaseCommon.test, "tabDiseaseCommon should have been reset but isn't").toBeUndefined();
+    expect(component.model.tabQuestionnaire.test, "tabQuestionnaire should have been reset but isn't").toBeUndefined();
   });
 
   it('should switch to next form page when clicking nextButton', async () => {
     let textContent = fixture.nativeElement.textContent;
-    expect(textContent.includes('Kontaktmöglichkeiten der betroffenen Person')).toBeFalse();
+    expect(textContent.includes('Kontaktmöglichkeiten der betroffenen Person')).toBe(false);
     expect(textContent).toContain('Ansprechperson (Melder)');
 
     await clickNextButton(fixture);
@@ -91,9 +92,7 @@ describe('DiseaseFormComponent example integration tests', () => {
   });
 
   it("navigation should throw an error when tab doesn't exist", async () => {
-    await expectAsync(navigateTo(loader, 100)).toBeRejectedWithError(
-      `Could not navigate to tab 100: TypeError: Cannot read properties of undefined (reading 'select')`
-    );
+    await expect(navigateTo(loader, 100)).rejects.toThrow(`Could not navigate to tab 100: TypeError: Cannot read properties of undefined (reading 'select')`);
   });
 
   it('should show new stepper heading with default routing', async () => {
@@ -104,6 +103,6 @@ describe('DiseaseFormComponent example integration tests', () => {
   it('should show epidemiologische Angaben', async () => {
     const tabList = await getTabList(loader);
     expect(tabList.length).toBe(6);
-    await expectAsync(tabList[4].getLabel()).toBeResolvedTo('Klinische und epidemiologische Angaben');
+    await expect(tabList[4].getLabel()).resolves.toEqual('Klinische und epidemiologische Angaben');
   });
 });

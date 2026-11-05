@@ -16,16 +16,10 @@
  */
 
 import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
-import {
-  bsNrValidation,
-  setValidationMessage,
-  validateEmail,
-  validatePhoneNo,
-  phoneValidation,
-  emailValidation,
-} from '../../../app/legacy/notification-form-validation-module';
-import { BSNR_ERROR_MSG, EMAIL_ERROR_MSG, PHONE_ERROR_MSG } from '../../../app/legacy/common-utils';
 import { FormlyFieldConfig } from '@ngx-formly/core';
+import { describe, expect, it } from 'vitest';
+import { BSNR_ERROR_MSG, EMAIL_ERROR_MSG, PHONE_ERROR_MSG } from '../../../app/legacy/common-utils';
+import { bsNrValidation, phoneValidation, setValidationMessage, validateEmail, validatePhoneNo } from '../../../app/legacy/notification-form-validation-module';
 
 describe('phoneValidation (Formly-Wrapper)', () => {
   it('gibt null zurück bei leerem Wert, wenn props.required=false', () => {

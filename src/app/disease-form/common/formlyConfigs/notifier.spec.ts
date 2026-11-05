@@ -16,9 +16,10 @@
  */
 
 import { FormlyFieldConfig } from '@ngx-formly/core';
-import { notifierFacilityOrganizationFormConfigFields } from './notifier';
-import { DemisCoding } from '../../../demis-types';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { environment } from '../../../../environments/environment';
+import { DemisCoding } from '../../../demis-types';
+import { notifierFacilityOrganizationFormConfigFields } from './notifier';
 
 describe('notifierFacilityOrgaTypeFormlyFieldConfig (via notifierFacilityOrganizationFormConfigFields)', () => {
   const orgaTypeOptions: DemisCoding[] = [{ code: 'hospital', display: 'Krankenhaus', system: 'foo' } as DemisCoding];

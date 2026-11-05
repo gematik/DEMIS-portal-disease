@@ -19,6 +19,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestBed } from '@angular/core/testing';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { MockedComponentFixture } from 'ng-mocks';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';
@@ -59,7 +60,7 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
   });
 
   it('should create', () => {
-    expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+    expect(component, 'DiseaseFormComponent could not be created').toBeTruthy();
   });
 
   it('should show the default disclaimer text', async () => {
@@ -69,7 +70,7 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
   it('error if current address set to notifier-address but this is not available', async () => {
     // steps to take
     await selectTab(fixture, loader, 2);
-    const showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
+    const showErrorDialogSpy = vi.spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog').mockImplementation(() => {});
 
     const radioGroup = await getRadioGroup(loader, '#currentAddressType');
     await radioGroup.checkRadioButton({ label: 'anderer Wohnsitz' });
@@ -77,7 +78,10 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
     fixture.detectChanges();
 
     // assertion
-    expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+    expect(showErrorDialogSpy).toHaveBeenCalledTimes(1);
+
+    // assertion
+    expect(showErrorDialogSpy).toHaveBeenCalledWith({
       errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
       errors: [
         {
@@ -98,7 +102,7 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
 
     expect(birthDateField).toBeTruthy();
     expect(birthDateField.type).toBe('datepicker');
-    expect(birthDateField.props?.multiYear).toBeTrue();
+    expect(birthDateField.props?.multiYear).toBe(true);
     expect(birthDateField.props?.maxDate).toBeInstanceOf(Date);
   });
 
@@ -113,6 +117,6 @@ describe('DiseaseFormComponent integration tests for Notified Person Tab', () =>
     expect(birthDateField.props?.label).toBe('Geburtsdatum');
     expect(birthDateField.props?.placeholder).toBe('');
     expect(birthDateField.props?.maxLength).toBe(10);
-    expect(birthDateField.props?.required).toBeFalse();
+    expect(birthDateField.props?.required).toBe(false);
   });
 });

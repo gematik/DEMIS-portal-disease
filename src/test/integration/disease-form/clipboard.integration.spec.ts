@@ -15,11 +15,26 @@
     find details in the "Readme" file.
  */
 
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
+import { MockedComponentFixture } from 'ng-mocks';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { getButton, getInput, getRadioGroup, getSelect } from '../../shared/material-harness-utils';
 
+import { TestBed } from '@angular/core/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { VALUE_DEFAULT_SELECT_PLACEHOLDER } from 'src/app/legacy/common-utils';
+import { AddressType } from '../../../api/notification';
+import { ImportFieldValuesService } from '../../../app/disease-form/services/import-field-values.service';
+import { ErrorMessage } from '../../../app/shared/error-message';
+import { exampleAddressOfType, TestDataAddress } from '../../shared/data/test-objects';
+import {
+  CLIPBOARD_VALUE_NOTIFIER_FAMILY,
+  CLIPBOARD_VALUE_NOTIFIER_GIVEN,
+  CLIPBOARD_VALUE_OTHER_NOTIFIER_FAMILY,
+  CLIPBOARD_VALUE_OTHER_NOTIFIER_GIVEN,
+} from '../../shared/test-constants';
 import {
   CLIPBOARD_DISEASE,
   CLIPBOARD_FACILITY,
@@ -30,9 +45,6 @@ import {
   RESIDENCE_ADDRESS_TYPE_HAUPTWOHNUNG,
 } from '../../shared/test-data';
 import { clickNextButton } from '../../shared/test-utils';
-import { AddressType } from '../../../api/notification';
-import { MatSelectHarness } from '@angular/material/select/testing';
-import { buildMock, setupIntegrationTests } from './base';
 import {
   getStepHeader,
   selectTab,
@@ -43,18 +55,7 @@ import {
   verifyHospitalizationContactInputFields,
   verifySelectedMeldetatbestand,
 } from '../utils/disease-common-utils';
-import {
-  CLIPBOARD_VALUE_NOTIFIER_FAMILY,
-  CLIPBOARD_VALUE_NOTIFIER_GIVEN,
-  CLIPBOARD_VALUE_OTHER_NOTIFIER_FAMILY,
-  CLIPBOARD_VALUE_OTHER_NOTIFIER_GIVEN,
-} from '../../shared/test-constants';
-import { exampleAddressOfType, TestDataAddress } from '../../shared/data/test-objects';
-import { TestBed } from '@angular/core/testing';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
-import { ImportFieldValuesService } from '../../../app/disease-form/services/import-field-values.service';
-import { ErrorMessage } from '../../../app/shared/error-message';
-import { VALUE_DEFAULT_SELECT_PLACEHOLDER } from 'src/app/legacy/common-utils';
+import { buildMock, setupIntegrationTests } from './base';
 
 describe('User fills in form through clipboard', () => {
   let component: DiseaseFormComponent;
@@ -284,21 +285,24 @@ describe('User fills in form through clipboard', () => {
   });
 
   describe('Error are handled correctly', () => {
-    let showErrorDialogSpy: jasmine.Spy;
-    let showErrorDialogInsertDataFromClipboard: jasmine.Spy;
-    let fillModelFromKVsSpy: jasmine.Spy;
+    let showErrorDialogSpy: Mock;
+    let showErrorDialogInsertDataFromClipboard: Mock;
+    let fillModelFromKVsSpy: Mock;
 
     beforeEach(() => {
-      showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
-      showErrorDialogInsertDataFromClipboard = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialogInsertDataFromClipboard');
-      fillModelFromKVsSpy = spyOn(TestBed.inject(ImportFieldValuesService), 'fillModelFromKVs');
+      showErrorDialogSpy = vi.spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog').mockImplementation(() => {});
+      showErrorDialogInsertDataFromClipboard = vi
+        .spyOn(TestBed.inject(MessageDialogService), 'showErrorDialogInsertDataFromClipboard')
+        .mockImplementation(() => {});
+      fillModelFromKVsSpy = vi.spyOn(TestBed.inject(ImportFieldValuesService), 'fillModelFromKVs').mockImplementation(() => undefined as any);
     });
 
     it('fillModelFromKVsSpy returns an error', async () => {
-      fillModelFromKVsSpy.and.returnValue(Promise.resolve([new ErrorMessage('E0002', 'foo')]));
+      fillModelFromKVsSpy.mockReturnValue(Promise.resolve([new ErrorMessage('E0002', 'foo')]));
       await userImportsDataThroughClipboard('URL N.salutation=Mrs');
       fixture.detectChanges();
-      expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+      expect(showErrorDialogSpy).toHaveBeenCalledTimes(1);
+      expect(showErrorDialogSpy).toHaveBeenCalledWith({
         errorTitle: 'Fehler bei der Datenübernahme',
         errors: [
           {
@@ -328,9 +332,7 @@ describe('User fills in form through clipboard', () => {
       const inputField = await getInput(loader, matchingSelector);
       const fieldValue = await inputField.getValue();
       // Custom error message for each property
-      expect(fieldValue)
-        .withContext(`For key: '${key}', the value for input field '${matchingSelector}' should be '${value}', but got '${fieldValue}'`)
-        .toBe(value);
+      expect(fieldValue, `For key: '${key}', the value for input field '${matchingSelector}' should be '${value}', but got '${fieldValue}'`).toBe(value);
     }
   }
 
@@ -345,7 +347,7 @@ describe('User fills in form through clipboard', () => {
     for (const selector of currentAddressProperties.filter(it => it.matchingSelector !== '').map(it => it.matchingSelector)) {
       const inputField = await getInput(loader, selector);
       const fieldValue = await inputField.getValue();
-      expect(fieldValue).withContext(`The value for input field '${selector}' should be empty, but got '${fieldValue}'`).toEqual('');
+      expect(fieldValue, `The value for input field '${selector}' should be empty, but got '${fieldValue}'`).toEqual('');
     }
   }
 
@@ -370,8 +372,8 @@ describe('User fills in form through clipboard', () => {
   }
 
   async function userImportsDataThroughClipboard(clipboardString: string) {
-    spyOn(window.navigator.clipboard, 'readText').and.returnValue(Promise.resolve(clipboardString));
-    spyOn(window.navigator.clipboard, 'writeText').and.returnValue(Promise.resolve());
+    vi.spyOn(window.navigator.clipboard, 'readText').mockReturnValue(Promise.resolve(clipboardString));
+    vi.spyOn(window.navigator.clipboard, 'writeText').mockReturnValue(Promise.resolve());
     await getButton(loader, '#btn-fill-form').then(btn => btn.click());
     fixture.detectChanges();
     await fixture.whenStable();

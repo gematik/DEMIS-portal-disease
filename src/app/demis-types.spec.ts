@@ -15,8 +15,9 @@
     find details in the "Readme" file.
  */
 
-import { allowedRoutes, getNotificationTypeByRouterUrl, NotificationType } from './demis-types';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { environment } from '../environments/environment';
+import { allowedRoutes, getNotificationTypeByRouterUrl, NotificationType } from './demis-types';
 
 describe('demis-types utilities', () => {
   let originalDiseaseConfig: any;

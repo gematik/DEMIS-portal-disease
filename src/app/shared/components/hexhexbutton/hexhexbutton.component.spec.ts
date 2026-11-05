@@ -16,6 +16,7 @@
  */
 
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { environment } from '../../../../environments/environment';
 import { HexhexbuttonComponent } from './hexhexbutton.component';
 
@@ -43,15 +44,15 @@ describe('HexhexbuttonComponent', () => {
   });
 
   it('should emit paste event when doPaste is called', () => {
-    spyOn(component.paste, 'emit');
+    vi.spyOn(component.pasteRequested, 'emit');
 
     component.doPaste();
 
-    expect(component.paste.emit).toHaveBeenCalled();
+    expect(component.pasteRequested.emit).toHaveBeenCalledWith(undefined);
   });
 
   it('should show hexhex button when not in production', () => {
-    spyOnProperty(environment, 'isProduction', 'get').and.returnValue(false);
+    vi.spyOn(environment, 'isProduction', 'get').mockReturnValue(false);
 
     const result = component.showHexHex();
 
@@ -59,7 +60,7 @@ describe('HexhexbuttonComponent', () => {
   });
 
   it('should not show hexhex button when in production', () => {
-    spyOnProperty(environment, 'isProduction', 'get').and.returnValue(true);
+    vi.spyOn(environment, 'isProduction', 'get').mockReturnValue(true);
 
     const result = component.showHexHex();
 
@@ -69,13 +70,13 @@ describe('HexhexbuttonComponent', () => {
   it('should animate button on click', () => {
     const mockButton = {
       classList: {
-        remove: jasmine.createSpy('remove'),
-        add: jasmine.createSpy('add'),
+        remove: vi.fn(),
+        add: vi.fn(),
       },
     };
 
     const targetElement = component['targetElement'].nativeElement;
-    spyOn(targetElement, 'querySelector').and.returnValue(mockButton);
+    vi.spyOn(targetElement, 'querySelector').mockReturnValue(mockButton);
 
     component.animate();
 
@@ -89,7 +90,7 @@ describe('HexhexbuttonComponent', () => {
 
   it('should handle animate when button is not found', () => {
     const targetElement = component['targetElement'].nativeElement;
-    spyOn(targetElement, 'querySelector').and.returnValue(null);
+    vi.spyOn(targetElement, 'querySelector').mockReturnValue(null);
 
     // Should not throw error
     expect(() => component.animate()).not.toThrow();

@@ -15,8 +15,9 @@
     find details in the "Readme" file.
  */
 
-import { AppComponent } from './app.component';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
   let fixture: MockedComponentFixture<AppComponent>;

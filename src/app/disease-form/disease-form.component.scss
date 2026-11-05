@@ -1,10 +1,4 @@
 $max-side-container-width: 437px; //17.5vw;
-$content-width: 345px;
-$stepper-top: 44px;
-$tab-top: calc($stepper-top + 90px);
-$hexhex-top: calc($tab-top + 360px + var(--subheader-offset, 0px));
-$paste-top: calc($hexhex-top + 50px);
-$form-footer-top: calc($paste-top + 300px);
 
 :host {
   --mat-button-text-label-text-color: var(--color-primary);
@@ -18,10 +12,6 @@ $form-footer-top: calc($paste-top + 300px);
 
 :host ::ng-deep {
 
-  // Shared layout baseline for BOTH branches of FEATURE_FLAG_PORTAL_DISEASE_LAYOUT.
-  // This block was introduced during the tabs-navigation refactor to keep a stable
-  // full-height/flex chain for formly content and the action bar, independent of
-  // whether the legacy or modern sidebar branch is rendered.
   gem-demis-max-height-content-container.disease-form-root > div {
     display: flex;
     flex-direction: column;
@@ -80,23 +70,6 @@ $form-footer-top: calc($paste-top + 300px);
     border-top-right-radius: 0;
   }
 
-  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove legacy tab label spacing rules when the flag is retired.
-  .disease-form-root.portal-disease-layout-disabled {
-    .mat-mdc-tab-label-container {
-      padding-top: $tab-top;
-    }
-  }
-
-
-  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this legacy overlap workaround after removing the flag.
-  .disease-form-root.portal-disease-layout-disabled.notification-type-non-nominal-7-3,
-  .disease-form-root.portal-disease-layout-disabled.notification-type-followup-6-1,
-  .disease-form-root.portal-disease-layout-disabled.notification-type-non-nominal-7-3-follow-up {
-    .mat-mdc-tab-label-container {
-      padding-top: calc($tab-top + 30px);
-    }
-  }
-
   .mat-mdc-outlined-button {
     letter-spacing: normal;
   }
@@ -145,56 +118,6 @@ $form-footer-top: calc($paste-top + 300px);
   .button-group {
     display: flex;
     gap: 10px;
-  }
-
-  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove all legacy sidebar positioning styles below when the flag is retired.
-  .disease-form-root.portal-disease-layout-disabled .stepper-heading {
-    position: absolute;
-    left: 1vw;
-    top: $stepper-top;
-    width: $content-width;
-    z-index: 999;
-    color: var(--color-primary);
-    padding-bottom: 15px;
-  }
-
-  .disease-form-root.portal-disease-layout-disabled .notification-subheader {
-    font-size: 15px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 20px;
-  }
-
-  .disease-form-root.portal-disease-layout-disabled app-hexhexbutton {
-    position: absolute;
-    left: 0;
-    top: $hexhex-top;
-    width: $content-width;
-    z-index: 999;
-  }
-
-  .disease-form-root.portal-disease-layout-disabled app-paste-box,
-  .disease-form-root.portal-disease-layout-disabled gem-demis-paste-box {
-    position: absolute;
-    top: $paste-top;
-    left: 0;
-    margin: 24px;
-    width: $content-width;
-    z-index: 999;
-  }
-
-  .disease-form-root.portal-disease-layout-disabled gem-demis-forms-footer {
-    position: absolute;
-    top: $form-footer-top;
-    left: 0;
-    bottom: 0;
-    width: $max-side-container-width;
-    z-index: 1000;
-  }
-
-  .disease-form-root.portal-disease-layout-disabled #disease-form gem-demis-max-height-content-container > div {
-    overflow-x: hidden;
-    padding-right: 16px;
   }
 
 }

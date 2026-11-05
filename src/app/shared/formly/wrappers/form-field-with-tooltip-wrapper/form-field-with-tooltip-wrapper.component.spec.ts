@@ -20,6 +20,7 @@ import { FormControl } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { MockBuilder, MockRender } from 'ng-mocks';
 import { LabelInfoIconComponent } from 'src/app/shared/components/label-info-icon/label-info-icon.component';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FormFieldWithTooltipWrapperComponent } from './form-field-with-tooltip-wrapper.component';
 
 describe('FormFieldWithTooltipComponent', () => {
@@ -54,8 +55,8 @@ describe('FormFieldWithTooltipComponent', () => {
       const component = fixture.point.componentInstance;
       component.field = testField;
 
-      const attachSpy = spyOn<any>(component, 'attachTooltipIconToLabel');
-      const adjustSpy = spyOn<any>(component, 'adjustLabelStyles');
+      const attachSpy = vi.spyOn(component as any, 'attachTooltipIconToLabel');
+      const adjustSpy = vi.spyOn(component as any, 'adjustLabelStyles');
 
       component.ngAfterViewInit();
 
@@ -75,8 +76,8 @@ describe('FormFieldWithTooltipComponent', () => {
       const component = fixture.point.componentInstance;
       component.field = testField;
 
-      const attachSpy = spyOn<any>(component, 'attachTooltipIconToLabel');
-      const adjustSpy = spyOn<any>(component, 'adjustLabelStyles');
+      const attachSpy = vi.spyOn(component as any, 'attachTooltipIconToLabel');
+      const adjustSpy = vi.spyOn(component as any, 'adjustLabelStyles');
 
       component.ngAfterViewInit();
 
@@ -98,10 +99,10 @@ describe('FormFieldWithTooltipComponent', () => {
 
       // Mock querySelector to return null
       const elementRef = fixture.debugElement.injector.get(ElementRef);
-      spyOn(elementRef.nativeElement, 'querySelector').and.returnValue(null);
+      vi.spyOn(elementRef.nativeElement, 'querySelector').mockReturnValue(null);
 
-      const attachSpy = spyOn<any>(component, 'attachTooltipIconToLabel');
-      const adjustSpy = spyOn<any>(component, 'adjustLabelStyles');
+      const attachSpy = vi.spyOn(component as any, 'attachTooltipIconToLabel');
+      const adjustSpy = vi.spyOn(component as any, 'adjustLabelStyles');
 
       component.ngAfterViewInit();
 
@@ -362,8 +363,8 @@ describe('FormFieldWithTooltipComponent', () => {
       fixture.point.nativeElement.appendChild(labelElement);
 
       // Spy on the private methods
-      const attachSpy = spyOn<any>(component, 'attachTooltipIconToLabel');
-      const adjustSpy = spyOn<any>(component, 'adjustLabelStyles');
+      const attachSpy = vi.spyOn(component as any, 'attachTooltipIconToLabel');
+      const adjustSpy = vi.spyOn(component as any, 'adjustLabelStyles');
 
       // Call ngAfterViewInit manually
       component.ngAfterViewInit();

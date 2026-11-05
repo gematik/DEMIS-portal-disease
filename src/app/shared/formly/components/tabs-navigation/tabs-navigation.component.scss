@@ -98,20 +98,19 @@
   min-height: 0;
 }
 
-// FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Keep the scoped modern layout rules and drop the flag-specific branching once retired.
-:host ::ng-deep .tabs-navigation-modern .mat-mdc-tab-header {
+:host ::ng-deep .tabs-navigation .mat-mdc-tab-header {
   display: none;
 }
 
-:host ::ng-deep .tabs-navigation-modern .mat-mdc-tab-body-wrapper,
-:host ::ng-deep .tabs-navigation-modern .mat-mdc-tab-body,
-:host ::ng-deep .tabs-navigation-modern .mat-mdc-tab-body-content {
+:host ::ng-deep .tabs-navigation .mat-mdc-tab-body-wrapper,
+:host ::ng-deep .tabs-navigation .mat-mdc-tab-body,
+:host ::ng-deep .tabs-navigation .mat-mdc-tab-body-content {
   min-width: 0;
   min-height: 0;
   height: 100%;
 }
 
-:host ::ng-deep .tabs-navigation-modern .mat-mdc-tab-body-content {
+:host ::ng-deep .tabs-navigation .mat-mdc-tab-body-content {
   display: flex;
   flex-direction: column;
   overflow: hidden;

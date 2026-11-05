@@ -15,28 +15,29 @@
     find details in the "Readme" file.
  */
 
-import { buildMock, setupIntegrationTests } from './base';
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { NotificationType } from '../../../app/demis-types';
 import { TestBed } from '@angular/core/testing';
 import { FollowUpMixedCodesService, FollowUpNotificationIdService, MessageDialogService } from '@gematik/demis-portal-core-library';
-import { Ifsg61Service } from '../../../app/ifsg61.service';
-import { EXAMPLE_DISEASE_OPTIONS_NONNOMINAL } from '../../shared/data/test-values';
-import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
-import { getButton, getInput, getSelect, navigateTo } from '../../shared/material-harness-utils';
-import { checkDescribingError } from '../../shared/assertion-utils';
-import { getHtmlButtonElement } from '../../shared/html-element-utils';
-import { clickNextButton } from '../../shared/test-utils';
+import { MockedComponentFixture } from 'ng-mocks';
 import { lastValueFrom, of } from 'rxjs';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { NotificationType } from '../../../app/demis-types';
 import { NotifiedPersonDisclaimer } from '../../../app/disease-form/common/notified-person-disclaimer';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
+import { Ifsg61Service } from '../../../app/ifsg61.service';
+import { checkDescribingError } from '../../shared/assertion-utils';
+import { EXAMPLE_DISEASE_OPTIONS_NONNOMINAL } from '../../shared/data/test-values';
+import { getHtmlButtonElement } from '../../shared/html-element-utils';
+import { getButton, getInput, getSelect, navigateTo } from '../../shared/material-harness-utils';
+import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
+import { clickNextButton } from '../../shared/test-utils';
+import { buildMock, setupIntegrationTests } from './base';
 
 describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
   let loader: HarnessLoader;
-  let showFollowUpDialogSpy: jasmine.Spy;
+  let showFollowUpDialogSpy: Mock;
   let followUpNotificationIdService: FollowUpNotificationIdService;
   let messageDialogService: MessageDialogService;
   let ifsg61Service: Ifsg61Service;
@@ -54,11 +55,11 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
     messageDialogService = TestBed.inject(MessageDialogService);
     ifsg61Service = TestBed.inject(Ifsg61Service);
     followUpMixedCodesService = TestBed.inject(FollowUpMixedCodesService);
-    showFollowUpDialogSpy = followUpNotificationIdService.openDialog as jasmine.Spy;
+    showFollowUpDialogSpy = followUpNotificationIdService.openDialog as Mock;
   });
 
   it('should create', () => {
-    expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+    expect(component, 'DiseaseFormComponent could not be created').toBeTruthy();
   });
 
   it('should show the follow-up disclaimer text', async () => {
@@ -88,9 +89,9 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
     const mockNotificationId = 'test-notification-id-123';
     const mockFollowUpCode = [{ code: mockDiseaseCode, display: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].display, designations: [] }];
 
-    (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
-    (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
-    (ifsg61Service.fetchFollowUpCode as jasmine.Spy).and.returnValue(of(mockFollowUpCode));
+    (followUpNotificationIdService.followUpNotificationCategory as unknown as Mock).mockReturnValue(mockDiseaseCode);
+    (followUpNotificationIdService.validatedNotificationId as unknown as Mock).mockReturnValue(mockNotificationId);
+    (ifsg61Service.fetchFollowUpCode as Mock).mockReturnValue(of(mockFollowUpCode));
 
     component.ngOnInit();
 
@@ -111,9 +112,9 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
     const mockNotificationId = 'test-notification-id-999';
     const mockFollowUpCode = [{ code: mockDiseaseCode, display: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].display, designations: [] }];
 
-    (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
-    (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
-    (ifsg61Service.fetchFollowUpCode as jasmine.Spy).and.returnValue(of(mockFollowUpCode));
+    (followUpNotificationIdService.followUpNotificationCategory as unknown as Mock).mockReturnValue(mockDiseaseCode);
+    (followUpNotificationIdService.validatedNotificationId as unknown as Mock).mockReturnValue(mockNotificationId);
+    (ifsg61Service.fetchFollowUpCode as Mock).mockReturnValue(of(mockFollowUpCode));
 
     component.ngOnInit();
     await fixture.whenStable();
@@ -126,12 +127,12 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
     expect(component.model.tabDiseaseChoice.statusNoteGroup.initialNotificationId.answer.valueString).toBe(mockNotificationId);
 
     const diseaseChoiceField = component.diseaseChoiceFields.find(f => f.id === 'disease-choice-input');
-    expect(diseaseChoiceField?.props?.disabled).toBeTrue();
+    expect(diseaseChoiceField?.props?.disabled).toBe(true);
 
     const initialNotificationIdField = component.diseaseChoiceFields
       .find(f => f.key === 'statusNoteGroup')
       ?.fieldGroup?.find(f => f.key === 'initialNotificationId.answer.valueString');
-    expect(initialNotificationIdField?.props?.disabled).toBeTrue();
+    expect(initialNotificationIdField?.props?.disabled).toBe(true);
   });
 
   describe('validate notified person anonymous input fields', () => {
@@ -172,8 +173,8 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
       expect(await country.getValueText()).toBe('Deutschland');
 
       const p = lastValueFrom(of('URL P.gender=MALE&P.birthDate=01.01.2023&P.r.zip=12345&P.r.country=DK'));
-      spyOn(window.navigator.clipboard, 'readText').and.returnValue(p);
-      spyOn(window.navigator.clipboard, 'writeText').and.returnValue(Promise.resolve());
+      vi.spyOn(window.navigator.clipboard, 'readText').mockReturnValue(p);
+      vi.spyOn(window.navigator.clipboard, 'writeText').mockReturnValue(Promise.resolve());
       await (await getButton(loader, '#btn-fill-form')).click();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -195,10 +196,10 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
       ];
       const selectedCode = EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].code;
 
-      (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
-      (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
-      (ifsg61Service.fetchFollowUpCode as jasmine.Spy).and.returnValue(of(mockFollowUpCodes));
-      (followUpMixedCodesService.openDialog as jasmine.Spy).and.returnValue(of(selectedCode));
+      (followUpNotificationIdService.followUpNotificationCategory as unknown as Mock).mockReturnValue(mockDiseaseCode);
+      (followUpNotificationIdService.validatedNotificationId as unknown as Mock).mockReturnValue(mockNotificationId);
+      (ifsg61Service.fetchFollowUpCode as Mock).mockReturnValue(of(mockFollowUpCodes));
+      (followUpMixedCodesService.openDialog as Mock).mockReturnValue(of(selectedCode));
 
       component.ngOnInit();
       await fixture.whenStable();
@@ -219,9 +220,9 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
       const mockNotificationId = 'test-notification-id-single-456';
       const mockFollowUpCode = [{ code: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].code, display: EXAMPLE_DISEASE_OPTIONS_NONNOMINAL[0].display, designations: [] }];
 
-      (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
-      (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
-      (ifsg61Service.fetchFollowUpCode as jasmine.Spy).and.returnValue(of(mockFollowUpCode));
+      (followUpNotificationIdService.followUpNotificationCategory as unknown as Mock).mockReturnValue(mockDiseaseCode);
+      (followUpNotificationIdService.validatedNotificationId as unknown as Mock).mockReturnValue(mockNotificationId);
+      (ifsg61Service.fetchFollowUpCode as Mock).mockReturnValue(of(mockFollowUpCode));
 
       component.ngOnInit();
       await fixture.whenStable();
@@ -240,9 +241,9 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
       const mockDiseaseCode = 'chtd';
       const mockNotificationId = 'test-notification-id-empty-789';
 
-      (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
-      (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
-      (ifsg61Service.fetchFollowUpCode as jasmine.Spy).and.returnValue(of([]));
+      (followUpNotificationIdService.followUpNotificationCategory as unknown as Mock).mockReturnValue(mockDiseaseCode);
+      (followUpNotificationIdService.validatedNotificationId as unknown as Mock).mockReturnValue(mockNotificationId);
+      (ifsg61Service.fetchFollowUpCode as Mock).mockReturnValue(of([]));
 
       component.ngOnInit();
       await fixture.whenStable();
@@ -260,9 +261,9 @@ describe('DiseaseFormComponent followUp nonNominal integration tests', () => {
       const mockDiseaseCode = 'chtd';
       const mockNotificationId = 'test-notification-id-null-012';
 
-      (followUpNotificationIdService.followUpNotificationCategory as unknown as jasmine.Spy).and.returnValue(mockDiseaseCode);
-      (followUpNotificationIdService.validatedNotificationId as unknown as jasmine.Spy).and.returnValue(mockNotificationId);
-      (ifsg61Service.fetchFollowUpCode as jasmine.Spy).and.returnValue(of(null as any));
+      (followUpNotificationIdService.followUpNotificationCategory as unknown as Mock).mockReturnValue(mockDiseaseCode);
+      (followUpNotificationIdService.validatedNotificationId as unknown as Mock).mockReturnValue(mockNotificationId);
+      (ifsg61Service.fetchFollowUpCode as Mock).mockReturnValue(of(null as any));
 
       component.ngOnInit();
       await fixture.whenStable();

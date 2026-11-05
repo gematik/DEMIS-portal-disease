@@ -25,9 +25,9 @@ import { environment } from '../../../../environments/environment';
   imports: [],
 })
 export class HexhexbuttonComponent {
-  private targetElement = inject(ElementRef);
+  private readonly targetElement = inject(ElementRef);
 
-  readonly paste = output<void>();
+  readonly pasteRequested = output<void>();
 
   constructor() {
     this.targetElement.nativeElement.classList.add('hexhexbutton');
@@ -44,8 +44,7 @@ export class HexhexbuttonComponent {
   }
 
   doPaste() {
-    // TODO: The 'emit' function requires a mandatory void argument
-    this.paste.emit();
+    this.pasteRequested.emit(undefined);
   }
 
   showHexHex(): boolean {

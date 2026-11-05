@@ -16,9 +16,10 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { FileService } from './file.service';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { DiseaseNotification, NotifiedPersonBasicInfo } from '../../api/notification';
 import { NotificationType } from '../demis-types';
+import { FileService } from './file.service';
 
 describe('FileService', () => {
   let service: FileService;

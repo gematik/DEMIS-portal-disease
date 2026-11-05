@@ -15,52 +15,59 @@
     find details in the "Readme" file.
  */
 
+import { FocusMonitor } from '@angular/cdk/a11y';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ChangeDetectorRef } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
-import { FollowUpMixedCodesService, FollowUpNotificationIdService, PasteBoxComponent, withDemisFormlyCore } from '@gematik/demis-portal-core-library';
+import {
+  FollowUpMixedCodesService,
+  FollowUpNotificationIdService,
+  MessageDialogService,
+  PasteBoxComponent,
+  withDemisFormlyCore,
+} from '@gematik/demis-portal-core-library';
 import { FORMLY_CONFIG, FormlyModule, provideFormlyCore } from '@ngx-formly/core';
 import { FormlyMaterialModule, withFormlyMaterial } from '@ngx-formly/material';
 import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
-import { NotificationFormValidationModule } from '../../../app/legacy/notification-form-validation-module';
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
+import { NGXLogger } from 'ngx-logger';
 import { BehaviorSubject, of } from 'rxjs';
+import { vi } from 'vitest';
 import { allowedRoutes, NotificationType } from '../../../app/demis-types';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { Ifsg61Service } from '../../../app/ifsg61.service';
 import { FormlyConstants } from '../../../app/legacy/formly-constants';
+import { NotificationFormValidationModule } from '../../../app/legacy/notification-form-validation-module';
 import { registerValueSetExtension } from '../../../app/legacy/value-set.extension';
 import { ValueSetService } from '../../../app/legacy/value-set.service';
-import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
-import { TabsNavigationComponent } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.component';
 import { RepeatSectionComponent } from '../../../app/shared/formly/components/repeat-section/repeat-section.component';
+import { TabsNavigationComponent } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.component';
+import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
 import { APP_FORMLY_CONFIG } from '../../../app/shared/formly/formly-app-config';
-import { HelpersService } from '../../../app/shared/helpers.service';
+import { ImportFieldValuesService } from '../../../app/disease-form/services/import-field-values.service';
+import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';
 import { environment } from '../../../environments/environment';
 import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_DISEASE_OPTIONS_NONNOMINAL, EXAMPLE_VALUE_SET } from '../../shared/data/test-values';
 import { EXAMPLE_TOXP_SHORT } from '../../shared/data/test-values-nonnominal';
 import { EXAMPLE_MSVD_SHORT } from '../../shared/data/test-values-short';
-import { NGXLogger } from 'ngx-logger';
-import { ReactiveFormsModule } from '@angular/forms';
-import { MatButton, MatButtonModule } from '@angular/material/button';
-import { FocusMonitor } from '@angular/cdk/a11y';
 
 const overrides = {
   get Ifsg61Service() {
     return {
-      getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
-      getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
-      getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_MSVD_SHORT)),
-      fetchFollowUpCode: jasmine.createSpy('fetchFollowUpCode').and.returnValue(of([])),
+      getCodeValueSet: vi.fn().mockReturnValue(of(EXAMPLE_VALUE_SET)),
+      getDiseaseOptions: vi.fn().mockReturnValue(of(EXAMPLE_DISEASE_OPTIONS)),
+      getQuestionnaire: vi.fn().mockReturnValue(of(EXAMPLE_MSVD_SHORT)),
+      fetchFollowUpCode: vi.fn().mockReturnValue(of([])),
     } as Partial<Ifsg61Service>;
   },
 
   get ValueSetService() {
     return {
-      get: jasmine.createSpy('get').and.callFake((identifier: string) => {
+      get: vi.fn().mockImplementation((identifier: string) => {
         if (identifier === FormlyConstants.COUNTRY_CODES) {
           return of([
             { value: 'DE', label: 'Deutschland' },
@@ -76,10 +83,10 @@ const overrides = {
 const overridesNonNominal = {
   get Ifsg61Service() {
     return {
-      getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
-      getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS_NONNOMINAL)),
-      getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_TOXP_SHORT)),
-      fetchFollowUpCode: jasmine.createSpy('fetchFollowUpCode').and.returnValue(of([])),
+      getCodeValueSet: vi.fn().mockReturnValue(of(EXAMPLE_VALUE_SET)),
+      getDiseaseOptions: vi.fn().mockReturnValue(of(EXAMPLE_DISEASE_OPTIONS_NONNOMINAL)),
+      getQuestionnaire: vi.fn().mockReturnValue(of(EXAMPLE_TOXP_SHORT)),
+      fetchFollowUpCode: vi.fn().mockReturnValue(of([])),
     } as Partial<Ifsg61Service>;
   },
 };
@@ -135,19 +142,18 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
 
   const followUpNotificationIdServiceMock = {
     hasValidNotificationId$: new BehaviorSubject<boolean>(false),
-    openDialog: jasmine.createSpy('openDialog'),
-    closeDialog: jasmine.createSpy('closeDialog'),
-    resetState: jasmine.createSpy('resetState'),
-    followUpNotificationCategory: jasmine.createSpy('followUpNotificationCategory').and.returnValue(''),
-    validatedNotificationId: jasmine.createSpy('validatedNotificationId').and.returnValue(''),
+    openDialog: vi.fn(),
+    closeDialog: vi.fn(),
+    resetState: vi.fn(),
+    followUpNotificationCategory: vi.fn().mockReturnValue(''),
+    validatedNotificationId: vi.fn().mockReturnValue(''),
   } as any;
 
   const followUpMixedCodesServiceMock = {
-    openDialog: jasmine.createSpy('openDialog'),
+    openDialog: vi.fn(),
   } as any;
 
   return MockBuilder(DiseaseFormComponent)
-    .keep(NoopAnimationsModule)
     .keep(MatIconTestingModule)
     .keep(PasteBoxComponent)
     .keep(TabsNavigationComponent)
@@ -166,8 +172,10 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
     .provide(MockProvider(ValueSetService, valueSetService))
     .provide(MockProvider(ChangeDetectorRef))
     .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
+    .provide(MessageDialogService)
+    .provide(ImportFieldValuesService)
+    .provide(CopyAndKeepInSyncService)
     .mock(NGXLogger)
-    .provide(MockProvider(HelpersService))
     .provide({
       provide: FollowUpNotificationIdService,
       useValue: followUpNotificationIdServiceMock,
@@ -184,10 +192,12 @@ export function buildMock(notificationType = NotificationType.NominalNotificatio
     })
     .provide({
       provide: Router,
-      useValue: jasmine.createSpyObj('Router', ['navigate', 'currentNavigation'], {
+      useValue: {
+        navigate: vi.fn(),
+        currentNavigation: vi.fn(),
         url: allowedRoutesMock,
         routerState: { root: {} },
-      }),
+      },
     })
     .provide({
       provide: ActivatedRoute,

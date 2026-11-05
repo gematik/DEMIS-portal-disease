@@ -16,20 +16,7 @@
  */
 
 import { HttpErrorResponse } from '@angular/common/http';
-import {
-  AfterViewInit,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  inject,
-  NgZone,
-  OnDestroy,
-  OnInit,
-  signal,
-  Signal,
-  viewChild,
-  WritableSignal,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, inject, NgZone, OnDestroy, OnInit, signal, Signal, WritableSignal } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -37,12 +24,10 @@ import {
   customCodeDisplay,
   FollowUpMixedCodesService,
   FollowUpNotificationIdService,
-  FormsFooterComponent,
   MaxHeightContentContainerComponent,
   MessageDialogService,
   notifiedPersonAnonymousConfigFields,
   notifiedPersonNotByNameConfigFields,
-  PasteBoxComponent,
 } from '@gematik/demis-portal-core-library';
 import { FormlyFieldConfig, FormlyFormOptions, FormlyModule } from '@ngx-formly/core';
 import { FormlyFieldProps } from '@ngx-formly/material/form-field';
@@ -72,7 +57,6 @@ import { findCodeDisplayByCodeValue } from '../legacy/common-utils';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-import { HexhexbuttonComponent } from '../shared/components/hexhexbutton/hexhexbutton.component';
 import StatusEnum = DiseaseStatus.StatusEnum;
 
 const IFSG61_NOTIFIER = 'IFSG61_NOTIFIER'; // key into local storage
@@ -100,27 +84,12 @@ const NO_DISEASE_CHOOSEN: FormlyFieldConfig[] = [
   templateUrl: './disease-form.component.html',
   styleUrls: ['./disease-form.component.scss'],
   host: {
-    '[style.--subheader-offset]': 'subheaderOffset',
     '(window:keydown.control.ArrowRight)': 'nextTab()',
     '(window:keydown.control.ArrowLeft)': 'prevTab()',
   },
-  imports: [
-    MaxHeightContentContainerComponent,
-    MatProgressSpinner,
-    ReactiveFormsModule,
-    FormlyModule,
-    MatButton,
-    MatIcon,
-    HexhexbuttonComponent,
-    PasteBoxComponent,
-    FormsFooterComponent,
-  ],
+  imports: [MaxHeightContentContainerComponent, MatProgressSpinner, ReactiveFormsModule, FormlyModule, MatButton, MatIcon],
 })
-export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTargetComponent, OnDestroy {
-  private readonly notificationSubheader = viewChild<ElementRef<HTMLElement>>('notificationSubheader');
-
-  subheaderOffset: string = '0px';
-
+export class DiseaseFormComponent implements OnInit, ImportTargetComponent, OnDestroy {
   private readonly ngZone = inject(NgZone); // ensure we can force change detection
 
   get formlyConfigFields(): FormlyFieldConfig[] {
@@ -157,38 +126,8 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
 
   notificationType = NotificationType.NominalNotification6_1;
 
-  get notificationTypeClass(): string {
-    switch (this.notificationType) {
-      case NotificationType.FollowUpNotification6_1:
-        return 'notification-type-followup-6-1';
-      case NotificationType.NonNominalNotification7_3:
-        return 'notification-type-non-nominal-7-3';
-      case NotificationType.FollowUpNotification7_3:
-        return 'notification-type-non-nominal-7-3-follow-up';
-      case NotificationType.NominalNotification6_1:
-      default:
-        return 'notification-type-nominal-6-1';
-    }
-  }
-
-  // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this toggle and keep only the modern layout path once the flag is retired.
-  public get isPortalDiseaseLayoutEnabled(): boolean {
-    return environment.featureFlags?.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT ?? false;
-  }
-
-  private calculateSubheaderHeight(): void {
-    const notificationSubheader = this.notificationSubheader();
-
-    if (notificationSubheader?.nativeElement) {
-      const height = notificationSubheader.nativeElement.offsetHeight;
-      this.subheaderOffset = `${height}px`;
-    } else {
-      this.subheaderOffset = '0px';
-    }
-  }
-
   constructor() {
-    this.token = (window as any)['token'];
+    this.token = (globalThis as any)['token'];
   }
 
   notifierFields: FormlyFieldConfig[] = [];
@@ -215,7 +154,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   ngOnInit() {
     this.isLoading.set(true);
     const nav = this.router.currentNavigation();
-    const data = nav?.extras.state ?? window.history.state;
+    const data = nav?.extras.state ?? globalThis.history.state;
 
     const notifierJson = localStorage.getItem(IFSG61_NOTIFIER);
     this.model.tabNotifier = notifierJson ? JSON.parse(notifierJson) : {};
@@ -242,7 +181,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
 
     this.model.tabDiseaseChoice = {
       diseaseChoice: { answer: { valueCoding: null } },
-      clinicalStatus: { answer: { valueString: environment.featureFlags?.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT ? null : StatusEnum.Final } },
+      clinicalStatus: { answer: { valueString: null } },
       statusNoteGroup: {
         statusNote: { answer: { valueString: '' } },
         initialNotificationId: { answer: { valueString: '' } },
@@ -296,18 +235,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     if (this.isFollowUpNotification()) {
       this.handleFollowUpNotifications();
     }
-  }
-
-  ngAfterViewInit(): void {
-    // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): Remove this legacy-only guard when FEATURE_FLAG_PORTAL_DISEASE_LAYOUT is removed.
-    if (this.isPortalDiseaseLayoutEnabled) {
-      return;
-    }
-
-    Promise.resolve().then(() => {
-      this.calculateSubheaderHeight();
-      this.changeDetector.detectChanges();
-    });
   }
 
   private getNotifiedPersonFields(notificationType: NotificationType): FormlyFieldConfig[] {
@@ -511,11 +438,6 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
     }
   }
 
-  public get FEATURE_FLAG_FOOTER_LINKS_CORRECTION(): boolean {
-    // FLAG_CLEANUP(FEATURE_FLAG_PORTAL_DISEASE_LAYOUT): This getter is only needed for the legacy layout branch.
-    return environment.diseaseConfig.featureFlags?.FEATURE_FLAG_FOOTER_LINKS_CORRECTION ?? false;
-  }
-
   isFullQuestionnaire() {
     return this.notificationType === NotificationType.NominalNotification6_1 || this.isFollowUpNotification6_1();
   }
@@ -566,7 +488,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   }
 
   private isNotifierField(field: FormlyFieldConfig): boolean {
-    if (this.notifierFields.findIndex(nf => nf === field)) return true;
+    if (this.notifierFields.includes(field)) return true;
     const parent = field.parent;
     if (!parent) return false;
     return this.isNotifierField(parent);
@@ -641,7 +563,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
           this.resetDiseaseChoiceDependentInput();
           this.questionnaireFields = descriptor.questionnaireConfigs;
           this.conditionFields = descriptor.conditionConfigs || [];
-          this.diseaseCommonFields = !this.isFullQuestionnaire() ? [] : descriptor.commonConfig;
+          this.diseaseCommonFields = this.isFullQuestionnaire() ? descriptor.commonConfig : [];
           this.combineFields();
           this.changeDetector.detectChanges();
           if (!this.isFollowUpNotification() && !this.isFollowUpNotification7_3()) {
@@ -711,13 +633,11 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   }
 
   async afterTransfer(importKey: string, value: any): Promise<ErrorMessage[]> {
-    switch (importKey) {
-      case 'D.code':
-        return await this.loadQuestionnaire(value);
-      default:
-        this.model = { ...this.model }; // angular tricks...
-        return Promise.resolve([]);
+    if (importKey === 'D.code') {
+      return this.loadQuestionnaire(value);
     }
+    this.model = { ...this.model }; // angular tricks...
+    return [];
   }
 
   /**
@@ -728,7 +648,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
   async paste(keyValuePairsFromClipboard: Map<string, string>) {
     this.messageDialogService.showSpinnerDialog({ message: 'Zwischenablage wird übernommen' });
     try {
-      window.focus();
+      globalThis.focus();
       const keyValuePairs: string[][] = [...(keyValuePairsFromClipboard ?? [])];
       const personRules = this.isFollowUpNotification() ? ANONYMOUS_PERSON_RULES : NOMINAL_PERSON_RULES;
       const personAddressRules = this.isFollowUpNotification() ? {} : NOMINAL_PERSON_ADDRESS_RULES;
@@ -750,7 +670,7 @@ export class DiseaseFormComponent implements OnInit, AfterViewInit, ImportTarget
           errors: problems.map(it => it.toErrorMessageFromCoreLibrary()),
         });
       } else {
-        await window.navigator.clipboard.writeText('');
+        await globalThis.navigator.clipboard.writeText('');
       }
     } catch (error) {
       this.logger.error(error);

@@ -15,9 +15,10 @@
     find details in the "Readme" file.
  */
 
-import { SelectCodingComponent } from './select-coding.component';
-import { DemisCoding } from '../../../../demis-types';
 import { Subject } from 'rxjs';
+import { describe, expect, it, type Mock, vi } from 'vitest';
+import { DemisCoding } from '../../../../demis-types';
+import { SelectCodingComponent } from './select-coding.component';
 
 describe('SelectCodingComponent', () => {
   let underTest: SelectCodingComponent;
@@ -25,7 +26,7 @@ describe('SelectCodingComponent', () => {
   let formControl: {
     value: DemisCoding | null | undefined | string;
     valueChanges: Subject<DemisCoding>;
-    setValue: jasmine.Spy;
+    setValue: Mock;
   };
 
   const codings: DemisCoding[] = [
@@ -54,7 +55,7 @@ describe('SelectCodingComponent', () => {
     formControl = {
       value,
       valueChanges: valueChanges$,
-      setValue: jasmine.createSpy('setValue').and.callFake((newValue: DemisCoding) => {
+      setValue: vi.fn().mockImplementation((newValue: DemisCoding) => {
         formControl.value = newValue;
       }),
     };
@@ -73,7 +74,7 @@ describe('SelectCodingComponent', () => {
     createComponent();
     underTest.ngOnInit();
 
-    expect(underTest).withContext('component was not created').toBeTruthy();
+    expect(underTest, 'component was not created').toBeTruthy();
     expect(underTest.codings).toEqual(codings);
   });
 
@@ -132,7 +133,7 @@ describe('SelectCodingComponent', () => {
     createComponent();
     underTest.ngOnInit();
 
-    const unsubscribeSpy = spyOn((underTest as any).changesSubscription, 'unsubscribe').and.callThrough();
+    const unsubscribeSpy = vi.spyOn((underTest as any).changesSubscription, 'unsubscribe');
 
     underTest.ngOnDestroy();
 

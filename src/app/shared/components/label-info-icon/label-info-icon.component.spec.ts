@@ -15,10 +15,11 @@
     find details in the "Readme" file.
  */
 
-import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
-import { LabelInfoIconComponent } from './label-info-icon.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { LabelInfoIconComponent } from './label-info-icon.component';
 
 describe('LabelInfoIconComponent', () => {
   beforeEach(() => {

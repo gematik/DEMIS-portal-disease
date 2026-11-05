@@ -16,6 +16,7 @@
  */
 
 import { FORMLY_CONFIG, FormlyModule, provideFormlyCore } from '@ngx-formly/core';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 /*
     Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
@@ -36,12 +37,12 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ChangeDetectorRef } from '@angular/core';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { FollowUpNotificationIdService, PasteBoxComponent, withDemisFormlyCore } from '@gematik/demis-portal-core-library';
 import { withFormlyMaterial } from '@ngx-formly/material';
 import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { NGXLogger } from 'ngx-logger';
 import { BehaviorSubject, of } from 'rxjs';
 import { allowedRoutes } from '../../../app/demis-types';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
@@ -50,15 +51,13 @@ import { FormlyConstants } from '../../../app/legacy/formly-constants';
 import { NotificationFormValidationModule } from '../../../app/legacy/notification-form-validation-module';
 import { registerValueSetExtension } from '../../../app/legacy/value-set.extension';
 import { ValueSetService } from '../../../app/legacy/value-set.service';
-import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
-import { TabsNavigationComponent } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.component';
 import { RepeatSectionComponent } from '../../../app/shared/formly/components/repeat-section/repeat-section.component';
+import { TabsNavigationComponent } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.component';
+import { TabsNavigationService } from '../../../app/shared/formly/components/tabs-navigation/tabs-navigation.service';
 import { APP_FORMLY_CONFIG } from '../../../app/shared/formly/formly-app-config';
-import { HelpersService } from '../../../app/shared/helpers.service';
 import { environment } from '../../../environments/environment';
 import { EXAMPLE_DISEASE_OPTIONS, EXAMPLE_VALUE_SET, QUESTIONNAIRE_WITH_TOOLTIP } from '../../shared/data/test-values';
 import { navigateTo } from '../../shared/material-harness-utils';
-import { NGXLogger } from 'ngx-logger';
 
 describe('DiseaseFormComponent tooltip integration tests', () => {
   let component: DiseaseFormComponent;
@@ -67,13 +66,13 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
 
   beforeEach(async () => {
     const ifsg61ServiceMock = {
-      getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
-      getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
-      getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(QUESTIONNAIRE_WITH_TOOLTIP)),
+      getCodeValueSet: vi.fn().mockReturnValue(of(EXAMPLE_VALUE_SET)),
+      getDiseaseOptions: vi.fn().mockReturnValue(of(EXAMPLE_DISEASE_OPTIONS)),
+      getQuestionnaire: vi.fn().mockReturnValue(of(QUESTIONNAIRE_WITH_TOOLTIP)),
     };
 
     const valueSetServiceMock = {
-      get: jasmine.createSpy('get').and.callFake((identifier: string) => {
+      get: vi.fn().mockImplementation((identifier: string) => {
         if (identifier === FormlyConstants.COUNTRY_CODES) {
           return of([
             { value: 'DE', label: 'Deutschland' },
@@ -86,14 +85,13 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
 
     const followUpNotificationIdServiceMock = {
       hasValidNotificationId$: new BehaviorSubject<boolean>(false),
-      openDialog: jasmine.createSpy('openDialog'),
-      resetState: jasmine.createSpy('resetState'),
-      followUpNotificationCategory: jasmine.createSpy('followUpNotificationCategory').and.returnValue(''),
-      validatedNotificationId: jasmine.createSpy('validatedNotificationId').and.returnValue(''),
+      openDialog: vi.fn(),
+      resetState: vi.fn(),
+      followUpNotificationCategory: vi.fn().mockReturnValue(''),
+      validatedNotificationId: vi.fn().mockReturnValue(''),
     };
 
     await MockBuilder(DiseaseFormComponent)
-      .keep(NoopAnimationsModule)
       .keep(MatIconTestingModule)
       .keep(FormlyModule)
       .keep(FormlyMatDatepickerModule)
@@ -108,7 +106,6 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       .mock(ChangeDetectorRef)
       .provide(TabsNavigationService)
       .mock(NGXLogger)
-      .mock(HelpersService)
       .provide({
         provide: FollowUpNotificationIdService,
         useValue: followUpNotificationIdServiceMock,
@@ -121,10 +118,12 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       })
       .provide({
         provide: Router,
-        useValue: jasmine.createSpyObj('Router', ['navigate', 'currentNavigation'], {
+        useValue: {
+          navigate: vi.fn(),
+          currentNavigation: vi.fn(),
           url: allowedRoutes['nominal'],
           routerState: { root: {} },
-        }),
+        },
       })
       .provide({
         provide: ActivatedRoute,
@@ -165,7 +164,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
   });
 
   it('should create', () => {
-    expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+    expect(component, 'DiseaseFormComponent could not be created').toBeTruthy();
   });
 
   describe('tooltip wrapper functionality', () => {
@@ -185,7 +184,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       // Find the field with tooltip - "infectProtectFacility" field has a tooltip
       const tooltipIcon = fixture.nativeElement.querySelector('.gem-demis-form-field-label-info-icon');
 
-      expect(tooltipIcon).withContext('Tooltip icon should be rendered for field with tooltip property').toBeTruthy();
+      expect(tooltipIcon, 'Tooltip icon should be rendered for field with tooltip property').toBeTruthy();
     });
 
     it('should have tooltip icon with correct attributes', async () => {
@@ -197,10 +196,10 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       expect(tooltipIcon).toBeTruthy();
 
       // Check that it's a mat-icon element
-      expect(tooltipIcon.tagName).withContext('Tooltip icon should be a mat-icon element').toBe('MAT-ICON');
+      expect(tooltipIcon.tagName, 'Tooltip icon should be a mat-icon element').toBe('MAT-ICON');
 
       // Check that it has tabindex="0" for keyboard accessibility
-      expect(tooltipIcon.getAttribute('tabindex')).withContext('Tooltip icon should have tabindex="0"').toBe('0');
+      expect(tooltipIcon.getAttribute('tabindex'), 'Tooltip icon should have tabindex="0"').toBe('0');
     });
 
     it('should display tooltip text on hover', async () => {
@@ -215,7 +214,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       // or matTooltip attribute on the element, indicating tooltip is configured
       const hasTooltipBinding =
         tooltipIcon.hasAttribute('mattooltip') || tooltipIcon.hasAttribute('aria-describedby') || tooltipIcon.classList.contains('mat-mdc-tooltip-trigger');
-      expect(hasTooltipBinding).withContext('Tooltip should be configured on the icon element').toBeTruthy();
+      expect(hasTooltipBinding, 'Tooltip should be configured on the icon element').toBeTruthy();
     });
 
     it('should have form-field-with-tooltip wrapper applied to fields with tooltip', async () => {
@@ -228,7 +227,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
         return hasTooltipWrapper(field);
       });
 
-      expect(hasTooltipFields).withContext('At least one field should have form-field-with-tooltip wrapper').toBeTruthy();
+      expect(hasTooltipFields, 'At least one field should have form-field-with-tooltip wrapper').toBeTruthy();
     });
 
     it('should render tooltip for the correct field with tooltip property in EXAMPLE_MSVD', async () => {
@@ -239,7 +238,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       // The field "infectProtectFacility" in EXAMPLE_MSVD has the tooltip about IfSG-relevant facilities
       const fieldElements = fixture.nativeElement.querySelectorAll('.LinkId_infectProtectFacility');
 
-      expect(fieldElements.length).withContext('infectProtectFacility field should be rendered').toBeGreaterThan(0);
+      expect(fieldElements.length, 'infectProtectFacility field should be rendered').toBeGreaterThan(0);
 
       // Check if this field has a tooltip icon
       let hasTooltipIcon = false;
@@ -250,7 +249,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
         }
       });
 
-      expect(hasTooltipIcon).withContext('infectProtectFacility field should have a tooltip icon').toBeTruthy();
+      expect(hasTooltipIcon, 'infectProtectFacility field should have a tooltip icon').toBeTruthy();
     });
 
     it('should have tooltip text containing IfSG references', async () => {
@@ -275,7 +274,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
         }
       });
 
-      expect(expectedTooltipText).withContext('Test data should contain tooltip for infectProtectFacility field').toBeTruthy();
+      expect(expectedTooltipText, 'Test data should contain tooltip for infectProtectFacility field').toBeTruthy();
 
       // Find the tooltip text directly in the component model instead of DOM attribute
       let foundTooltip = false;
@@ -292,7 +291,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       };
       component.fields.forEach(field => checkField(field));
 
-      expect(foundTooltip).withContext('Tooltip text should match the expected content from test data').toBe(true);
+      expect(foundTooltip, 'Tooltip text should match the expected content from test data').toBe(true);
     });
 
     it('should maintain tooltip functionality across tab navigation', async () => {
@@ -302,7 +301,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       await fixture.whenStable();
 
       let tooltipIcon = fixture.nativeElement.querySelector('.gem-demis-form-field-label-info-icon');
-      expect(tooltipIcon).withContext('Tooltip icon should be present on tab 5').toBeTruthy();
+      expect(tooltipIcon, 'Tooltip icon should be present on tab 5').toBeTruthy();
 
       // Navigate away to another tab
       await navigateTo(loader, 1);
@@ -315,7 +314,7 @@ describe('DiseaseFormComponent tooltip integration tests', () => {
       await fixture.whenStable();
 
       tooltipIcon = fixture.nativeElement.querySelector('.gem-demis-form-field-label-info-icon');
-      expect(tooltipIcon).withContext('Tooltip icon should still be present after navigating back').toBeTruthy();
+      expect(tooltipIcon, 'Tooltip icon should still be present after navigating back').toBeTruthy();
     });
   });
 });
