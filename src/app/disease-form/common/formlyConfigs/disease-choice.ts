@@ -19,7 +19,6 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { infoOutline } from './formly-base';
 import { NotificationType } from '../../../demis-types';
 import { CodeDisplay, DiseaseStatus, NotificationLaboratoryCategory } from '../../../../api/notification';
-import { environment } from '../../../../environments/environment';
 import StatusEnum = DiseaseStatus.StatusEnum;
 import { NOTIFICATION_ID_REFERENCE_LIST } from 'src/app/legacy/formly-options-lists';
 import NotificationIdReferenceEnum = NotificationLaboratoryCategory.NotificationIdReferenceEnum;
@@ -83,17 +82,10 @@ export function getDiseaseChoiceFields(diseaseOptions: CodeDisplay[], notificati
       key: 'clinicalStatus.answer.valueString',
       props: {
         label: 'Status',
-        ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT ? { required: true } : {}),
+        required: true,
         options: [
-          ...(environment.featureFlags?.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT
-            ? [
-                { value: StatusEnum.Preliminary, label: 'Vorläufig/Verdacht', disabled: isFollowUp },
-                { value: StatusEnum.Final, label: 'Endgültig' },
-              ]
-            : [
-                { value: StatusEnum.Final, label: 'Endgültig' },
-                { value: StatusEnum.Preliminary, label: 'Vorläufig/Verdacht', disabled: isFollowUp },
-              ]),
+          { value: StatusEnum.Preliminary, label: 'Vorläufig/Verdacht', disabled: isFollowUp },
+          { value: StatusEnum.Final, label: 'Endgültig' },
           { value: StatusEnum.Amended, label: 'Ergänzung oder Korrektur' },
           { value: StatusEnum.Refuted, label: 'Verdacht nicht bestätigt' },
           { value: StatusEnum.Error, label: 'Irrtümliche Meldung revidieren' },

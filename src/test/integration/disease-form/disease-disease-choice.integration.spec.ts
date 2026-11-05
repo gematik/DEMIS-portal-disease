@@ -15,23 +15,24 @@
     find details in the "Readme" file.
  */
 
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture, MockRender } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { buildMock, mainConfig } from './base';
-import { environment } from '../../../environments/environment';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { selectTab } from '../utils/disease-common-utils';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { TestBed } from '@angular/core/testing';
 import { FormControl } from '@angular/forms';
-import { Ifsg61Service } from '../../../app/ifsg61.service';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { MockedComponentFixture, MockRender } from 'ng-mocks';
 import { throwError } from 'rxjs';
+import { beforeAll, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
+import { Ifsg61Service } from '../../../app/ifsg61.service';
+import { environment } from '../../../environments/environment';
+import { selectTab } from '../utils/disease-common-utils';
+import { buildMock, mainConfig } from './base';
 
 describe('DiseaseFormComponent integration tests for Disease Choice Tab', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
-  let getQuestionnaireSpy: jasmine.Spy;
+  let getQuestionnaireSpy: Mock;
   let loader: HarnessLoader;
 
   beforeAll(() => {
@@ -46,18 +47,18 @@ describe('DiseaseFormComponent integration tests for Disease Choice Tab', () => 
     component = fixture.point.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
-    getQuestionnaireSpy = TestBed.inject(Ifsg61Service).getQuestionnaire as jasmine.Spy;
+    getQuestionnaireSpy = TestBed.inject(Ifsg61Service).getQuestionnaire as Mock;
   });
 
   it('should create', () => {
-    expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+    expect(component, 'DiseaseFormComponent could not be created').toBeTruthy();
   });
 
   describe('handle errors correctly', () => {
     it('getQuestionnaire throws an error', async () => {
-      spyOn(console, 'error'); // suppress expected error output
-      let showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
-      getQuestionnaireSpy.and.returnValue(throwError(() => new Error('Foo')));
+      vi.spyOn(console, 'error').mockImplementation(() => {}); // suppress expected error output
+      let showErrorDialogSpy = vi.spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog').mockImplementation(() => {});
+      getQuestionnaireSpy.mockReturnValue(throwError(() => new Error('Foo')));
 
       await selectTab(fixture, loader, 3);
 
@@ -71,7 +72,10 @@ describe('DiseaseFormComponent integration tests for Disease Choice Tab', () => 
       await fixture.whenStable();
 
       // assertion
-      expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+      expect(showErrorDialogSpy).toHaveBeenCalledTimes(1);
+
+      // assertion
+      expect(showErrorDialogSpy).toHaveBeenCalledWith({
         errorTitle: 'Systemfehler',
         errors: [
           {

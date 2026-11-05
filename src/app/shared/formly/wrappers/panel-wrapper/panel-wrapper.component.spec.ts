@@ -15,24 +15,23 @@
     find details in the "Readme" file.
  */
 
+import { MockBuilder, MockRender } from 'ng-mocks';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { PanelWrapperComponent } from './panel-wrapper.component';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { AppComponent } from '../../../../app.component';
 
-//@todo Component needs many formly-inputs, disabled -> need to fix initialization
-xdescribe('PanelWrapperComponent', () => {
-  let fixture: MockedComponentFixture<PanelWrapperComponent>;
-  let component: AppComponent;
-
-  const createComponent = () => {
-    fixture = MockRender(PanelWrapperComponent);
-    component = fixture.point.componentInstance;
-  };
-
+describe('PanelWrapperComponent', () => {
   beforeEach(() => MockBuilder(PanelWrapperComponent));
 
-  it('should create', () => {
-    createComponent();
-    expect(component).withContext('component was not created').toBeTruthy();
+  it('renders the panel label and indentation for a regular field', () => {
+    const fixture = MockRender(PanelWrapperComponent, {}, { detectChanges: false });
+    fixture.point.componentInstance.field = {
+      id: 'test-panel',
+      props: { label: 'Aufenthalt' },
+      fieldGroup: [],
+    };
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.card-header').textContent).toContain('Aufenthalt');
+    expect(fixture.nativeElement.querySelector('.card').classList.contains('demis-indent-group')).toBe(true);
   });
 });

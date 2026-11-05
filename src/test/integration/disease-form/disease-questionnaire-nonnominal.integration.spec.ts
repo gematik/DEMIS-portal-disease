@@ -15,17 +15,18 @@
     find details in the "Readme" file.
  */
 
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture, MockRender } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MockedComponentFixture, MockRender } from 'ng-mocks';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { NotificationType } from '../../../app/demis-types';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { environment } from '../../../environments/environment';
+import { checkDescribingError } from '../../shared/assertion-utils';
+import { getInput } from '../../shared/material-harness-utils';
+import { VALUE_INVALID_QUANTITY } from '../../shared/test-constants';
 import { selectDisease, selectTab } from '../utils/disease-common-utils';
 import { buildMock, mainConfig } from './base';
-import { getInput } from '../../shared/material-harness-utils';
-import { checkDescribingError } from '../../shared/assertion-utils';
-import { VALUE_INVALID_QUANTITY } from '../../shared/test-constants';
-import { NotificationType } from '../../../app/demis-types';
 
 describe('DiseaseFormComponent integration tests for Questionnaire Tab with §7.3 nonnominal notifications', () => {
   let component: DiseaseFormComponent;
@@ -45,11 +46,11 @@ describe('DiseaseFormComponent integration tests for Questionnaire Tab with §7.
   });
 
   it('should create', () => {
-    expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+    expect(component, 'DiseaseFormComponent could not be created').toBeTruthy();
   });
 
   it('should have correct feature flags', async () => {
-    expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION).toBeTrue();
+    expect(environment.diseaseConfig.featureFlags.FEATURE_FLAG_NON_NOMINAL_NOTIFICATION).toBe(true);
   });
 
   describe('Spezifische Angaben - test validation for quantity field pregancyWeek', () => {
@@ -111,7 +112,10 @@ describe('DiseaseFormComponent integration tests for Questionnaire Tab with §7.
      * Max value for pregnancyWeek is 42
      */
     describe('Validation errors', () => {
-      const invalidCases: Array<{ input: string; expectedEcho: string }> = [
+      const invalidCases: Array<{
+        input: string;
+        expectedEcho: string;
+      }> = [
         { input: '0', expectedEcho: '0' }, // too small
         { input: '42.1', expectedEcho: '42.1' }, // too big
         { input: '50', expectedEcho: '50' }, // too big

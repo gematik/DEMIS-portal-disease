@@ -18,14 +18,15 @@
 import { signal } from '@angular/core';
 import { MockBuilder, MockRender } from 'ng-mocks';
 import { NGXLogger } from 'ngx-logger';
+import { beforeEach, describe, expect, it, type MockedObject, vi } from 'vitest';
 
 import { TabsNavigationComponent } from './tabs-navigation.component';
 import { TabsNavigationService } from './tabs-navigation.service';
 
 describe('TabsNavigationService', () => {
   let service: TabsNavigationService;
-  let mockTabsComponent: jasmine.SpyObj<TabsNavigationComponent>;
-  let loggerSpy: jasmine.SpyObj<NGXLogger>;
+  let mockTabsComponent: MockedObject<TabsNavigationComponent>;
+  let loggerSpy: MockedObject<NGXLogger>;
 
   beforeEach(() => {
     return MockBuilder(TabsNavigationService).mock(NGXLogger);
@@ -34,12 +35,13 @@ describe('TabsNavigationService', () => {
   beforeEach(() => {
     const fixture = MockRender();
     service = fixture.point.injector.get(TabsNavigationService);
-    loggerSpy = fixture.point.injector.get(NGXLogger) as jasmine.SpyObj<NGXLogger>;
+    loggerSpy = fixture.point.injector.get(NGXLogger) as MockedObject<NGXLogger>;
 
-    mockTabsComponent = jasmine.createSpyObj('TabsNavigationComponent', ['chooseTab'], {
+    mockTabsComponent = {
+      chooseTab: vi.fn(),
       currentIndex: signal<number | undefined>(0),
       tabCount: signal(3),
-    });
+    } as unknown as MockedObject<TabsNavigationComponent>;
   });
 
   it('should be created', () => {
@@ -76,19 +78,21 @@ describe('TabsNavigationService', () => {
     expect(service.canGoBack()).toBeFalsy();
 
     // Create a new mock at index 1
-    const mockAtIndex1 = jasmine.createSpyObj('TabsNavigationComponent', ['chooseTab'], {
+    const mockAtIndex1 = {
+      chooseTab: vi.fn(),
       currentIndex: signal<number | undefined>(1),
       tabCount: signal(3),
-    });
+    } as unknown as MockedObject<TabsNavigationComponent>;
     service.register(mockAtIndex1);
     expect(service.canGoBack()).toBeTruthy();
   });
 
   it('should go back when component is registered', () => {
-    const mockAtIndex1 = jasmine.createSpyObj('TabsNavigationComponent', ['chooseTab'], {
+    const mockAtIndex1 = {
+      chooseTab: vi.fn(),
       currentIndex: signal<number | undefined>(1),
       tabCount: signal(3),
-    });
+    } as unknown as MockedObject<TabsNavigationComponent>;
     service.register(mockAtIndex1);
     service.goBack();
     expect(mockAtIndex1.chooseTab).toHaveBeenCalledWith(0);
@@ -100,13 +104,14 @@ describe('TabsNavigationService', () => {
   });
 
   it('should log error when goBack is called with undefined index', () => {
-    const mockWithUndefinedIndex = jasmine.createSpyObj('TabsNavigationComponent', ['chooseTab'], {
+    const mockWithUndefinedIndex = {
+      chooseTab: vi.fn(),
       currentIndex: signal<number | undefined>(undefined),
       tabCount: signal(3),
-    });
+    } as unknown as MockedObject<TabsNavigationComponent>;
     service.register(mockWithUndefinedIndex);
 
-    spyOn(service['logger'], 'error');
+    vi.spyOn(service['logger'], 'error');
     service.goBack();
     expect(service['logger'].error).toHaveBeenCalledWith('Ups, there is no tabs navigation');
   });
@@ -120,10 +125,11 @@ describe('TabsNavigationService', () => {
     expect(service.canGoForward()).toBeTruthy();
 
     // Create a mock at the last index (cannot go forward)
-    const mockAtLastIndex = jasmine.createSpyObj('TabsNavigationComponent', ['chooseTab'], {
+    const mockAtLastIndex = {
+      chooseTab: vi.fn(),
       currentIndex: signal<number | undefined>(2),
       tabCount: signal(3),
-    });
+    } as unknown as MockedObject<TabsNavigationComponent>;
     service.register(mockAtLastIndex);
     expect(service.canGoForward()).toBeFalsy();
   });
@@ -140,13 +146,14 @@ describe('TabsNavigationService', () => {
   });
 
   it('should log error when goForward is called with undefined index', () => {
-    const mockWithUndefinedIndex = jasmine.createSpyObj('TabsNavigationComponent', ['chooseTab'], {
+    const mockWithUndefinedIndex = {
+      chooseTab: vi.fn(),
       currentIndex: signal<number | undefined>(undefined),
       tabCount: signal(3),
-    });
+    } as unknown as MockedObject<TabsNavigationComponent>;
     service.register(mockWithUndefinedIndex);
 
-    spyOn(service['logger'], 'error');
+    vi.spyOn(service['logger'], 'error');
     service.goForward();
     expect(service['logger'].error).toHaveBeenCalledWith('Ups, there is no tabs navigation');
   });

@@ -15,29 +15,25 @@
     find details in the "Readme" file.
  */
 
-import { TabsNavigationComponent } from './tabs-navigation.component';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { Component, signal } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { By } from '@angular/platform-browser';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { LoggerTestingModule } from 'ngx-logger/testing';
-import { environment } from '../../../../../environments/environment';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { TabsNavigationComponent } from './tabs-navigation.component';
 
 describe('TabsNavigationComponent', () => {
   let fixture: ComponentFixture<MockComponent>;
   let component: TabsNavigationComponent;
 
   beforeEach(() => {
-    environment.diseaseConfig = {
-      featureFlags: {
-        FEATURE_FLAG_PORTAL_DISEASE_LAYOUT: false,
-      },
-    };
-
     TestBed.configureTestingModule({
       imports: [
         ReactiveFormsModule,
+        MatIconTestingModule,
         LoggerTestingModule,
         FormlyModule.forRoot({
           types: [{ name: 'tabs-navigation', component: TabsNavigationComponent }],
@@ -56,24 +52,40 @@ describe('TabsNavigationComponent', () => {
   });
 
   it('should render the footer', () => {
-    environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT = true;
-
-    fixture = TestBed.createComponent(MockComponent);
-    fixture.detectChanges();
-
     const footerEl: HTMLElement | null = fixture.nativeElement.querySelector('gem-demis-forms-footer');
 
     expect(footerEl).toBeTruthy();
   });
 
-  it('isPortalDiseaseLayoutEnabled defaults to false when featureFlags are not set', () => {
-    environment.diseaseConfig = {};
+  it('should always render the side navigation and hide the tab header', () => {
+    expect(fixture.nativeElement.querySelector('.side-nav-steps')).toBeTruthy();
+    const tabHeader: HTMLElement = fixture.nativeElement.querySelector('.mat-mdc-tab-header');
+    expect(getComputedStyle(tabHeader).display).toBe('none');
+  });
 
+  it('should switch the active form section when a side navigation step is clicked', async () => {
     fixture = TestBed.createComponent(MockComponent);
+    fixture.componentInstance.fields[0].fieldGroup = [
+      { props: { label: 'First section' }, template: '<p>First section content</p>' },
+      { props: { label: 'Second section' }, template: '<p>Second section content</p>' },
+    ];
     fixture.detectChanges();
+    await fixture.whenStable();
 
-    const inst = fixture.debugElement.query(By.directive(TabsNavigationComponent)).componentInstance as TabsNavigationComponent;
-    expect(inst['isPortalDiseaseLayoutEnabled']).toBeFalse();
+    component = fixture.debugElement.query(By.directive(TabsNavigationComponent)).componentInstance as TabsNavigationComponent;
+    const steps: NodeListOf<HTMLButtonElement> = fixture.nativeElement.querySelectorAll('.side-nav-step');
+    expect(steps.length).toBe(2);
+    expect(component.currentIndex()).toBe(0);
+
+    steps[1].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.currentIndex()).toBe(1);
+    expect(component.matTabGroup?.selectedIndex).toBe(1);
+    expect(steps[1].classList.contains('selected-tab')).toBe(true);
+    expect(steps[0].classList.contains('selected-tab')).toBe(false);
+    expect(fixture.nativeElement.querySelector('.mat-mdc-tab-body-active').textContent).toContain('Second section content');
   });
 
   describe('sideNavTitle', () => {
@@ -102,7 +114,7 @@ describe('TabsNavigationComponent', () => {
 
   describe('handleHexHex', () => {
     it('calls the onHexHex prop when it is a function', () => {
-      const spy = jasmine.createSpy('onHexHex');
+      const spy = vi.fn();
       component.field.props['onHexHex'] = spy;
       component.handleHexHex();
       expect(spy).toHaveBeenCalledTimes(1);
@@ -116,7 +128,7 @@ describe('TabsNavigationComponent', () => {
 
   describe('handlePaste', () => {
     it('calls the onPaste prop with clipboardData when it is a function', () => {
-      const spy = jasmine.createSpy('onPaste');
+      const spy = vi.fn();
       const data = new Map<string, string>([['key', 'value']]);
       component.field.props['onPaste'] = spy;
       component.handlePaste(data);

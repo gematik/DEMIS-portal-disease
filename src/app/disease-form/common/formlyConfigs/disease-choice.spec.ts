@@ -16,10 +16,10 @@
  */
 
 import { FormlyFieldConfig } from '@ngx-formly/core';
-import { getDiseaseChoiceFields } from './disease-choice';
-import { NotificationType } from '../../../demis-types';
+import { describe, expect, it } from 'vitest';
 import { CodeDisplay, DiseaseStatus, NotificationLaboratoryCategory } from '../../../../api/notification';
-import { environment } from '../../../../environments/environment';
+import { NotificationType } from '../../../demis-types';
+import { getDiseaseChoiceFields } from './disease-choice';
 import NotificationIdReferenceEnum = NotificationLaboratoryCategory.NotificationIdReferenceEnum;
 
 function findFieldById(fields: FormlyFieldConfig[], id: string): FormlyFieldConfig | undefined {
@@ -43,27 +43,21 @@ function findNestedFieldByKey(fields: FormlyFieldConfig[], groupKey: string, nes
 describe('getDiseaseChoiceFields', () => {
   const diseaseOptions: CodeDisplay[] = [{ code: 'cvdd', display: 'COVID-19' }];
 
-  beforeEach(() => {
-    environment.diseaseConfig = {
-      featureFlags: {},
-    };
-  });
-
   it('should contain the knowledge database info link with the correct href', () => {
     const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
 
     const infoField = fields.find(field => typeof field.template === 'string' && field.template.includes('id="knowledge-db-info-link"'));
-    expect(infoField).withContext('info link field should be present').toBeTruthy();
+    expect(infoField, 'info link field should be present').toBeTruthy();
 
     const template = infoField && ((infoField as any).template as string | undefined);
     if (!template) {
-      fail('info link template not found');
+      throw new Error('info link template not found');
       return;
     }
 
     // match href value of anchor inside the template
     const hrefMatch = template.match(/href\s*=\s*"([^"]+)"/);
-    expect(hrefMatch).withContext('href must be present in the template anchor').toBeTruthy();
+    expect(hrefMatch, 'href must be present in the template anchor').toBeTruthy();
     expect(hrefMatch && hrefMatch[1]).toBe('https://go.gematik.de/demis-info-disease');
   });
 
@@ -72,7 +66,7 @@ describe('getDiseaseChoiceFields', () => {
       const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
 
       const diseaseChoice = findFieldById(fields, 'disease-choice-input');
-      expect(diseaseChoice).withContext('new field id "disease-choice-input" should be present').toBeTruthy();
+      expect(diseaseChoice, 'new field id "disease-choice-input" should be present').toBeTruthy();
       expect(diseaseChoice?.type).toBe('filterable-select');
       expect(diseaseChoice?.props?.['label']).toBe('Erkrankung');
       expect(diseaseChoice?.props?.['placeholder']).toBe('Bitte auswählen');
@@ -85,7 +79,7 @@ describe('getDiseaseChoiceFields', () => {
       const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
 
       const statusTitleField = fields.find(field => field.className === 'diseaseStatus');
-      expect(statusTitleField).withContext('legacy status title must not be rendered').toBeUndefined();
+      expect(statusTitleField, 'legacy status title must not be rendered').toBeUndefined();
 
       const clinicalStatus = findFieldById(fields, 'clinical-status');
       expect(clinicalStatus?.props?.['label']).toBe('Status');
@@ -95,52 +89,29 @@ describe('getDiseaseChoiceFields', () => {
       const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.FollowUpNotification7_3);
       const diseaseChoice = findFieldById(fields, 'disease-choice-input');
 
-      expect(diseaseChoice?.props?.['disabled']).toBeTrue();
-      expect(diseaseChoice?.props?.['clearable']).toBeFalse();
+      expect(diseaseChoice?.props?.['disabled']).toBe(true);
+      expect(diseaseChoice?.props?.['clearable']).toBe(false);
     });
   });
 
-  describe('when FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT is enabled', () => {
-    beforeEach(() => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT = true;
-    });
-
+  describe('clinical-status field', () => {
     it('should mark the clinical-status field as required', () => {
       const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
       const clinicalStatus = findFieldById(fields, 'clinical-status');
 
-      expect(clinicalStatus?.props?.['required']).toBeTrue();
+      expect(clinicalStatus?.props?.['required']).toBe(true);
     });
 
     it('should list Preliminary before Final in the clinical-status options', () => {
       const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
       const clinicalStatus = findFieldById(fields, 'clinical-status');
-      const options = clinicalStatus?.props?.['options'] as { value: string; label: string }[];
+      const options = clinicalStatus?.props?.['options'] as {
+        value: string;
+        label: string;
+      }[];
 
       expect(options[0].value).toBe(DiseaseStatus.StatusEnum.Preliminary);
       expect(options[1].value).toBe(DiseaseStatus.StatusEnum.Final);
-    });
-  });
-
-  describe('when FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT is disabled', () => {
-    beforeEach(() => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT = false;
-    });
-
-    it('should not mark the clinical-status field as required', () => {
-      const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
-      const clinicalStatus = findFieldById(fields, 'clinical-status');
-
-      expect(clinicalStatus?.props?.['required']).toBeFalsy();
-    });
-
-    it('should list Final before Preliminary in the clinical-status options', () => {
-      const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
-      const clinicalStatus = findFieldById(fields, 'clinical-status');
-      const options = clinicalStatus?.props?.['options'] as { value: string; label: string }[];
-
-      expect(options[0].value).toBe(DiseaseStatus.StatusEnum.Final);
-      expect(options[1].value).toBe(DiseaseStatus.StatusEnum.Preliminary);
     });
   });
 
@@ -148,7 +119,7 @@ describe('getDiseaseChoiceFields', () => {
     const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
     const statusNoteGroup = findFieldByKey(fields, 'statusNoteGroup');
 
-    expect(statusNoteGroup).withContext('statusNoteGroup should be present').toBeTruthy();
+    expect(statusNoteGroup, 'statusNoteGroup should be present').toBeTruthy();
     expect(statusNoteGroup?.fieldGroupClassName).toBe('row');
   });
 
@@ -156,7 +127,7 @@ describe('getDiseaseChoiceFields', () => {
     const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
     const statusNote = findNestedFieldByKey(fields, 'statusNoteGroup', 'statusNote.answer.valueString');
 
-    expect(statusNote).withContext('statusNote field should be present').toBeTruthy();
+    expect(statusNote, 'statusNote field should be present').toBeTruthy();
     expect(statusNote?.type).toBe('input');
     expect(statusNote?.props?.['label']).toBe('Hinweise');
     expect(statusNote?.className).toContain('col-md-12');
@@ -189,7 +160,7 @@ describe('getDiseaseChoiceFields', () => {
     });
 
     it('should be present', () => {
-      expect(templateField).withContext('template field with dynamic text should be present').toBeTruthy();
+      expect(templateField, 'template field with dynamic text should be present').toBeTruthy();
     });
 
     it('should return own facility text when reference is RelatesToOwnFacility', () => {
@@ -235,10 +206,10 @@ describe('getDiseaseChoiceFields', () => {
       const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
       const referenceField = findNestedFieldById(fields, 'statusNoteGroup', 'notificationIdReference');
 
-      expect(referenceField).withContext('notificationIdReference field should be present').toBeTruthy();
+      expect(referenceField, 'notificationIdReference field should be present').toBeTruthy();
       expect(referenceField?.type).toBe('radio');
       expect(referenceField?.props?.['label']).toBe('Verweis auf vorherige Meldung (Initiale Meldungs-ID)');
-      expect(referenceField?.props?.['required']).toBeTrue();
+      expect(referenceField?.props?.['required']).toBe(true);
     });
 
     it('should not be disabled for nominal notifications', () => {
@@ -252,7 +223,7 @@ describe('getDiseaseChoiceFields', () => {
       const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.FollowUpNotification6_1);
       const referenceField = findNestedFieldById(fields, 'statusNoteGroup', 'notificationIdReference');
 
-      expect(referenceField?.props?.['disabled']).toBeTrue();
+      expect(referenceField?.props?.['disabled']).toBe(true);
     });
 
     it('should set defaultValue to RelatesToOtherFacility for follow-up notifications', () => {
@@ -323,7 +294,7 @@ describe('getDiseaseChoiceFields', () => {
         const options = optionsExpr(referenceFieldConfig);
 
         const noRefOption = options.find((o: any) => o.value === NotificationIdReferenceEnum.NoReference);
-        expect(noRefOption.disabled).toBeTrue();
+        expect(noRefOption.disabled).toBe(true);
       });
 
       it('should disable NoReference option when status is Refuted', () => {
@@ -332,7 +303,7 @@ describe('getDiseaseChoiceFields', () => {
         const options = optionsExpr(referenceFieldConfig);
 
         const noRefOption = options.find((o: any) => o.value === NotificationIdReferenceEnum.NoReference);
-        expect(noRefOption.disabled).toBeTrue();
+        expect(noRefOption.disabled).toBe(true);
       });
 
       it('should disable NoReference option when status is Error', () => {
@@ -341,7 +312,7 @@ describe('getDiseaseChoiceFields', () => {
         const options = optionsExpr(referenceFieldConfig);
 
         const noRefOption = options.find((o: any) => o.value === NotificationIdReferenceEnum.NoReference);
-        expect(noRefOption.disabled).toBeTrue();
+        expect(noRefOption.disabled).toBe(true);
       });
 
       it('should not disable NoReference option when status is Final', () => {
@@ -350,7 +321,7 @@ describe('getDiseaseChoiceFields', () => {
         const options = optionsExpr(referenceFieldConfig);
 
         const noRefOption = options.find((o: any) => o.value === NotificationIdReferenceEnum.NoReference);
-        expect(noRefOption.disabled).toBeFalse();
+        expect(noRefOption.disabled).toBe(false);
       });
 
       it('should not disable NoReference option when status is Preliminary', () => {
@@ -359,7 +330,7 @@ describe('getDiseaseChoiceFields', () => {
         const options = optionsExpr(referenceFieldConfig);
 
         const noRefOption = options.find((o: any) => o.value === NotificationIdReferenceEnum.NoReference);
-        expect(noRefOption.disabled).toBeFalse();
+        expect(noRefOption.disabled).toBe(false);
       });
 
       it('should not disable NoReference option when status is undefined', () => {
@@ -368,7 +339,7 @@ describe('getDiseaseChoiceFields', () => {
         const options = optionsExpr(referenceFieldConfig);
 
         const noRefOption = options.find((o: any) => o.value === NotificationIdReferenceEnum.NoReference);
-        expect(noRefOption.disabled).toBeFalse();
+        expect(noRefOption.disabled).toBe(false);
       });
 
       it('should never disable RelatesToOwnFacility or RelatesToOtherFacility options', () => {
@@ -378,8 +349,8 @@ describe('getDiseaseChoiceFields', () => {
 
         const ownOption = options.find((o: any) => o.value === NotificationIdReferenceEnum.RelatesToOwnFacility);
         const otherOption = options.find((o: any) => o.value === NotificationIdReferenceEnum.RelatesToOtherFacility);
-        expect(ownOption.disabled).toBeFalse();
-        expect(otherOption.disabled).toBeFalse();
+        expect(ownOption.disabled).toBe(false);
+        expect(otherOption.disabled).toBe(false);
       });
     });
 
@@ -437,7 +408,7 @@ describe('getDiseaseChoiceFields', () => {
       const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.NominalNotification6_1);
       const initialNotificationId = findNestedFieldById(fields, 'statusNoteGroup', 'initialNotificationId');
 
-      expect(initialNotificationId).withContext('initialNotificationId field should be present').toBeTruthy();
+      expect(initialNotificationId, 'initialNotificationId field should be present').toBeTruthy();
       expect(initialNotificationId?.type).toBe('input');
       expect(initialNotificationId?.props?.['label']).toBe('Initiale Meldungs-ID');
       expect(initialNotificationId?.validators?.['validation']).toContain('uuidValidator');
@@ -447,7 +418,7 @@ describe('getDiseaseChoiceFields', () => {
       const fields = getDiseaseChoiceFields(diseaseOptions, NotificationType.FollowUpNotification6_1);
       const initialNotificationId = findNestedFieldById(fields, 'statusNoteGroup', 'initialNotificationId');
 
-      expect(initialNotificationId?.props?.['disabled']).toBeTrue();
+      expect(initialNotificationId?.props?.['disabled']).toBe(true);
     });
 
     describe('props.required expression', () => {
@@ -479,35 +450,35 @@ describe('getDiseaseChoiceFields', () => {
         buildMockFieldTree(NotificationIdReferenceEnum.RelatesToOwnFacility);
         const requiredExpr = initialNotificationIdField.expressions!['props.required'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(requiredExpr(initialNotificationIdField)).toBeTrue();
+        expect(requiredExpr(initialNotificationIdField)).toBe(true);
       });
 
       it('should be true when reference value is RelatesToOtherFacility', () => {
         buildMockFieldTree(NotificationIdReferenceEnum.RelatesToOtherFacility);
         const requiredExpr = initialNotificationIdField.expressions!['props.required'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(requiredExpr(initialNotificationIdField)).toBeTrue();
+        expect(requiredExpr(initialNotificationIdField)).toBe(true);
       });
 
       it('should be false when reference value is NoReference', () => {
         buildMockFieldTree(NotificationIdReferenceEnum.NoReference);
         const requiredExpr = initialNotificationIdField.expressions!['props.required'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(requiredExpr(initialNotificationIdField)).toBeFalse();
+        expect(requiredExpr(initialNotificationIdField)).toBe(false);
       });
 
       it('should be false when reference value is null', () => {
         buildMockFieldTree(null);
         const requiredExpr = initialNotificationIdField.expressions!['props.required'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(requiredExpr(initialNotificationIdField)).toBeFalse();
+        expect(requiredExpr(initialNotificationIdField)).toBe(false);
       });
 
       it('should be false when reference value is undefined', () => {
         buildMockFieldTree(undefined);
         const requiredExpr = initialNotificationIdField.expressions!['props.required'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(requiredExpr(initialNotificationIdField)).toBeFalse();
+        expect(requiredExpr(initialNotificationIdField)).toBe(false);
       });
     });
 
@@ -540,35 +511,35 @@ describe('getDiseaseChoiceFields', () => {
         buildMockFieldTree(NotificationIdReferenceEnum.NoReference);
         const disabledExpr = initialNotificationIdField.expressions!['props.disabled'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(disabledExpr(initialNotificationIdField)).toBeTrue();
+        expect(disabledExpr(initialNotificationIdField)).toBe(true);
       });
 
       it('should be true when reference value is null', () => {
         buildMockFieldTree(null);
         const disabledExpr = initialNotificationIdField.expressions!['props.disabled'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(disabledExpr(initialNotificationIdField)).toBeTrue();
+        expect(disabledExpr(initialNotificationIdField)).toBe(true);
       });
 
       it('should be true when reference value is undefined', () => {
         buildMockFieldTree(undefined);
         const disabledExpr = initialNotificationIdField.expressions!['props.disabled'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(disabledExpr(initialNotificationIdField)).toBeTrue();
+        expect(disabledExpr(initialNotificationIdField)).toBe(true);
       });
 
       it('should be false when reference value is RelatesToOwnFacility', () => {
         buildMockFieldTree(NotificationIdReferenceEnum.RelatesToOwnFacility);
         const disabledExpr = initialNotificationIdField.expressions!['props.disabled'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(disabledExpr(initialNotificationIdField)).toBeFalse();
+        expect(disabledExpr(initialNotificationIdField)).toBe(false);
       });
 
       it('should be false when reference value is RelatesToOtherFacility', () => {
         buildMockFieldTree(NotificationIdReferenceEnum.RelatesToOtherFacility);
         const disabledExpr = initialNotificationIdField.expressions!['props.disabled'] as (field: FormlyFieldConfig) => boolean;
 
-        expect(disabledExpr(initialNotificationIdField)).toBeFalse();
+        expect(disabledExpr(initialNotificationIdField)).toBe(false);
       });
 
       it('should be true for follow-up notifications regardless of reference value', () => {
@@ -591,7 +562,7 @@ describe('getDiseaseChoiceFields', () => {
         (groupField as any)['parent'] = rootParent;
 
         const disabledExpr = followUpField.expressions!['props.disabled'] as (field: FormlyFieldConfig) => boolean;
-        expect(disabledExpr(followUpField)).toBeTrue();
+        expect(disabledExpr(followUpField)).toBe(true);
       });
     });
 

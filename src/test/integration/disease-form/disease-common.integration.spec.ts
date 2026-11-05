@@ -15,14 +15,21 @@
     find details in the "Readme" file.
  */
 
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture, MockRender } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { getMultipleInputFieldsWithSameSelector, getRadioGroup } from '../../shared/material-harness-utils';
+import { TestBed } from '@angular/core/testing';
+import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { MockedComponentFixture, MockRender } from 'ng-mocks';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AddressType } from '../../../api/notification';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
+import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';
 import { environment } from '../../../environments/environment';
-import { clickButtonWithSelector, setInputFieldValues } from '../../shared/test-utils';
 import { exampleAddressOfType, NOTIFIER_FACILITY, TestDataAddress } from '../../shared/data/test-objects';
+import { getMultipleInputFieldsWithSameSelector, getRadioGroup } from '../../shared/material-harness-utils';
+import { CLIPBOARD_VALUE_HOUSENR, CLIPBOARD_VALUE_STREET, FIELD_CURRENT_ADDRESS_HOUSE_NUMBER, FIELD_CURRENT_ADDRESS_ZIP } from '../../shared/test-constants';
+import { NOTIFIER_PERSON_CONTACT_INPUT } from '../../shared/test-data';
+import { clickButtonWithSelector, setInputFieldValues } from '../../shared/test-utils';
 import {
   checkCopyAddressCheckbox,
   checkCopyContactCheckbox,
@@ -38,13 +45,7 @@ import {
   verifyHospitalizationAddressInputFields,
   verifyHospitalizationContactInputFields,
 } from '../utils/disease-common-utils';
-import { NOTIFIER_PERSON_CONTACT_INPUT } from '../../shared/test-data';
-import { CLIPBOARD_VALUE_HOUSENR, CLIPBOARD_VALUE_STREET, FIELD_CURRENT_ADDRESS_HOUSE_NUMBER, FIELD_CURRENT_ADDRESS_ZIP } from '../../shared/test-constants';
-import { AddressType } from '../../../api/notification';
 import { buildMock, mainConfig } from './base';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
-import { TestBed } from '@angular/core/testing';
-import { CopyAndKeepInSyncService } from '../../../app/disease-form/services/copy-and-keep-in-sync-service';
 
 describe('DiseaseFormComponent integration tests for Common Tab', () => {
   let component: DiseaseFormComponent;
@@ -58,7 +59,7 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
     environment.diseaseConfig = mainConfig;
 
     // preparation: set notifier facility set in local storage
-    spyOn(localStorage, 'getItem').and.returnValue(JSON.stringify(NOTIFIER_FACILITY));
+    vi.spyOn(localStorage, 'getItem').mockReturnValue(JSON.stringify(NOTIFIER_FACILITY));
 
     fixture = MockRender(DiseaseFormComponent);
     component = fixture.point.componentInstance;
@@ -67,7 +68,7 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
   });
 
   it('should create', () => {
-    expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+    expect(component, 'DiseaseFormComponent could not be created').toBeTruthy();
   });
 
   describe('Klinische und epidemiologische Angaben', () => {
@@ -95,13 +96,16 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           await setInputFieldValues(loader, [{ selector: '#firstname', value: 'Test' }]);
           await selectTab(fixture, loader, 5);
           await selectIsHospitalizedYes(loader);
-          const showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
+          const showErrorDialogSpy = vi.spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog').mockImplementation(() => {});
 
           const checkBox = await checkCopyContactCheckbox(loader);
           fixture.detectChanges();
 
           // assertion
-          expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+          expect(showErrorDialogSpy).toHaveBeenCalledTimes(1);
+
+          // assertion
+          expect(showErrorDialogSpy).toHaveBeenCalledWith({
             errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
             errors: [
               {
@@ -120,13 +124,16 @@ describe('DiseaseFormComponent integration tests for Common Tab', () => {
           await setInputFieldValues(loader, [{ selector: `#${FIELD_CURRENT_ADDRESS_ZIP}`, value: '' }]);
           await selectTab(fixture, loader, 5);
           await selectIsHospitalizedYes(loader);
-          const showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
+          const showErrorDialogSpy = vi.spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog').mockImplementation(() => {});
 
           const checkBox = await checkCopyAddressCheckbox(loader);
           fixture.detectChanges();
 
           // assertion
-          expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+          expect(showErrorDialogSpy).toHaveBeenCalledTimes(1);
+
+          // assertion
+          expect(showErrorDialogSpy).toHaveBeenCalledWith({
             errorTitle: CopyAndKeepInSyncService.MESSAGE_COPY_IMPOSSIBLE,
             errors: [
               {

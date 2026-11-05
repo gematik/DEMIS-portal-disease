@@ -15,26 +15,28 @@
     find details in the "Readme" file.
  */
 
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import { ValidationWrapperComponent } from './validation-wrapper.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { ValidationWrapperComponent } from './validation-wrapper.component';
 
 describe('ValidationWrapperComponent', () => {
   let component: ValidationWrapperComponent;
   let fixture: ComponentFixture<ValidationWrapperComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [ValidationWrapperComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ValidationWrapperComponent);
     component = fixture.componentInstance;
-    component.field = { formControl: { statusChanges: { subscribe: () => {} } } } as any;
+    component.field = { formControl: new FormControl() } as any;
     fixture.detectChanges();
   });
 

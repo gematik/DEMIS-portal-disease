@@ -15,15 +15,16 @@
     find details in the "Readme" file.
  */
 
+import { HarnessLoader } from '@angular/cdk/testing';
+import { MockedComponentFixture } from 'ng-mocks';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
 import { checkDescribingError } from '../../shared/assertion-utils';
-import { MockedComponentFixture } from 'ng-mocks';
-import { HarnessLoader } from '@angular/cdk/testing';
 import { getButton, getInput } from '../../shared/material-harness-utils';
 import { buildMock, setupIntegrationTests } from './base';
 
-import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
 import { getHtmlButtonElement } from '../../shared/html-element-utils';
+import { TEST_PARAMETER_VALIDATION } from '../../shared/test-data';
 
 describe('DiseaseFormComponent institution regex integration tests', () => {
   let component: DiseaseFormComponent;

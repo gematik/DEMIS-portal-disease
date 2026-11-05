@@ -15,13 +15,14 @@
     find details in the "Readme" file.
  */
 
-import { buildMock, setupIntegrationTests } from './base';
-import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
-import { MockedComponentFixture } from 'ng-mocks';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { getTabList } from '../../shared/material-harness-utils';
-import { NotificationType } from '../../../app/demis-types';
+import { MockedComponentFixture } from 'ng-mocks';
 import { selectTab } from 'src/test/integration/utils/disease-common-utils';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { NotificationType } from '../../../app/demis-types';
+import { DiseaseFormComponent } from '../../../app/disease-form/disease-form.component';
+import { getTabList } from '../../shared/material-harness-utils';
+import { buildMock, setupIntegrationTests } from './base';
 
 describe('DiseaseFormComponent nonnominal integration tests', () => {
   let component: DiseaseFormComponent;
@@ -39,7 +40,7 @@ describe('DiseaseFormComponent nonnominal integration tests', () => {
   });
 
   it('should create', () => {
-    expect(component).withContext('DiseaseFormComponent could not be created').toBeTruthy();
+    expect(component, 'DiseaseFormComponent could not be created').toBeTruthy();
   });
 
   it('should show new stepper heading with nonnominal routing', async () => {
@@ -58,6 +59,6 @@ describe('DiseaseFormComponent nonnominal integration tests', () => {
   it('should not show epidemiologische Angaben', async () => {
     const tabList = await getTabList(loader);
     expect(tabList.length).toBe(5);
-    await expectAsync(tabList[4].getLabel()).toBeResolvedTo('Spezifische Angaben');
+    await expect(tabList[4].getLabel()).resolves.toEqual('Spezifische Angaben');
   });
 });

@@ -15,39 +15,38 @@
     find details in the "Readme" file.
  */
 
-import { DiseaseFormComponent } from './disease-form.component';
-import { Ifsg61Service } from '../ifsg61.service';
-import { of, throwError } from 'rxjs';
-import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
-import { ImportFieldValuesService } from './services/import-field-values.service';
-import { HelpersService } from '../shared/helpers.service';
-import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
-import { ChangeDetectorRef, ElementRef } from '@angular/core';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ValueSetService } from '../legacy/value-set.service';
-import { FORMLY_CONFIG } from '@ngx-formly/core';
-import { registerValueSetExtension } from '../legacy/value-set.extension';
-import { environment } from '../../environments/environment';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { EXAMPLE_COUNTRY_CODES, EXAMPLE_DISEASE_OPTIONS, EXAMPLE_MSVD, EXAMPLE_VALUE_SET } from '../../test/shared/data/test-values';
+import { ChangeDetectorRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { fakeAsync, TestBed } from '@angular/core/testing';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { NavigationStart, provideRouter, Router } from '@angular/router';
 import { FollowUpNotificationIdService, MessageDialogService } from '@gematik/demis-portal-core-library';
-import { NavigationStart, Router, provideRouter } from '@angular/router';
-import { allowedRoutes, NotificationType } from '../demis-types';
+import { FORMLY_CONFIG } from '@ngx-formly/core';
+import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
 import { NGXLogger } from 'ngx-logger';
+import { of, throwError } from 'rxjs';
+import { beforeEach, describe, expect, it, type Mock, type MockedObject, vi } from 'vitest';
+import { environment } from '../../environments/environment';
+import { EXAMPLE_COUNTRY_CODES, EXAMPLE_DISEASE_OPTIONS, EXAMPLE_MSVD, EXAMPLE_VALUE_SET } from '../../test/shared/data/test-values';
+import { allowedRoutes, NotificationType } from '../demis-types';
+import { Ifsg61Service } from '../ifsg61.service';
+import { registerValueSetExtension } from '../legacy/value-set.extension';
+import { ValueSetService } from '../legacy/value-set.service';
+import { TabsNavigationService } from '../shared/formly/components/tabs-navigation/tabs-navigation.service';
+import { DiseaseFormComponent } from './disease-form.component';
+import { ImportFieldValuesService } from './services/import-field-values.service';
 
 const overrides = {
   get Ifsg61Service() {
     return {
-      getCodeValueSet: jasmine.createSpy('getCodeValueSet').and.returnValue(of(EXAMPLE_VALUE_SET)),
-      getDiseaseOptions: jasmine.createSpy('getDiseaseOptions').and.returnValue(of(EXAMPLE_DISEASE_OPTIONS)),
-      getQuestionnaire: jasmine.createSpy('getQuestionnaire').and.returnValue(of(EXAMPLE_MSVD)),
+      getCodeValueSet: vi.fn().mockReturnValue(of(EXAMPLE_VALUE_SET)),
+      getDiseaseOptions: vi.fn().mockReturnValue(of(EXAMPLE_DISEASE_OPTIONS)),
+      getQuestionnaire: vi.fn().mockReturnValue(of(EXAMPLE_MSVD)),
     } as Partial<Ifsg61Service>;
   },
   get ValueSetService() {
     return {
-      get: jasmine.createSpy('get').and.returnValue(of(EXAMPLE_COUNTRY_CODES)),
+      get: vi.fn().mockReturnValue(of(EXAMPLE_COUNTRY_CODES)),
     };
   },
 };
@@ -55,22 +54,18 @@ const overrides = {
 describe('DiseaseFormComponent unit tests', () => {
   let component: DiseaseFormComponent;
   let fixture: MockedComponentFixture<DiseaseFormComponent>;
-  let getCodeValueSetSpy: jasmine.Spy;
-  let getDiseaseOptionsSpy: jasmine.Spy;
-  let showErrorDialogSpy: jasmine.Spy;
-  let routerSpy: jasmine.SpyObj<Router>;
-
-  const helpersServiceSpy = {
-    exitApplication: jasmine.createSpy('exitApplication') as jasmine.Spy,
-  };
+  let getCodeValueSetSpy: Mock;
+  let getDiseaseOptionsSpy: Mock;
+  let showErrorDialogSpy: Mock;
+  let routerSpy: MockedObject<Router>;
 
   beforeEach(() =>
-    MockBuilder([DiseaseFormComponent, NoopAnimationsModule])
+    MockBuilder(DiseaseFormComponent)
+      .keep(FollowUpNotificationIdService)
       .provide(MockProvider(Ifsg61Service, overrides.Ifsg61Service))
       .provide(MockProvider(ChangeDetectorRef))
       .provide(TabsNavigationService) //Real service needs to be provided. Signals from service are used in disease-form template.
       .mock(NGXLogger)
-      .provide(MockProvider(HelpersService, helpersServiceSpy))
       .provide(MockProvider(ValueSetService, overrides.ValueSetService))
       .provide(MockProvider(ImportFieldValuesService))
       .provide(MockProvider(MatIconModule))
@@ -84,11 +79,13 @@ describe('DiseaseFormComponent unit tests', () => {
       .provide(provideRouter([]))
       .provide({
         provide: Router,
-        useValue: jasmine.createSpyObj('Router', ['navigate', 'currentNavigation'], {
+        useValue: {
+          navigate: vi.fn(),
+          currentNavigation: vi.fn(),
           url: allowedRoutes['nominal'],
           events: of(new NavigationStart(0, allowedRoutes['nominal'])),
           routerState: { root: {} },
-        }),
+        },
       })
   );
 
@@ -118,10 +115,10 @@ describe('DiseaseFormComponent unit tests', () => {
     fixture = MockRender(DiseaseFormComponent);
     component = fixture.point.componentInstance;
     fixture.detectChanges();
-    getCodeValueSetSpy = TestBed.inject(Ifsg61Service).getCodeValueSet as jasmine.Spy;
-    getDiseaseOptionsSpy = TestBed.inject(Ifsg61Service).getDiseaseOptions as jasmine.Spy;
-    showErrorDialogSpy = spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog');
-    routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    getCodeValueSetSpy = TestBed.inject(Ifsg61Service).getCodeValueSet as Mock;
+    getDiseaseOptionsSpy = TestBed.inject(Ifsg61Service).getDiseaseOptions as Mock;
+    showErrorDialogSpy = vi.spyOn(TestBed.inject(MessageDialogService), 'showErrorDialog').mockImplementation(() => {});
+    routerSpy = TestBed.inject(Router) as MockedObject<Router>;
   });
 
   describe('test createNotification and submitNotification', () => {
@@ -130,8 +127,8 @@ describe('DiseaseFormComponent unit tests', () => {
       const processFormService = (component as any)['processFormService'];
       const ifsg61Service = (component as any)['ifsg61Service'];
       const notificationMock = { common: { item: [] }, disease: { item: [] } };
-      spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
-      spyOn(ifsg61Service, 'submitNotification');
+      vi.spyOn(processFormService, 'createNotification').mockReturnValue(notificationMock);
+      vi.spyOn(ifsg61Service, 'submitNotification').mockImplementation(() => {});
 
       (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
       component.model = { foo: 'bar' };
@@ -150,8 +147,8 @@ describe('DiseaseFormComponent unit tests', () => {
       const processFormService = (component as any)['processFormService'];
       const ifsg61Service = (component as any)['ifsg61Service'];
       const notificationMock = { common: { item: [] }, disease: { item: [] } };
-      spyOn(processFormService, 'createNotification').and.returnValue(notificationMock);
-      spyOn(ifsg61Service, 'submitNotification');
+      vi.spyOn(processFormService, 'createNotification').mockReturnValue(notificationMock);
+      vi.spyOn(ifsg61Service, 'submitNotification').mockImplementation(() => {});
 
       (component as any).fieldSequence = { tabDiseaseCommon: [], tabQuestionnaire: [] };
       component.model = { foo: 'bar' };
@@ -161,23 +158,23 @@ describe('DiseaseFormComponent unit tests', () => {
       await component.submitForm();
 
       // Assertion
-      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, NotificationType.NonNominalNotification7_3, jasmine.any(Map));
+      expect(processFormService.createNotification).toHaveBeenCalledWith(component.model, NotificationType.NonNominalNotification7_3, expect.any(Map));
       expect(ifsg61Service.submitNotification).toHaveBeenCalledWith(notificationMock, component.notificationType);
     });
   });
 
   describe('should display error dialog if error on init', () => {
     beforeEach(() => {
-      helpersServiceSpy.exitApplication?.calls.reset();
-      showErrorDialogSpy.calls.reset();
+      showErrorDialogSpy.mockClear();
     });
 
-    it('error while getCodeValueSet()', fakeAsync(() => {
+    it('error while getCodeValueSet()', () => {
       const error = new Error('Etwas ist schief gelaufen');
-      getCodeValueSetSpy.and.returnValue(throwError(() => error));
+      getCodeValueSetSpy.mockReturnValue(throwError(() => error));
 
       component.ngOnInit();
-      expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+      expect(showErrorDialogSpy).toHaveBeenCalledTimes(1);
+      expect(showErrorDialogSpy).toHaveBeenCalledWith({
         redirectToHome: true,
         errorTitle: 'Systemfehler',
         errors: [
@@ -186,13 +183,14 @@ describe('DiseaseFormComponent unit tests', () => {
           },
         ],
       });
-    }));
+    });
 
-    it('error while getDiseaseOptions()', fakeAsync(() => {
+    it('error while getDiseaseOptions()', () => {
       const error = new Error('Etwas ist schief gelaufen');
-      getDiseaseOptionsSpy.and.returnValue(throwError(() => error));
+      getDiseaseOptionsSpy.mockReturnValue(throwError(() => error));
       component.ngOnInit();
-      expect(showErrorDialogSpy).toHaveBeenCalledOnceWith({
+      expect(showErrorDialogSpy).toHaveBeenCalledTimes(1);
+      expect(showErrorDialogSpy).toHaveBeenCalledWith({
         redirectToHome: true,
         errorTitle: 'Systemfehler',
         errors: [
@@ -201,7 +199,7 @@ describe('DiseaseFormComponent unit tests', () => {
           },
         ],
       });
-    }));
+    });
   });
 
   describe('test transformDate3Input', () => {
@@ -320,11 +318,11 @@ describe('DiseaseFormComponent unit tests', () => {
   });
 
   describe('openDialogIfFollowUp via ngOnInit', () => {
-    let openDialogSpy: jasmine.Spy;
+    let openDialogSpy: Mock;
 
     beforeEach(() => {
       const followUpService = TestBed.inject(FollowUpNotificationIdService);
-      openDialogSpy = spyOn(followUpService, 'openDialog');
+      openDialogSpy = vi.spyOn(followUpService, 'openDialog').mockImplementation(() => {});
     });
 
     it('should open the follow-up dialog for FollowUpNotification6_1 with the §6 link text', () => {
@@ -333,7 +331,7 @@ describe('DiseaseFormComponent unit tests', () => {
       component.ngOnInit();
 
       expect(openDialogSpy).toHaveBeenCalledTimes(1);
-      const dialogArg = openDialogSpy.calls.mostRecent().args[0];
+      const dialogArg = vi.mocked(openDialogSpy).mock.lastCall![0];
       expect(dialogArg.dialogData.routerLink).toBe('/' + allowedRoutes['nominal']);
       expect(dialogArg.dialogData.linkTextContent).toContain('§ 6 IfSG');
     });
@@ -346,14 +344,14 @@ describe('DiseaseFormComponent unit tests', () => {
       component.ngOnInit();
 
       expect(openDialogSpy).toHaveBeenCalledTimes(1);
-      const dialogArg = openDialogSpy.calls.mostRecent().args[0];
+      const dialogArg = vi.mocked(openDialogSpy).mock.lastCall![0];
       expect(dialogArg.dialogData.routerLink).toBe('/' + allowedRoutes['nonNominal']);
       expect(dialogArg.dialogData.linkTextContent).toContain('§ 7 Abs. 3 IfSG');
     });
 
     it('should not open the follow-up dialog when navigation state has redirect=true', () => {
       Object.defineProperty(routerSpy, 'url', { value: allowedRoutes['followUp'], configurable: true });
-      (routerSpy.currentNavigation as jasmine.Spy).and.returnValue({ extras: { state: { redirect: true } } });
+      (routerSpy.currentNavigation as Mock).mockReturnValue({ extras: { state: { redirect: true } } });
 
       component.ngOnInit();
 
@@ -369,86 +367,17 @@ describe('DiseaseFormComponent unit tests', () => {
     });
   });
 
-  describe('model initialization with FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT', () => {
-    it('should initialize clinicalStatus.answer.valueString to null when the flag is enabled', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT = true;
-
+  describe('model initialization of clinical status', () => {
+    it('should initialize clinicalStatus.answer.valueString to null', () => {
       component.ngOnInit();
 
       expect(component.model.tabDiseaseChoice.clinicalStatus.answer.valueString).toBeNull();
-    });
-
-    it('should initialize clinicalStatus.answer.valueString to StatusEnum.Final when the flag is disabled', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT = false;
-
-      component.ngOnInit();
-
-      expect(component.model.tabDiseaseChoice.clinicalStatus.answer.valueString).toBe('final');
-    });
-  });
-
-  describe('isPortalDiseaseLayoutEnabled', () => {
-    it('returns true when FEATURE_FLAG_PORTAL_DISEASE_LAYOUT is enabled', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT = true;
-      expect(component.isPortalDiseaseLayoutEnabled).toBeTrue();
-    });
-
-    it('returns false when FEATURE_FLAG_PORTAL_DISEASE_LAYOUT is disabled', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT = false;
-      expect(component.isPortalDiseaseLayoutEnabled).toBeFalse();
-    });
-
-    it('returns false when featureFlags are not set', () => {
-      environment.diseaseConfig.featureFlags = undefined;
-      expect(component.isPortalDiseaseLayoutEnabled).toBeFalse();
-    });
-  });
-
-  describe('ngAfterViewInit', () => {
-    it('returns early and does not call calculateSubheaderHeight when isPortalDiseaseLayoutEnabled is true', () => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT = true;
-      const spy = spyOn<any>(component, 'calculateSubheaderHeight');
-
-      component.ngAfterViewInit();
-
-      expect(spy).not.toHaveBeenCalled();
-    });
-
-    it('calls calculateSubheaderHeight asynchronously when isPortalDiseaseLayoutEnabled is false', fakeAsync(() => {
-      environment.diseaseConfig.featureFlags.FEATURE_FLAG_PORTAL_DISEASE_LAYOUT = false;
-      const spy = spyOn<any>(component, 'calculateSubheaderHeight');
-
-      component.ngAfterViewInit();
-      // Promise.resolve().then() schedules a microtask; flush by advancing past it
-      Promise.resolve().then(() => {
-        expect(spy).toHaveBeenCalled();
-      });
-    }));
-  });
-
-  describe('calculateSubheaderHeight', () => {
-    it('sets subheaderOffset from element offsetHeight when nativeElement is present', () => {
-      const mockElement = { offsetHeight: 72 } as HTMLElement;
-      const mockRef = { nativeElement: mockElement } as ElementRef<HTMLElement>;
-      (component as any).notificationSubheader = () => mockRef;
-
-      (component as any)['calculateSubheaderHeight']();
-
-      expect(component.subheaderOffset).toBe('72px');
-    });
-
-    it('sets subheaderOffset to 0px when nativeElement is absent', () => {
-      (component as any).notificationSubheader = () => undefined;
-
-      (component as any)['calculateSubheaderHeight']();
-
-      expect(component.subheaderOffset).toBe('0px');
     });
   });
 
   describe('combineFields props callbacks', () => {
     it('onHexHex callback invokes hexHex()', () => {
-      const hexHexSpy = spyOn<any>(component, 'hexHex');
+      const hexHexSpy = vi.spyOn(component as any, 'hexHex');
       (component as any)['combineFields']();
 
       const onHexHex = component.fields[0].props?.['onHexHex'];
@@ -459,7 +388,7 @@ describe('DiseaseFormComponent unit tests', () => {
     });
 
     it('onPaste callback invokes paste() with the provided clipboardData', () => {
-      const pasteSpy = spyOn<any>(component, 'paste');
+      const pasteSpy = vi.spyOn(component as any, 'paste');
       (component as any)['combineFields']();
 
       const onPaste = component.fields[0].props?.['onPaste'];

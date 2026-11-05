@@ -15,8 +15,9 @@
     find details in the "Readme" file.
  */
 
-import { FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core';
-import { findFormlyFieldIterativeByKey, findQuantityFieldsByProp, modifyFieldsByPredicate } from './utils';
+import { FormlyFieldConfig } from '@ngx-formly/core';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { findFormlyFieldIterativeByKey, findQuantityFieldsByProp } from './utils';
 
 describe('test utils', () => {
   describe('findFormlyFieldIterativeByKey', () => {

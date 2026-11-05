@@ -16,12 +16,12 @@
  */
 
 import { HarnessLoader } from '@angular/cdk/testing';
-import { MatFormFieldControlHarness } from '@angular/material/form-field/testing/control';
 import { MatFormFieldHarness } from '@angular/material/form-field/testing';
+import { MatFormFieldControlHarness } from '@angular/material/form-field/testing/control';
 
 export async function checkDescribingError(options: { loader: HarnessLoader; element: MatFormFieldControlHarness; expectedResult: string }): Promise<void> {
   const inputId = await (await options.element.host()).getAttribute('id');
-  expect(inputId).withContext('input should have an id').toBeTruthy();
+  expect(inputId, 'input should have an id').toBeTruthy();
 
   const formFields = await options.loader.getAllHarnesses(MatFormFieldHarness);
   let matchingField: MatFormFieldHarness | null = null;
@@ -34,11 +34,12 @@ export async function checkDescribingError(options: { loader: HarnessLoader; ele
       break;
     }
   }
-  expect(matchingField).withContext(`mat-form-field for input '${inputId}' should be present`).toBeTruthy();
+  expect(matchingField, `mat-form-field for input '${inputId}' should be present`).toBeTruthy();
 
   const errors = await matchingField!.getTextErrors();
-  expect(errors.length).withContext('mat-form-field should have at least one error').toBeGreaterThan(0);
-  expect(errors.some(err => err.includes(options.expectedResult)))
-    .withContext(`expected an error containing "${options.expectedResult}", got: ${JSON.stringify(errors)}`)
-    .toBeTrue();
+  expect(errors.length, 'mat-form-field should have at least one error').toBeGreaterThan(0);
+  expect(
+    errors.some(err => err.includes(options.expectedResult)),
+    `expected an error containing "${options.expectedResult}", got: ${JSON.stringify(errors)}`
+  ).toBe(true);
 }

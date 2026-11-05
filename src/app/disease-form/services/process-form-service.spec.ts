@@ -16,10 +16,11 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { ProcessFormService } from './process-form-service';
-import { ExtendedSalutationEnum } from '../../legacy/common-utils';
-import { NotificationType } from '../../demis-types';
 import { NotificationLaboratoryCategory } from 'src/api/notification';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { NotificationType } from '../../demis-types';
+import { ExtendedSalutationEnum } from '../../legacy/common-utils';
+import { ProcessFormService } from './process-form-service';
 import NotificationIdReferenceEnum = NotificationLaboratoryCategory.NotificationIdReferenceEnum;
 
 describe('ProcessFormService', () => {

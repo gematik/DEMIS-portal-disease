@@ -19,36 +19,31 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { MockBuilder, MockRender } from 'ng-mocks';
 import { NGXLogger } from 'ngx-logger';
+import { beforeEach, describe, expect, it, type MockedObject, vi } from 'vitest';
 
 import { HelpersService } from './helpers.service';
 
 describe('HelpersService', () => {
   let service: HelpersService;
-  let routerSpy: jasmine.SpyObj<Router>;
-  let matDialogSpy: jasmine.SpyObj<MatDialog>;
-  let loggerSpy: jasmine.SpyObj<NGXLogger>;
+  let routerSpy: MockedObject<Router>;
 
   beforeEach(() => MockBuilder(HelpersService).mock(Router).mock(MatDialog).mock(NGXLogger));
 
   beforeEach(() => {
     const fixture = MockRender();
     service = fixture.point.injector.get(HelpersService);
-    routerSpy = fixture.point.injector.get(Router) as jasmine.SpyObj<Router>;
-    matDialogSpy = fixture.point.injector.get(MatDialog) as jasmine.SpyObj<MatDialog>;
-    loggerSpy = fixture.point.injector.get(NGXLogger) as jasmine.SpyObj<NGXLogger>;
+    routerSpy = fixture.point.injector.get(Router) as MockedObject<Router>;
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('exitApplication', () => {
-    it('should navigate to welcome page', () => {
-      routerSpy.navigate = jasmine.createSpy('navigate');
+  it('should navigate to welcome page when exiting', () => {
+    routerSpy.navigate = vi.fn();
 
-      service.exitApplication();
+    service.exitApplication();
 
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/welcome']);
-    });
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/welcome']);
   });
 });

@@ -18,18 +18,19 @@
 import { HttpHandler, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { MockBuilder, MockRender } from 'ng-mocks';
 import { of } from 'rxjs';
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { AuthInterceptor } from './auth.interceptor';
 
 describe('AuthInterceptor', () => {
   let interceptor: AuthInterceptor;
-  let mockNext: jasmine.Spy;
+  let mockNext: Mock;
 
   beforeEach(() => MockBuilder(AuthInterceptor));
 
   beforeEach(() => {
     const fixture = MockRender();
     interceptor = fixture.point.injector.get(AuthInterceptor);
-    mockNext = jasmine.createSpy('next').and.returnValue(of({}));
+    mockNext = vi.fn().mockReturnValue(of({}));
   });
 
   afterEach(() => {
@@ -56,15 +57,15 @@ describe('AuthInterceptor', () => {
 
     // Verify that the request was cloned with Authorization header
     expect(mockNext).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        headers: jasmine.objectContaining({
-          has: jasmine.any(Function),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          has: expect.any(Function),
         }),
       })
     );
 
     // Get the cloned request from the spy call
-    const clonedRequest = mockNext.calls.argsFor(0)[0];
+    const clonedRequest = vi.mocked(mockNext).mock.calls[0][0];
     expect(clonedRequest.headers.get('Authorization')).toBe(`Bearer ${testToken}`);
   });
 
@@ -84,7 +85,7 @@ describe('AuthInterceptor', () => {
     expect(mockNext).toHaveBeenCalledWith(req);
 
     // Get the request from the spy call
-    const passedRequest = mockNext.calls.argsFor(0)[0];
+    const passedRequest = vi.mocked(mockNext).mock.calls[0][0];
     expect(passedRequest.headers.get('Authorization')).toBeNull();
   });
 
@@ -104,7 +105,7 @@ describe('AuthInterceptor', () => {
     expect(mockNext).toHaveBeenCalledWith(req);
 
     // Get the request from the spy call
-    const passedRequest = mockNext.calls.argsFor(0)[0];
+    const passedRequest = vi.mocked(mockNext).mock.calls[0][0];
     expect(passedRequest.headers.get('Authorization')).toBeNull();
   });
 
@@ -124,7 +125,7 @@ describe('AuthInterceptor', () => {
     expect(mockNext).toHaveBeenCalledWith(req);
 
     // Get the request from the spy call
-    const passedRequest = mockNext.calls.argsFor(0)[0];
+    const passedRequest = vi.mocked(mockNext).mock.calls[0][0];
     expect(passedRequest.headers.get('Authorization')).toBeNull();
   });
 
@@ -148,15 +149,15 @@ describe('AuthInterceptor', () => {
 
     // Verify that the request was cloned with both headers
     expect(mockNext).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        headers: jasmine.objectContaining({
-          has: jasmine.any(Function),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          has: expect.any(Function),
         }),
       })
     );
 
     // Get the cloned request from the spy call
-    const clonedRequest = mockNext.calls.argsFor(0)[0];
+    const clonedRequest = vi.mocked(mockNext).mock.calls[0][0];
     expect(clonedRequest.headers.get('Authorization')).toBe(`Bearer ${testToken}`);
     expect(clonedRequest.headers.get('Custom-Header')).toBe(customHeaderValue);
   });
@@ -177,16 +178,16 @@ describe('AuthInterceptor', () => {
 
     // Verify that the request was cloned with Authorization header
     expect(mockNext).toHaveBeenCalledWith(
-      jasmine.objectContaining({
+      expect.objectContaining({
         method: 'POST',
-        headers: jasmine.objectContaining({
-          has: jasmine.any(Function),
+        headers: expect.objectContaining({
+          has: expect.any(Function),
         }),
       })
     );
 
     // Get the cloned request from the spy call
-    const clonedRequest = mockNext.calls.argsFor(0)[0];
+    const clonedRequest = vi.mocked(mockNext).mock.calls[0][0];
     expect(clonedRequest.headers.get('Authorization')).toBe(`Bearer ${testToken}`);
     expect(clonedRequest.body).toEqual(testData);
   });
@@ -207,16 +208,16 @@ describe('AuthInterceptor', () => {
 
     // Verify that the request was cloned with Authorization header
     expect(mockNext).toHaveBeenCalledWith(
-      jasmine.objectContaining({
+      expect.objectContaining({
         method: 'PUT',
-        headers: jasmine.objectContaining({
-          has: jasmine.any(Function),
+        headers: expect.objectContaining({
+          has: expect.any(Function),
         }),
       })
     );
 
     // Get the cloned request from the spy call
-    const clonedRequest = mockNext.calls.argsFor(0)[0];
+    const clonedRequest = vi.mocked(mockNext).mock.calls[0][0];
     expect(clonedRequest.headers.get('Authorization')).toBe(`Bearer ${testToken}`);
     expect(clonedRequest.body).toEqual(testData);
   });
@@ -236,16 +237,16 @@ describe('AuthInterceptor', () => {
 
     // Verify that the request was cloned with Authorization header
     expect(mockNext).toHaveBeenCalledWith(
-      jasmine.objectContaining({
+      expect.objectContaining({
         method: 'DELETE',
-        headers: jasmine.objectContaining({
-          has: jasmine.any(Function),
+        headers: expect.objectContaining({
+          has: expect.any(Function),
         }),
       })
     );
 
     // Get the cloned request from the spy call
-    const clonedRequest = mockNext.calls.argsFor(0)[0];
+    const clonedRequest = vi.mocked(mockNext).mock.calls[0][0];
     expect(clonedRequest.headers.get('Authorization')).toBe(`Bearer ${testToken}`);
   });
 });

@@ -15,9 +15,10 @@
     find details in the "Readme" file.
  */
 
-import { formatItems, makeFieldSequence } from './format-items';
+import { describe, expect, it } from 'vitest';
 import { Quantity } from '../api/notification';
 import { FIELDS } from '../test/shared/data/format-item-fields';
+import { formatItems, makeFieldSequence } from './format-items';
 
 describe('utils', () => {
   it('should give the correct sequence numbers', () => {

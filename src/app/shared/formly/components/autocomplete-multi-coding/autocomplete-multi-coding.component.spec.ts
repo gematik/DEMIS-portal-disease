@@ -15,20 +15,21 @@
     find details in the "Readme" file.
  */
 
-import { AutocompleteMultiCodingComponent } from './autocomplete-multi-coding.component';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
-import { By } from '@angular/platform-browser';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { AutocompleteComponent } from '../../../components/autocomplete/autocomplete.component';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatIconModule } from '@angular/material/icon';
-import { AddBreadcrumbDirective } from '../autocomplete-coding/add-breadcrumb.directive';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { By } from '@angular/platform-browser';
+import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { AutocompleteComponent } from '../../../components/autocomplete/autocomplete.component';
+import { AddBreadcrumbDirective } from '../autocomplete-coding/add-breadcrumb.directive';
+import { AutocompleteMultiCodingComponent } from './autocomplete-multi-coding.component';
 
 describe('AutocompleteMultiCodingComponent', () => {
   let fixture: ComponentFixture<MockComponent>;

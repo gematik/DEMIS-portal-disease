@@ -15,11 +15,12 @@
     find details in the "Readme" file.
  */
 
-import { AutocompleteCodingComponent } from './autocomplete-coding.component';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { AutocompleteCodingComponent } from './autocomplete-coding.component';
 
 describe('AutocompleteCodingComponent', () => {
   let fixture: ComponentFixture<MockComponent>;

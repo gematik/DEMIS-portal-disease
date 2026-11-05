@@ -2,6 +2,16 @@
 
 # Release portal-disease
 
+## Release 1.9.5
+- Removed FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT
+- Removed FEATURE_FLAG_FOOTER_LINKS_CORRECTION
+- Updated @gematik/demis-portal-core-library to 4.4.8
+- Updated minor/patch versions of dependencies
+- Adapted renovate.json
+- Added min-release-age to .npmrc
+- Migrated from Karma/Jasmine to Vitest/Browser/Playwright for unit testing
+- Removed FEATURE_FLAG_PORTAL_DISEASE_LAYOUT
+
 ## Release 1.9.4
 - Removed FEATURE_FLAG_PLACEHOLDER_REMOVAL
 - Updated @gematik/demis-portal-core-library to 4.4.6 incl. a11y improvements for pastebox, repeater and dialogs
@@ -13,7 +23,7 @@
 - Fixed broken CSS in steps navigation
 
 ## Release 1.9.2
-- Removed feature flag FEATURE_FLAG_PORTAL_HEADER_FOOTER: forms footer is now always rendered
+- Removed FEATURE_FLAG_PORTAL_HEADER_FOOTER: forms footer is now always rendered
 - Added reference field in disease choice form
 - Removed FEATURE_FLAG_DISEASE_AUTOCOMPLETE
 - Removed FEATURE_FLAG_WITHOUT_CONTACT_POINT_USE
@@ -22,7 +32,7 @@
 
 ## Release 1.9.1
 - Fixed third party license collection
-- Removed feature flag FEATURE_FLAG_PORTAL_ACCESSIBILITY
+- Removed FEATURE_FLAG_PORTAL_ACCESSIBILITY
 - Fixed broken indentation for form field groups
 - Updated hexHexDummy data
 - Changed disclaimer text for non-nominal notified person
@@ -52,7 +62,7 @@
 - Updated NGINX-Base-Image to 1.31.0
 - Removed FEATURE_FLAG_OUTLINE_DESIGN
 - Added unit test for knowledge database link
-- Removed feature flag FEATURE_FLAG_PORTAL_PAGE_STRUCTURE
+- Removed FEATURE_FLAG_PORTAL_PAGE_STRUCTURE
 
 ## Release 1.7.0
 
