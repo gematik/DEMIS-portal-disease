@@ -1,0 +1,27 @@
+:host ::ng-deep {
+  gem-demis-process-stepper-step-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .ITEM_GROUP {
+    padding: 1rem 1rem 0;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0, 3, 3, 0.12);
+    display: block;
+  }
+
+  .info-link {
+    margin-left: 34px;
+    margin-bottom: 30px;
+  }
+}
+
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}

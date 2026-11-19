@@ -2,6 +2,10 @@
 
 # Release portal-disease
 
+## Release 1.9.6
+- Updated minor/patch versions of dependencies
+- Added new side navigation from portal-core (FEATURE_FLAG_CORE_SIDENAV)
+
 ## Release 1.9.5
 - Removed FEATURE_FLAG_DISEASE_STATUS_ORDER_NODEFAULT
 - Removed FEATURE_FLAG_FOOTER_LINKS_CORRECTION

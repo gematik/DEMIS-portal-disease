@@ -40,6 +40,7 @@ config:
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: false
     FEATURE_FLAG_DISEASE_STRICT: false
     FEATURE_FLAG_FOLLOW_UP_7_3: false
+    FEATURE_FLAG_CORE_SIDENAV: false
   ngxLoggerConfig:
     level: 1,
     disableConsoleLogging: true
