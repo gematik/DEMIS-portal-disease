@@ -117,6 +117,7 @@ export const mainConfig = {
     FEATURE_FLAG_NON_NOMINAL_NOTIFICATION: true,
     FEATURE_FLAG_DISEASE_STRICT: true,
     FEATURE_FLAG_FOLLOW_UP_7_3: true,
+    FEATURE_FLAG_CORE_SIDENAV: false,
   },
   ngxLoggerConfig: environment.defaultLoggerConfiguration,
 };

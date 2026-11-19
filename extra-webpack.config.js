@@ -19,6 +19,7 @@ const singleSpaAngularWebpack = require('@single-spa-community/angular/lib/webpa
 
 module.exports = (config, options) => {
   const singleSpaWebpackConfig = singleSpaAngularWebpack(config, options);
+  singleSpaWebpackConfig.devtool = false;
 
   // Suppress CommonJS warnings specifically for style-loader runtime modules
   singleSpaWebpackConfig.ignoreWarnings = [

@@ -16,24 +16,24 @@
  */
 
 import { Routes } from '@angular/router';
-import { DiseaseFormComponent } from './disease-form/disease-form.component';
 import { allowedRoutes } from './demis-types';
+import { WrapperComponent } from './wrapper/wrapper.component';
 
 export const routes: Routes = [
   {
     path: allowedRoutes['nonNominal'],
-    component: DiseaseFormComponent,
+    component: WrapperComponent,
   },
   {
     path: allowedRoutes['nominal'],
-    component: DiseaseFormComponent,
+    component: WrapperComponent,
   },
   {
     path: allowedRoutes['followUp'],
-    component: DiseaseFormComponent,
+    component: WrapperComponent,
   },
   {
     path: '**',
-    component: DiseaseFormComponent,
+    component: WrapperComponent,
   },
 ];

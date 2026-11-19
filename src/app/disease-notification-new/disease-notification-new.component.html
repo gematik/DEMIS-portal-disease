@@ -1,0 +1,19 @@
+<gem-demis-max-height-content-container [elementSelectorsToSubtract]="['app-navbar']">
+  @if (notificationService.isReady()) {
+    <gem-demis-side-navigation #sideNav [sideNavTitle]="notificationService.sideNavTitle()" [stepsMap]="stepsMap()">
+      <ng-template #sideNavSubtitle>
+        @if (notificationService.sideNavDescription()) {
+          <p>{{ notificationService.sideNavDescription() }}</p>
+        }
+      </ng-template>
+      <ng-template #additionalSideNavActions>
+        <!--      <app-hexhexbutton (pasteRequested)="handleHexHex()" />-->
+        <!--      <gem-demis-paste-box [importData]="importClipboardData" />-->
+      </ng-template>
+    </gem-demis-side-navigation>
+  } @else {
+    <div class="loading-indicator">
+      <mat-spinner />
+    </div>
+  }
+</gem-demis-max-height-content-container>

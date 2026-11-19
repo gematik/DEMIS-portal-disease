@@ -79,6 +79,9 @@ const NO_DISEASE_CHOOSEN: FormlyFieldConfig[] = [
   },
 ];
 
+/**
+ * @deprecated: this component can be removed with FEATURE_FLAG_CORE_SIDENAV
+ */
 @Component({
   selector: 'app-disease-form',
   templateUrl: './disease-form.component.html',

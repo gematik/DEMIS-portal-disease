@@ -16,12 +16,11 @@
  */
 
 import { Injectable } from '@angular/core';
-import { AddressType, DiseaseNotification, NotifiedPersonAddressInfo, Quantity } from '../../../api/notification';
-import { formatItems } from '../../format-items';
 import { trimStrings } from '@gematik/demis-portal-core-library';
-import { ExtendedSalutationEnum } from '../../legacy/common-utils';
+import { AddressType, DiseaseNotification, NotifiedPersonAddressInfo, Quantity } from '../../../api/notification';
 import { NotificationType } from '../../demis-types';
-import { environment } from '../../../environments/environment';
+import { formatItems } from '../../format-items';
+import { ExtendedSalutationEnum } from '../../legacy/common-utils';
 
 @Injectable({
   providedIn: 'root', // Makes it available app-wide
